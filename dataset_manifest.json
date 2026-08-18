@@ -1,0 +1,53 @@
+{
+  "dataset_name": "search_sft_2000",
+  "total_records": 2000,
+  "trajectory_types": {
+    "single_search": 1025,
+    "multi_search": 975
+  },
+  "search_depth": {
+    "1": 1025,
+    "2": 667,
+    "3": 265,
+    "4": 43
+  },
+  "training_unit": "full_trajectory",
+  "loss_mask_policy": "assistant_generated_except_information",
+  "public_schema": [
+    "id",
+    "question",
+    "trajectory_type",
+    "search_count",
+    "full_trajectory_text"
+  ],
+  "ordering": "deterministic_global_shuffle",
+  "shuffle_seed": 42,
+  "shuffle_key": "SHA256(\"42|\" + old_public_id + \"|\" + SHA256(full_trajectory_text_after_eot))",
+  "assistant_eot": "<|im_end|>",
+  "assistant_eot_supervised": true,
+  "integrity_audit": {
+    "total_records": 2000,
+    "unique_id": 2000,
+    "ids_exactly_000001_to_002000": true,
+    "single_search": 1025,
+    "multi_search": 975,
+    "depth_1": 1025,
+    "depth_2": 667,
+    "depth_3": 265,
+    "depth_4": 43,
+    "public_jsonl_fields_exactly_5": true,
+    "every_trajectory_ends_with_im_end": 2000,
+    "duplicate_final_im_end": 0,
+    "final_answer_count_not_one": 0,
+    "search_information_pair_invalid": 0,
+    "empty_search": 0,
+    "empty_information": 0,
+    "empty_answer": 0,
+    "malformed_trajectory": 0,
+    "question_changed": 0,
+    "content_changed_except_final_im_end": 0,
+    "deterministic_shuffle_reproducible": true,
+    "old_block_order_removed": true,
+    "provenance_mapping_complete": 2000
+  }
+}

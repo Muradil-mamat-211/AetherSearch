@@ -1,0 +1,7 @@
+.ipynb_checkpoints/
+*.jsonl
+*.tsv
+*.parquet
+*.safetensors
+release/
+*.tmp
