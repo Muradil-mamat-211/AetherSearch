@@ -1,0 +1,95 @@
+extends: formal_train.yaml
+
+algorithm_mode: answer_only_ragen2_mica_ig_v1_singleton_outcome
+
+project:
+  name: igpo_ragen2_mica_ig_v1
+  design_report: /root/autodl-tmp/search-r1-workspace/projects/igpo_ragen2_mica_ig_v1/references/AGENTIC_RL_IGPO_RAGEN2_A2TGPO_SYSTEM_DESIGN_V1_2_UPDATE_STAGED.md
+  algorithm_overrides: /root/autodl-tmp/search-r1-workspace/projects/igpo_ragen2_mica_ig_v1/ALGORITHM_OVERRIDES_V2_1.md
+
+paths:
+  runtime_root: /root/autodl-tmp/search-r1-workspace/projects/igpo_ragen2_mica_ig_v1/outputs/formal_training
+
+# Reuse the active production host topology. These are infrastructure values;
+# they do not change the algorithm, optimizer, KL, rollout, or reduction.
+hardware:
+  total_physical_gpus: 4
+  # The container is hard-limited to 360 GiB. Keep the resolved contract
+  # aligned with the cgroup instead of inheriting the old 5x48 profile.
+  expected_host_ram_gb: 360
+  expected_cpu_cores: 48
+  cpu_reserved_for_os: 4
+  ray_object_store_gb: 48
+  memory_safety_reserve_gb: 64
+  rl_physical_gpus: [1, 2, 3]
+  rl_visible_gpus: [0, 1, 2]
+  rl_world_size: 3
+  vllm_data_parallel_size: 3
+  allow_world_size_change_on_resume: true
+
+ray:
+  retriever_pool_cpus: 8
+  rl_engine_cpus_per_gpu: 3
+  controller_cpu_workers: 5
+  outcome_worker_count: 4
+  exact_ig_task_builder_count: 2
+  agent_loop_worker_count: 12
+
+rollout:
+  data_parallel_size: 3
+  replicas: 3
+  gpu_memory_utilization: 0.48
+  max_num_seqs: 64
+
+learner:
+  world_size: 3
+
+formal_schedule:
+  learner_micro_batch_size: 6
+
+checkpoint:
+  # Keep every complete formal checkpoint. Cadence remains every 20
+  # successful updates; no retention-based deletion is allowed.
+  formal_limit: null
+  # A checkpoint is integrity-checked in a read-only subprocess at commit.
+  # Full distributed restore is qualified in a fresh runtime, avoiding a
+  # second transient Actor+optimizer footprint in live colocated workers.
+  live_distributed_reload_verification: false
+  # Enabled only in a verified recovery run whose cadence checkpoint exists
+  # but whose derived model export/eval task was interrupted before commit.
+  materialize_missing_cadence_artifacts_on_resume: false
+
+selection:
+  mode: answer_outcome_only_scaled_top_p
+  signal: answer_outcome_only
+
+advantage:
+  mode: mica_ig_v1
+  search_task_mode: answer_only_ragen2_mica_ig_v1_singleton_outcome
+  search_advantage_formula: "Z_O if peer_count == 1 else 0.5*A_ret + 0.5*A_loc"
+  outcome_fallback_to_search: true
+  future_ig_accumulation: false
+  sqrt_n_rescale: false
+  rescale_count_mode: none_mica_raw_suffix_return
+  search_formula_terms:
+    - raw_exact_ig
+    - literal_raw_ig_suffix_return
+    - prompt_search_depth_local_advantage
+    - prompt_search_depth_return_advantage
+    - singleton_normalized_terminal_outcome
+  sufficiency_probe:
+    enabled: false
+    pre_search_enabled: false
+    post_search_enabled: false
+
+mica:
+  gamma: 1.0
+  alpha: 0.5
+  normalization_scope: prompt_search_depth
+  singleton_fallback: normalized_terminal_outcome
+  cross_prompt_normalization: false
+  cross_depth_normalization: false
+  raw_ig_fallback: false
+  routed_outcome: false
+  role_gate: false
+  debug_answer_probes: false

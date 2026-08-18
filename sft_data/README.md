@@ -108,3 +108,10 @@ Hugging Face dataset linked above into this directory, then verify the complete
 release with:
 
 sha256sum -c checksums.sha256
+
+## Build scripts
+
+The historical SFT build scripts are preserved under `scripts/`. They accept the
+working directory as the first argument, or read `AETHERSEARCH_SFT_WORKDIR`.
+Without either value they fall back to the original local path
+`/root/CLEAN_SFT_FINAL`.

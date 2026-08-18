@@ -1,0 +1,152 @@
+extends: base.yaml
+
+paths:
+  runtime_root: /root/autodl-tmp/search-r1-workspace/projects/igpo_ragen2_a2tgpo_strict_onpolicy_v1/outputs/pilot_20_final
+
+optimizer:
+  name: adamw
+  learning_rate: 2.0e-7
+  betas: [0.9, 0.999]
+  epsilon: 1.0e-8
+  weight_decay: 0.0
+  max_grad_norm: 1.0
+
+scheduler:
+  name: constant_with_warmup
+  warmup_successful_updates: 2
+  total_successful_updates: 20
+  advance_on_skip: false
+
+rollout:
+  do_sample: true
+  temperature: 1.0
+  sampling_top_p: 0.95
+  top_p: 0.95
+  top_k: 0
+  min_p: 0.0
+  repetition_penalty: 1.0
+  presence_penalty: 0.0
+  frequency_penalty: 0.0
+  group_size: 16
+  max_search_turns: 5
+  max_model_tokens_per_turn: 500
+  max_new_tokens_per_turn: 500
+  max_information_tokens_per_turn: 500
+
+# Answer coefficients remain explicit. Search has no external coefficient.
+advantage:
+  lambda_outcome: 1.0
+  lambda_format: 1.0
+
+candidate_pool:
+  initial_prompts: 64
+  refill_prompts: 32
+  max_prompts: 128
+  group_size: 16
+
+selection:
+  variance_mass_top_p: 0.90
+  top_p_mass: 0.90
+  min_selected: 32
+  minimum_selected_prompts: 32
+  max_selected: 36
+  maximum_selected_prompts: 36
+  alpha_ig: 0.5
+  alpha_outcome: 0.5
+
+exact_ig:
+  exact_ig_version: exact_ig_official_offset_fp32_no_anchor_v4
+  production_precision_mode: fp32_exact_ig
+  numerical_gate_status: PASS
+  numerical_gate_reason: structural_and_semantic_audit_pass_numeric_drift_is_telemetry
+  structural_audit_status: PASS
+  structural_audit_path: /root/autodl-tmp/search-r1-workspace/projects/igpo_ragen2_a2tgpo_strict_onpolicy_v1/artifacts/exact_ig_fast_path_self_audit_20260730/audit_status.json
+  numerical_gate_path: /root/autodl-tmp/search-r1-workspace/projects/igpo_ragen2_a2tgpo_strict_onpolicy_v1/artifacts/exact_ig_fast_path_self_audit_20260730/audit_status.json
+  attention_backend: sdpa_math
+  parameter_dtype: float32
+  activation_dtype: float32
+  logits_dtype: float32
+  log_probs_dtype: float32
+  autocast_enabled: false
+  autocast_dtype: null
+  allow_tf32: false
+  allow_bf16_reduced_precision_reduction: false
+  allow_fp16_reduced_precision_reduction: false
+  float32_matmul_precision: highest
+  temperature: 1.0
+  scoring_logits_mode: official_full_logits
+  selected_positions_enabled: false
+  selected_positions_gate_status: FAIL
+  attention_mask_mode: official_additive
+  boolean_4d_enabled: false
+  boolean_4d_gate_status: PASS
+  parity_rtol: 1.0e-5
+  parity_atol: 2.0e-5
+  maximum_token_log_prob_abs_diff: 2.0e-5
+  maximum_phi_abs_diff: 2.0e-5
+  maximum_ig_abs_diff: 2.0e-5
+  maximum_phi_safety_abs_diff: 1.0e-3
+  maximum_ig_safety_abs_diff: 1.0e-3
+  numeric_ambiguity_epsilon: 5.174198001623147e-4
+  calibration_p99_ig_abs_diff: 1.7247326672077158e-4
+  minimum_canary_samples_for_p99: 8
+  oracle_numeric_difference_policy: telemetry_only_unless_semantic_or_safety_drift
+  maximum_telescoping_error: 1.0e-10
+  logits_element_size: 4
+  use_cache: false
+  oracle_canary_rate: 0.01
+  oracle_canary_fail_closed: false
+
+pilot:
+  successful_updates: 20
+  stop_after_successful_update: 20
+  checkpoints: [20]
+  evaluations: []
+
+evaluation:
+  asynchronous: true
+  physical_gpu: 0
+  batch_size: 1
+  retry_seconds: 300
+  minimum_free_memory_gib: 10
+  manifest_path: /root/autodl-tmp/search-r1-workspace/projects/igpo_ragen2_a2tgpo_strict_onpolicy_v1/artifacts/fixed_eval_manifest.json
+  expected_manifest_sha256: d91fa19041c43cd44e878a044257b1e2bf9047b36b2a0e69019a29f6669a1709
+  manifest_seed: 20260724
+  nq_count: 300
+  hotpotqa_count: 300
+  batch_prompts: 32
+  do_sample: false
+  temperature: 0.0
+  sampling_top_p: 1.0
+  model_dtype: bfloat16
+  attention_backend: flash_attention_2
+  max_memory_fraction: 0.24
+
+formal_schedule:
+  optimizer_family: AdamW
+  learning_rate: 2.0e-7
+  weight_decay: 0.0
+  optimizer_betas: [0.9, 0.999]
+  optimizer_epsilon: 1.0e-8
+  scheduler: constant
+  warmup: 2
+  learner_micro_batch_size: 6
+  total_successful_updates: 20
+  checkpoint_every_successful_updates: 20
+  fixed_eval_every_successful_updates: 20
+  maximum_prompt_length: 2048
+  maximum_response_length: 6144
+  maximum_model_length: 8192
+  maximum_extended_sequence_length: 16384
+  maximum_position_id_exclusive: 32768
+  sampling_temperature_approval: 1.0
+  sampling_top_p_approval: 0.95
+  source: user_frozen_final_pretrain_pilot_20
+
+checkpoint:
+  pilot_successful_updates: [20]
+  formal_limit: 2
+  readonly_subprocess_verification: true
+
+runtime_test:
+  force_refill_after_initial_pool: false

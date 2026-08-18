@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "agentic-rl-igpo-ragen2-a2tgpo"
+version = "1.0.0"
+description = "Strict rollout-start on-policy Agentic RL deployment for IGPO, RAGEN-2, and A2TGPO"
+requires-python = ">=3.9"
+dependencies = [
+  "PyYAML>=6.0",
+  "numpy>=1.24",
+  "aiohttp>=3.10",
+  "pandas>=2.0",
+  "pyarrow>=14.0",
+]
+
+[project.scripts]
+agentic-rl-config = "agentic_rl.config:main"
+agentic-rl-train = "agentic_rl.controller.update_controller:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+addopts = "-q"
+testpaths = ["tests"]

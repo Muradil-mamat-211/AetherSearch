@@ -1,0 +1,231 @@
+project:
+  name: igpo_ragen2_a2tgpo_strict_onpolicy_v1
+  schema_version: "2.1"
+  design_report: /root/autodl-tmp/search-r1-workspace/projects/igpo_ragen2_a2tgpo_strict_onpolicy_v1/references/AGENTIC_RL_IGPO_RAGEN2_A2TGPO_SYSTEM_DESIGN_V1_2_UPDATE_STAGED.md
+  algorithm_overrides: /root/autodl-tmp/search-r1-workspace/projects/igpo_ragen2_a2tgpo_strict_onpolicy_v1/ALGORITHM_OVERRIDES_V2_1.md
+
+paths:
+  search_r1_root: /root/autodl-tmp/search-r1-workspace/code/Search-R1
+  environment_script: /root/autodl-tmp/search-r1-workspace/env.sh
+  rl_python: /root/autodl-tmp/search-r1-workspace/envs/igpo-ragen2-fsdp2-vllm011/bin/python
+  retriever_python: /root/autodl-tmp/search-r1-workspace/envs/retriever/bin/python
+  actor_model: /root/autodl-tmp/search-r1-workspace/models/dpo_v2_final_model
+  reference_model: /root/autodl-tmp/search-r1-workspace/models/dpo_v2_final_model
+  train_data: /root/autodl-tmp/search-r1-workspace/data/nq_hotpotqa_train/train.parquet
+  validation_data: /root/autodl-tmp/search-r1-workspace/data/nq_hotpotqa_train/test.parquet
+  runtime_root: /root/autodl-tmp/search-r1-workspace/projects/igpo_ragen2_a2tgpo_strict_onpolicy_v1/runtime
+
+runtime:
+  framework: verl_ray
+  require_clean_preflight: true
+  fail_on_backend_fallback: true
+  require_vllm_import: true
+  require_fsdp2_public_api: true
+  require_vllm_sleep_wake: true
+  require_current_verl_agent_loop: true
+  adapter_factory: agentic_rl.runtime.verl_runtime_adapter:create_runtime_adapter
+
+data:
+  immutable: true
+  prompt_key: prompt
+  id_key: id
+  aliases_key: golden_answers
+  reward_target_key: reward_model.ground_truth.target
+  data_source_key: data_source
+  logical_view_mode: deterministic_nq_hotpotqa_40_60
+  source_rows: 169615
+  source_sha256: c3cc21e862a8469105de666101578cbff23cdc77e91a803cef102622c89cc4f6
+  selection_seed: 20260708
+  nq_ratio: 0.4
+  expected_rows: 150745
+  expected_source_counts:
+    nq: 60298
+    hotpotqa: 90447
+  ordered_view_identity_sha256: b8bc8792a85e1172e52ceb5eaefb9c6065aa9c0dabf5fe4cb6004ddc4281710e
+  shuffle: true
+  shuffle_seed: 20260724
+  derive_or_copy_data: false
+
+rollout:
+  engine: vllm
+  group_size: 16
+  prompt_wave_size: 32
+  candidate_prompts_initial: 64
+  refill_prompts: 32
+  candidate_prompts_max: 128
+  data_parallel_size: 4
+  tensor_parallel_size: 1
+  replicas: 4
+  sticky_trajectory_sessions: true
+  strict_rollout_start_snapshot: true
+  enable_sleep_mode: true
+  enable_prefix_caching: true
+  enable_chunked_prefill: true
+  # Throughput profile validated against the 48 GiB hybrid-engine topology.
+  # This leaves roughly 5 GiB of observed headroom at the prior 40 GiB peak.
+  gpu_memory_utilization: 0.46
+  max_num_seqs: 64
+  temperature: 1.0
+  top_p: 0.95
+  top_k: -1
+  max_search_turns: 5
+  max_new_tokens_per_turn: 500
+  max_information_tokens_per_turn: 500
+
+selection:
+  mode: dual_channel_scaled_top_p
+  top_p_mass: 0.9
+  include_zero: false
+  selection_epsilon: 0.0
+  minimum_selected_prompts: 32
+  target_selected_prompts: 36
+  maximum_selected_prompts: 36
+  alpha_ig: 0.5
+  alpha_outcome: 0.5
+  noise_floor_ig: 1.0e-12
+  noise_floor_outcome: 1.0e-12
+  stats_dtype: float64
+  minimum_positive_prompts: 4
+  scale_ema_half_life: 10
+  health_reference_valid_updates: 10
+  health_threshold_ratio: 0.1
+  retain_all_trajectories: true
+  recompute_after_refill_on_full_pool: true
+
+advantage:
+  mode: a2tgpo
+  search_task_mode: sufficiency_novelty_cumulative_ig_probe_routed_outcome
+  gamma: 1.0
+  lambda_outcome: 1.0
+  lambda_format: 1.0
+  probe_epsilon: 1.0e-6
+  search_advantage_formula: "-1.0 if S_before else -1.0 if N else D_ig_eff + O_route"
+  outcome_fallback_to_search: false
+  normalization_epsilon: 1.0e-6
+  zero_variance_tolerance: 1.0e-12
+  future_ig_accumulation: true
+  sqrt_n_rescale: true
+  external_ig_multiplier: null
+  search_formula_terms:
+    - sufficient_before_search
+    - sufficient_after_search
+    - no_new_observation
+    - effective_cumulative_normalized_local_ig
+    - probe_routed_normalized_outcome
+  answer_formula_terms:
+    - normalized_outcome
+    - centered_format_indicator
+  rescale_count_mode: effective_valid_ig_until_first_s_after
+  sufficiency_probe:
+    enabled: true
+    pre_search_enabled: true
+    post_search_enabled: true
+    do_sample: false
+    temperature: 0.0
+    top_p: 1.0
+    top_k: -1
+    min_p: 0.0
+    n: 1
+    max_tokens: 500
+    stop: ["</answer>"]
+    exact_match_only: true
+  sc:
+    enabled: false
+    shadow_only: true
+    actor_loss_enabled: false
+
+policy:
+  strict_on_policy: true
+  ppo_epochs: 1
+  optimizer_mini_steps: 1
+  zero_grad_calls_per_successful_update: 1
+  optimizer_steps_per_successful_update: 1
+  scheduler_steps_per_successful_update: 1
+  ratio_level: turn
+  ratio_hardcoded: false
+  clipping_mode: a2tgpo_adaptive_turn_level
+  adaptive_clip_beta: 0.3
+  adaptive_clip_epsilon_low: 0.003
+  adaptive_clip_epsilon_high: 0.004
+  answer_clip_scale: 1.0
+  task_reduction: prompt_trajectory_action_token_mean
+  kl_reduction: prompt_trajectory_action_token_mean
+  full_vocab_reference_kl: true
+  kl_action_state_chunk_size: 16
+  kl_vocabulary_chunk_size: 8192
+  kl_coefficient: 0.01
+  entropy_coefficient: 0.0
+  value_coefficient: 0.0
+  max_grad_norm: 1.0
+
+formal_schedule:
+  optimizer_family: null
+  learning_rate: null
+  weight_decay: null
+  optimizer_betas: null
+  optimizer_epsilon: null
+  scheduler: null
+  warmup: null
+  learner_micro_batch_size: null
+  total_successful_updates: null
+  checkpoint_every_successful_updates: 20
+  fixed_eval_every_successful_updates: 20
+  maximum_prompt_length: null
+  maximum_response_length: null
+  maximum_model_length: null
+  maximum_extended_sequence_length: null
+  maximum_position_id_exclusive: null
+  sampling_temperature_approval: null
+  sampling_top_p_approval: null
+  source: final_algorithm_spec_v2_1_with_pending_approvals
+
+# Isolated Stage B/C debug-shape and Stage D production-shape smoke validation.
+# These values are copied into memory and never approve or mutate
+# formal_schedule on disk.
+runtime_smoke_schedule:
+  optimizer_family: AdamW
+  learning_rate: 2.0e-7
+  weight_decay: 0.0
+  optimizer_betas: [0.9, 0.999]
+  optimizer_epsilon: 1.0e-8
+  scheduler: constant
+  warmup: 0
+  learner_micro_batch_size: 6
+  total_successful_updates: 5
+  maximum_prompt_length: 2048
+  maximum_response_length: 6144
+  maximum_model_length: 8192
+  maximum_extended_sequence_length: 16384
+  maximum_position_id_exclusive: 32768
+  sampling_temperature_approval: 1.0
+  sampling_top_p_approval: 0.95
+  source: isolated_runtime_smoke_from_historically_executed_exact_igpo_config
+
+learner:
+  strategy: fsdp2
+  world_size: 4
+  mixed_precision: bfloat16
+  reshard_after_forward: false
+  reference_reshard_after_forward: false
+  actor_is_weight_source_of_truth: true
+  exact_ig_no_grad: true
+  exact_ig_use_cache: false
+  gradient_checkpointing: true
+
+checkpoint:
+  smoke_model_checkpoints: false
+  save_on_successful_update_only: true
+  atomic_directory_commit: true
+  include_optimizer: true
+  include_scheduler: true
+  include_rng: true
+  include_data_cursor: true
+  include_channel_state: true
+  reject_post_step_precommit_failure: true
+
+includes:
+  - hardware_5x48gb.yaml
+  - update_stages.yaml
+  - exact_ig.yaml
+  - retriever_external.yaml
+  - logging.yaml

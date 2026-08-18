@@ -1,0 +1,31 @@
+update_stages:
+  attempt_counter:
+    increments_on: candidate_pool_begin
+  successful_update_counter:
+    increments_on: optimizer_transaction_commit
+  update_1:
+    selection_scale_source: final_pool_positive_median
+    bootstrap_activation_controls_current_selection_only: true
+    bootstrap_activation_controls_scale_commit: false
+    commit_scale_after_optimizer_commit: true
+    append_health_observation_after_commit: true
+  update_2_to_health_ready:
+    selection_scale_source: previously_committed_scale
+    current_pool_scale_cannot_affect_current_selection: true
+    scale_update: log_ema_after_optimizer_commit
+    bootstrap_activation_controls_current_selection_only: true
+    bootstrap_activation_controls_scale_update: false
+  health_ready:
+    valid_observations_per_channel: 10
+    reference: median_first_10_valid_successful_observations
+    threshold_ratio: 0.1
+    minimum_positive_prompts: 4
+    independent_per_channel: true
+    inactive_channel_freezes_scale_update: true
+  skip:
+    when_selected_below_minimum_after_refill: true
+    optimizer_step: false
+    scheduler_step: false
+    scale_commit: false
+    health_commit: false
+    successful_update_increment: false

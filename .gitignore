@@ -1,0 +1,33 @@
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+build/
+dist/
+*.egg-info/
+
+# Local/runtime state
+runtime/
+outputs/
+checkpoints/
+logs/
+ray_spill/
+*.log
+
+# Secrets and local env files
+.env
+.env.*
+env.sh
+*token*
+*secret*
+
+# Model weights and optimizer shards belong on HuggingFace/LFS, not normal Git.
+*.safetensors
+*.bin
+*.pt
+*.pth
+*.distcp

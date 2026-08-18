@@ -1,0 +1,45 @@
+extends: formal_train.yaml
+
+paths:
+  runtime_root: /root/autodl-tmp/search-r1-workspace/projects/igpo_ragen2_a2tgpo_strict_onpolicy_v1/artifacts/role_localized_gate_calibration_20260804/runtime
+
+scheduler:
+  total_successful_updates: 500
+
+formal:
+  total_successful_updates: 500
+  resume_from_successful_update: 0
+  fresh_start_required: true
+
+formal_schedule:
+  total_successful_updates: 500
+
+advantage:
+  search_task_mode: sufficiency_novelty_cumulative_ig_probe_routed_outcome_role_localized_gate
+  search_advantage_formula: J_main + lambda_d*J_decision + lambda_q*J_query
+  search_formula_terms:
+    - sufficient_before_search
+    - sufficient_after_search
+    - no_new_observation
+    - effective_cumulative_normalized_local_ig
+    - probe_routed_normalized_outcome
+    - role_localized_main_credit
+    - decision_segment_gate
+    - query_segment_gate
+  role_localized_gate:
+    enabled: true
+    lambda_decision: 0.0
+    lambda_query: 0.0
+    calibration_manifest: /root/autodl-tmp/search-r1-workspace/projects/igpo_ragen2_a2tgpo_strict_onpolicy_v1/artifacts/role_localized_gate_calibration_20260804/gate_calibration_manifest.json
+    calibration_manifest_sha256: PENDING
+    calibration_pending: true
+    branch_priority: [n_budget, n_invalid, s_before, n_soft, normal]
+    token_provenance_required: true
+    decision_clip_mode: fixed_dapo
+    query_clip_mode: fixed_dapo
+    decision_reduction: prompt_rollout_search_event_mean
+    query_reduction: prompt_rollout_search_event_mean
+    eta_decision: 0.10
+    eta_query: 0.05
+    max_gate_to_main_grad_ratio: 0.15
+    online_lambda_updates: false

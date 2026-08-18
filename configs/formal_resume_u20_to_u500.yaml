@@ -1,0 +1,61 @@
+extends: pilot_20_final.yaml
+
+paths:
+  runtime_root: /root/autodl-tmp/search-r1-workspace/projects/igpo_ragen2_a2tgpo_strict_onpolicy_v1/outputs/formal_training
+
+# This run restores the scheduler state from Pilot Update 20. Keeping the
+# original two-update warmup in the constructor is required for exact state
+# restoration; the loaded scheduler is already past warmup.
+scheduler:
+  name: constant_with_warmup
+  warmup_successful_updates: 2
+  total_successful_updates: 500
+  advance_on_skip: false
+
+formal:
+  resume_from_successful_update: 20
+  total_successful_updates: 500
+
+formal_schedule:
+  optimizer_family: AdamW
+  learning_rate: 2.0e-7
+  weight_decay: 0.0
+  optimizer_betas: [0.9, 0.999]
+  optimizer_epsilon: 1.0e-8
+  scheduler: constant
+  warmup: 2
+  learner_micro_batch_size: 6
+  total_successful_updates: 500
+  checkpoint_every_successful_updates: 20
+  fixed_eval_every_successful_updates: 20
+  maximum_prompt_length: 2048
+  maximum_response_length: 6144
+  maximum_model_length: 8192
+  maximum_extended_sequence_length: 16384
+  maximum_position_id_exclusive: 32768
+  sampling_temperature_approval: 1.0
+  sampling_top_p_approval: 0.95
+  source: user_frozen_resume_pilot20_to_global_update500
+
+checkpoint:
+  formal_limit: 3
+  model_checkpoints_retain_all: true
+  readonly_subprocess_verification: true
+
+evaluation:
+  asynchronous: true
+  physical_gpu: 0
+  batch_size: 1
+  retry_seconds: 300
+  minimum_free_memory_gib: 10
+  expected_manifest_sha256: d91fa19041c43cd44e878a044257b1e2bf9047b36b2a0e69019a29f6669a1709
+  model_dtype: bfloat16
+  attention_backend: flash_attention_2
+  max_memory_fraction: 0.24
+
+monitoring:
+  interval_seconds: 600
+  watchdog_interval_seconds: 60
+  target_successful_update: 500
+  stale_metrics_seconds: 7200
+  minimum_disk_free_gib: 80

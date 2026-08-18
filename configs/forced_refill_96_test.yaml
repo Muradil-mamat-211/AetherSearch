@@ -1,0 +1,4 @@
+extends: pilot_20_final.yaml
+
+runtime_test:
+  force_refill_after_initial_pool: true

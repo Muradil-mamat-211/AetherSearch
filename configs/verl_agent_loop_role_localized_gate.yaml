@@ -1,0 +1,15 @@
+- name: search_exact_ig
+  _target_: agentic_rl.runtime.search_agent_loop.SearchExactIGAgentLoop
+  max_search_turns: 5
+  max_new_tokens_per_turn: 500
+  max_information_tokens_per_turn: 500
+  sampling_top_k: 0
+  sampling_min_p: 0.0
+  repetition_penalty: 1.0
+  presence_penalty: 0.0
+  frequency_penalty: 0.0
+  retriever_url: http://127.0.0.1:8000
+  retriever_batch_window_ms: 5.0
+  retriever_max_concurrency: 128
+  retriever_request_timeout_seconds: 30.0
+  role_localized_gate_enabled: true

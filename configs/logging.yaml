@@ -1,0 +1,55 @@
+logging:
+  root: metrics
+  attempt_jsonl: attempt_metrics.jsonl
+  update_jsonl: update_metrics.jsonl
+  channel_jsonl: channel_metrics.jsonl
+  prompt_jsonl: prompt_metrics.jsonl
+  trajectory_jsonl: trajectory_metrics.jsonl
+  turn_jsonl: turn_metrics.jsonl
+  behavior_jsonl: behavior_metrics.jsonl
+  system_jsonl: system_metrics.jsonl
+  checkpoint_jsonl: checkpoint_metrics.jsonl
+  fixed_eval_jsonl: eval_metrics.jsonl
+  flush_every_records: 1
+  record_parser_diagnostics: true
+  record_environment_failure_codes: true
+  record_reasoning_collapse_metrics: true
+  selection_scale_fields:
+    - scale_used
+    - scale_observation_valid
+    - scale_update_allowed_after_success
+    - channel_active
+    - gate_mode
+    - gate_reason
+    - health_ratio
+  adaptive_clipping_fields:
+    - normalized_ig
+    - clip_scale
+    - clip_lower
+    - clip_upper
+    - clipped
+  stop_continue_fields:
+    - R_C
+    - R_S1
+    - R_S2
+    - Delta_SC
+    - s_SC
+    - raw_A_SC
+    - A_SC
+    - sc_clear
+    - A_task
+    - A_search_old_shadow
+    - A_search_new
+  parser_diagnostic_fields:
+    - parser_status
+    - parser_error_type
+    - malformed_search_rate
+    - fallback_status
+    - trajectory_validity
+    - environment_failure_code
+    - search_action_span_valid
+    - search_prefix_valid
+    - ig_reward_eligible
+    - policy_credit_eligible
+    - terminal_answer_valid
+    - trajectory_system_valid
