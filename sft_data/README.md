@@ -1,20 +1,20 @@
----
-license: unknown
-configs:
-- config_name: default
-  data_files:
-  - split: train
-    path: final_sft_2000.jsonl
----
-
 # Search-SFT 2000
 
-> This directory contains the release documentation and integrity metadata
-> only. The complete dataset is hosted on Hugging Face:
-> [AetherSearch SFT dataset](https://huggingface.co/datasets/muradil211/aethersearch_sft).
+> **Complete dataset:** [AetherSearch SFT on Hugging Face](https://huggingface.co/datasets/muradil211/aethersearch_sft)
 >
-> The JSONL data files are intentionally not committed to this GitHub
-> repository.
+> This directory contains the release documentation and integrity metadata
+> only. The JSONL payloads are intentionally hosted on Hugging Face rather than
+> committed to this GitHub repository.
+
+## Release at a glance
+
+| Item | Details |
+|---|---|
+| Complete data | [Download from Hugging Face](https://huggingface.co/datasets/muradil211/aethersearch_sft) |
+| Records | 2,000 validated trajectories |
+| Training unit | Full trajectory |
+| License metadata | `unknown` |
+| GitHub contents | Documentation, attribution, manifest, and checksums |
 
 ## Dataset Overview
 
