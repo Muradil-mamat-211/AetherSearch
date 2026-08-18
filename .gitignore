@@ -3,5 +3,4 @@
 *.tsv
 *.parquet
 *.safetensors
-release/
 *.tmp
