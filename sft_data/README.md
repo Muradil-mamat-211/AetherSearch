@@ -1,5 +1,8 @@
 # Search-SFT 2000
 
+[![SFT Data](https://img.shields.io/badge/%F0%9F%A4%97%20Dataset-aethersearch_sft-yellow)](https://huggingface.co/datasets/muradil211/aethersearch_sft)
+[![Checksums](https://img.shields.io/badge/checksums-sha256-blue)](checksums.sha256)
+
 > **Complete dataset:** [AetherSearch SFT on Hugging Face](https://huggingface.co/datasets/muradil211/aethersearch_sft)
 >
 > This directory contains the release documentation and integrity metadata
