@@ -60,7 +60,6 @@ evaluation:
   role: eval
   batch_size: 1
   retry_seconds: 300
-  minimum_free_memory_gib: 10
   manifest_path: ${AETHERSEARCH_RUNTIME_ROOT}/full_search_r1_test_manifest.json
   manifest_mode: full_validation
   expected_validation_sha256: 30aa887b6d47e06e8c0f6f5307c88fe4e13461ac25a20ec0a5433ad7a4fe25dc
@@ -80,7 +79,6 @@ evaluation:
   sampling_top_p: 1.0
   model_dtype: bfloat16
   attention_backend: flash_attention_2
-  max_memory_fraction: 0.24
 
 formal:
   total_successful_updates: null
@@ -100,7 +98,8 @@ formal_schedule:
   optimizer_epsilon: 1.0e-8
   scheduler: constant
   warmup: 10
-  learner_micro_batch_size: 8
+  # Capacity-dependent; supplied by an explicit hardware/reference profile.
+  learner_micro_batch_size: null
   total_successful_updates: null
   checkpoint_every_successful_updates: 20
   fixed_eval_every_successful_updates: 20

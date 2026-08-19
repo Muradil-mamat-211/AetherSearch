@@ -1,0 +1,14 @@
+# Explicit test compose for generic formal schedule tests.
+extends: formal_train_5x48gb_base.yaml
+
+rollout:
+  tensor_parallel_size: 1
+  gpu_memory_utilization: 0.46
+  max_num_seqs: 64
+
+formal_schedule:
+  learner_micro_batch_size: 8
+
+evaluation:
+  minimum_free_memory_gib: 10
+  max_memory_fraction: 0.24

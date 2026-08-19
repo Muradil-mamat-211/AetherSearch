@@ -40,6 +40,26 @@ data:
   shuffle: true
   shuffle_seed: 20260724
   derive_or_copy_data: false
+topology:
+  cluster_mode: local
+  nnodes: 1
+  roles:
+    retriever:
+      physical_gpu: 0
+    eval:
+      colocate_with: retriever
+    rl:
+      physical_gpus_by_node:
+      - - 1
+        - 2
+        - 3
+  ray:
+    placement_strategy: STRICT_PACK
+    cluster_mode: local
+    address: local
+  rollout:
+    data_parallel_size: 3
+    tensor_parallel_size: 1
 rollout:
   engine: vllm
   group_size: 16

@@ -1,4 +1,6 @@
-from agentic_rl.config import DEFAULT_CONFIG, load_config
+from agentic_rl.config import load_config
+
+from config_support import TEST_CONFIG
 from agentic_rl.controller.attempt_state import SnapshotVersions, TrainingState
 import pytest
 
@@ -118,7 +120,7 @@ class FakeRuntime:
 
 
 def test_controller_caps_to_36_and_performs_one_step() -> None:
-    controller = StrictAttemptController(load_config(DEFAULT_CONFIG))
+    controller = StrictAttemptController(load_config(TEST_CONFIG))
     runtime = FakeRuntime()
     result = controller.run_attempt(TrainingState(), runtime)
     assert result.optimizer_committed
@@ -145,7 +147,7 @@ def test_controller_caps_to_36_and_performs_one_step() -> None:
 
 
 def test_controller_refills_full_pool_then_skips_without_step() -> None:
-    controller = StrictAttemptController(load_config(DEFAULT_CONFIG))
+    controller = StrictAttemptController(load_config(TEST_CONFIG))
     runtime = FakeRuntime(sparse_signal=True)
     result = controller.run_attempt(TrainingState(), runtime)
     assert not result.optimizer_committed
@@ -190,7 +192,7 @@ def test_controller_second_refill_recomputes_full_128_pool_and_can_succeed() -> 
                 )
             return rebuilt
 
-    controller = StrictAttemptController(load_config(DEFAULT_CONFIG))
+    controller = StrictAttemptController(load_config(TEST_CONFIG))
     runtime = SecondRefillRuntime()
     result = controller.run_attempt(TrainingState(), runtime)
 
@@ -206,7 +208,7 @@ def test_controller_second_refill_recomputes_full_128_pool_and_can_succeed() -> 
 
 
 def test_optimizer_call_failure_never_uses_pre_step_rollback() -> None:
-    controller = StrictAttemptController(load_config(DEFAULT_CONFIG))
+    controller = StrictAttemptController(load_config(TEST_CONFIG))
     runtime = FakeRuntime(optimizer_raises=True)
     state = TrainingState()
     with pytest.raises(UntrustedPostStepState):
@@ -220,7 +222,7 @@ def test_optimizer_call_failure_never_uses_pre_step_rollback() -> None:
 
 
 def test_durable_commit_failure_marks_process_state_untrusted() -> None:
-    controller = StrictAttemptController(load_config(DEFAULT_CONFIG))
+    controller = StrictAttemptController(load_config(TEST_CONFIG))
     runtime = FakeRuntime(commit_raises=True)
     with pytest.raises(UntrustedPostStepState):
         controller.run_attempt(TrainingState(), runtime)

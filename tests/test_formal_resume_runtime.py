@@ -8,6 +8,8 @@ from types import SimpleNamespace
 import pytest
 
 from agentic_rl.config import load_config
+
+from config_support import FORMAL_RESUME_CONFIG, MICA_CONFIG, PILOT_CONFIG
 from agentic_rl.runtime.formal_state import (
     claim_next_eval,
     complete_eval,
@@ -140,7 +142,7 @@ def test_snapshot_sync_and_hf_export_use_bounded_streaming_state() -> None:
 
 
 def test_formal_resume_config_preserves_pilot_state_contract() -> None:
-    config = load_config(ROOT / "configs/formal_resume_u20_to_u500.yaml")
+    config = load_config(FORMAL_RESUME_CONFIG)
     assert config["formal"]["resume_from_successful_update"] == 20
     assert config["formal_schedule"]["total_successful_updates"] == 500
     assert config["formal_schedule"]["warmup"] == 2
@@ -154,9 +156,7 @@ def test_formal_resume_config_preserves_pilot_state_contract() -> None:
 
 
 def test_mica_formal_checkpoint_retention_is_unlimited() -> None:
-    config = load_config(
-        ROOT / "configs/formal_train_answer_only_ragen2_mica_ig_v1.yaml"
-    )
+    config = load_config(MICA_CONFIG)
     assert config["checkpoint"]["formal_limit"] is None
 
 
@@ -172,7 +172,7 @@ def test_checkpoint_limit_none_does_not_delete_complete_checkpoints(
 
 def test_formal_checkpoint_cadence_is_every_twenty(monkeypatch) -> None:
     monkeypatch.setenv("AGENTIC_RL_RUNTIME_STAGE", "FORMAL")
-    config = load_config(ROOT / "configs/formal_resume_u20_to_u500.yaml")
+    config = load_config(FORMAL_RESUME_CONFIG)
     adapter = VerlAttemptRuntimeAdapter(config)
     assert adapter._should_checkpoint(20)
     assert adapter._should_checkpoint(40)
@@ -182,7 +182,7 @@ def test_formal_checkpoint_cadence_is_every_twenty(monkeypatch) -> None:
 
 def test_pilot_checkpoint_and_async_eval_target_are_update_twenty(monkeypatch) -> None:
     monkeypatch.setenv("AGENTIC_RL_RUNTIME_STAGE", "PILOT20")
-    config = load_config(ROOT / "configs/pilot_20_final.yaml")
+    config = load_config(PILOT_CONFIG)
     adapter = VerlAttemptRuntimeAdapter(config)
     assert not adapter._should_checkpoint(10)
     assert adapter._should_checkpoint(20)
@@ -190,7 +190,7 @@ def test_pilot_checkpoint_and_async_eval_target_are_update_twenty(monkeypatch) -
 
 
 def test_runtime_persists_complete_search_advantage_component_summary() -> None:
-    config = load_config(ROOT / "configs/pilot_20_final.yaml")
+    config = load_config(PILOT_CONFIG)
     config["advantage"]["search_task_mode"] = "sufficiency_novelty_local_ig"
     adapter = VerlAttemptRuntimeAdapter(config)
     advantage = SimpleNamespace(
@@ -258,7 +258,7 @@ def test_runtime_persists_complete_search_advantage_component_summary() -> None:
 
 
 def test_runtime_accepts_answer_only_selected_payload_without_fake_search() -> None:
-    config = load_config(ROOT / "configs/pilot_20_final.yaml")
+    config = load_config(PILOT_CONFIG)
     config["advantage"]["search_task_mode"] = "sufficiency_novelty_local_ig"
     adapter = VerlAttemptRuntimeAdapter(config)
     advantage = SimpleNamespace(

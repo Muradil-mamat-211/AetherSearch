@@ -2,12 +2,14 @@ from pathlib import Path
 
 import pytest
 
-from agentic_rl.config import ConfigError, DEFAULT_CONFIG, load_config, validate_config
+from agentic_rl.config import ConfigError, load_config, validate_config
 from agentic_rl.workers.resource_plan import build_resource_plan
+
+from config_support import TEST_CONFIG
 
 
 def test_resolved_config_locks_requested_topology_and_algorithm() -> None:
-    config = load_config(DEFAULT_CONFIG)
+    config = load_config(TEST_CONFIG)
     plan = build_resource_plan(config)
     assert plan.retriever_cuda_visible_devices == "0"
     assert plan.rl_cuda_visible_devices == "1,2,3,4"
@@ -152,21 +154,21 @@ def test_resolved_config_locks_requested_topology_and_algorithm() -> None:
 
 
 def test_unexpected_third_search_optimization_field_is_rejected() -> None:
-    config = load_config(DEFAULT_CONFIG)
+    config = load_config(TEST_CONFIG)
     config["advantage"]["third_search_term"] = 1.0
     with pytest.raises(ConfigError, match="Unexpected advantage fields"):
         validate_config(config)
 
 
 def test_fixed_clipping_fields_are_rejected_as_unknown_policy_fields() -> None:
-    config = load_config(DEFAULT_CONFIG)
+    config = load_config(TEST_CONFIG)
     config["policy"]["clip_low"] = 0.2
     with pytest.raises(ConfigError, match="Unexpected policy fields"):
         validate_config(config)
 
 
 def test_oracle_canary_is_observation_only() -> None:
-    config = load_config(DEFAULT_CONFIG)
+    config = load_config(TEST_CONFIG)
     config["exact_ig"]["oracle_canary_fail_closed"] = True
     with pytest.raises(
         ConfigError,
@@ -176,7 +178,7 @@ def test_oracle_canary_is_observation_only() -> None:
 
 
 def test_all_external_assets_are_absolute_references() -> None:
-    config = load_config(DEFAULT_CONFIG)
+    config = load_config(TEST_CONFIG)
     for key in (
         "actor_model",
         "reference_model",

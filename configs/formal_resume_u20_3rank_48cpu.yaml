@@ -1,41 +1,13 @@
 extends: formal_resume_u20_3rank.yaml
 
+includes:
+  - hardware/4x48gb_3rl.yaml
+
 # Distributed/resource-only validation profile for the four-GPU host with
 # three RL GPUs (physical 1-3) and 48 host CPU cores. Algorithm fields inherit
 # unchanged from the validated U20 resume profile.
 paths:
   runtime_root: ${AETHERSEARCH_RUNTIME_ROOT}/3rank_resume_48cpu_validation
-
-hardware:
-  total_physical_gpus: 4
-  expected_cpu_cores: 48
-  cpu_reserved_for_os: 4
-  rl_physical_gpus: [1, 2, 3]
-  rl_visible_gpus: [0, 1, 2]
-  rl_world_size: 3
-  allow_world_size_change_on_resume: true
-
-ray:
-  retriever_pool_cpus: 8
-  rl_engine_cpus_per_gpu: 3
-  controller_cpu_workers: 5
-  outcome_worker_count: 4
-  exact_ig_task_builder_count: 2
-  agent_loop_worker_count: 12
-
-rollout:
-  data_parallel_size: 3
-  replicas: 3
-  # Small controlled increase; max_num_seqs remains 64 until a real rollout
-  # peak is measured under this three-rank placement.
-  gpu_memory_utilization: 0.48
-  max_num_seqs: 64
-
-learner:
-  world_size: 3
-
-formal_schedule:
-  learner_micro_batch_size: 6
 
 checkpoint:
   formal_limit: 3

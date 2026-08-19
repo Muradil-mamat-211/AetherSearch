@@ -51,18 +51,11 @@ rollout:
   candidate_prompts_initial: 64
   refill_prompts: 32
   candidate_prompts_max: 128
-  data_parallel_size: 4
-  tensor_parallel_size: 1
-  replicas: 4
   sticky_trajectory_sessions: true
   strict_rollout_start_snapshot: true
   enable_sleep_mode: true
   enable_prefix_caching: true
   enable_chunked_prefill: true
-  # Throughput profile validated against the 48 GiB hybrid-engine topology.
-  # This leaves roughly 5 GiB of observed headroom at the prior 40 GiB peak.
-  gpu_memory_utilization: 0.46
-  max_num_seqs: 64
   temperature: 1.0
   top_p: 0.95
   top_k: -1
@@ -188,7 +181,8 @@ runtime_smoke_schedule:
   optimizer_epsilon: 1.0e-8
   scheduler: constant
   warmup: 0
-  learner_micro_batch_size: 6
+  # Capacity-dependent; supplied by an explicit hardware/reference profile.
+  learner_micro_batch_size: null
   total_successful_updates: 5
   maximum_prompt_length: 2048
   maximum_response_length: 6144
@@ -201,7 +195,6 @@ runtime_smoke_schedule:
 
 learner:
   strategy: fsdp2
-  world_size: 4
   mixed_precision: bfloat16
   reshard_after_forward: false
   reference_reshard_after_forward: false
@@ -222,7 +215,6 @@ checkpoint:
   reject_post_step_precommit_failure: true
 
 includes:
-  - hardware_5x48gb.yaml
   - update_stages.yaml
   - exact_ig.yaml
   - retriever_external.yaml

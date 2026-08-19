@@ -11,12 +11,14 @@ from agentic_rl.runtime.pretrain_controls import (
 )
 from agentic_rl.runtime.verl_config import build_verl_config
 
+from config_support import FORMAL_CONFIG, PILOT_CONFIG
+
 
 ROOT = Path(__file__).resolve().parents[1]
 
 
 def test_pilot_20_resolved_contract() -> None:
-    config = load_config(ROOT / "configs" / "pilot_20_final.yaml")
+    config = load_config(PILOT_CONFIG)
     assert config["data"]["expected_rows"] == 150_745
     assert config["data"]["shuffle_seed"] == 20_260_724
     assert config["rollout"]["group_size"] == 16
@@ -39,7 +41,7 @@ def test_pilot_20_resolved_contract() -> None:
 
 
 def test_formal_total_remains_user_supplied() -> None:
-    config = load_config(ROOT / "configs" / "formal_train.yaml")
+    config = load_config(FORMAL_CONFIG)
     assert config["formal"]["total_successful_updates"] is None
     assert config["formal_schedule"]["total_successful_updates"] is None
     assert config["formal_schedule"]["checkpoint_every_successful_updates"] == 20
@@ -71,7 +73,7 @@ def test_pilot_rollout_config_instantiates_against_installed_verl() -> None:
     from verl.utils.config import omega_conf_to_dataclass
     from verl.workers.config.rollout import RolloutConfig
 
-    project = load_config(ROOT / "configs" / "pilot_20_final.yaml")
+    project = load_config(PILOT_CONFIG)
     resolved = build_verl_config(project, require_optimizer=True)
     rollout = omega_conf_to_dataclass(resolved.actor_rollout_ref.rollout)
     assert isinstance(rollout, RolloutConfig)

@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import copy
 import os
 from pathlib import Path
 
@@ -8,11 +7,18 @@ import pytest
 import yaml
 
 from agentic_rl.assets import load_asset_manifest
-from agentic_rl.config import ConfigError, DEFAULT_CONFIG, load_config, validate_config
+from agentic_rl.config import (
+    ConfigError,
+    _load_config_tree,
+    load_config,
+    validate_backend_compatibility,
+    validate_resources,
+    validate_topology,
+)
 from agentic_rl.qualification import QualificationError, validate_reference_qualification
 from agentic_rl.runtime.resource_guard import BYTES_PER_GIB, validate_runtime_resource_budget
 from agentic_rl.runtime.verl_config import build_verl_config, effective_rollout_topology
-from agentic_rl.topology import TopologyPlan
+from agentic_rl.topology import TopologyPlan, materialize_topology
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -96,6 +102,7 @@ def test_reference_recipe_preserves_semantic_snapshot() -> None:
     sections = (
         "project",
         "data",
+        "topology",
         "rollout",
         "selection",
         "advantage",
@@ -128,12 +135,48 @@ def test_reference_recipe_preserves_semantic_snapshot() -> None:
     }
 
 
-def _eight_gpu_config() -> dict:
-    config = copy.deepcopy(load_config(DEFAULT_CONFIG))
+def test_algorithm_layers_do_not_select_server_capacity() -> None:
+    base_path = ROOT / "configs" / "base.yaml"
+    base_source = yaml.safe_load(base_path.read_text(encoding="utf-8"))
+    assert "hardware_5x48gb.yaml" not in base_source.get("includes", [])
+
+    for path in (
+        base_path,
+        ROOT / "configs" / "formal_train_answer_only_ragen2_mica_ig_v1.yaml",
+    ):
+        config = _load_config_tree(path)
+        assert "hardware" not in config
+        assert "topology" not in config
+        assert "world_size" not in config.get("learner", {})
+        assert not {
+            "data_parallel_size",
+            "replicas",
+            "gpu_memory_utilization",
+            "max_num_seqs",
+        } & set(config.get("rollout", {}))
+
+
+def test_official_recipe_resolves_through_explicit_reference_profile() -> None:
+    config = _load_config_tree(ROOT / "recipes" / "rl" / "train_4x48gb.yaml")
+    plan = TopologyPlan.from_config(config)
+    assert plan.retriever_physical_gpu == 0
+    assert plan.eval_physical_gpu == 0
+    assert plan.rl_physical_gpus == (1, 2, 3)
+    assert plan.rl_visible_gpus == (0, 1, 2)
+    assert plan.learner_world_size == 3
+    assert plan.rollout_data_parallel_size == 3
+    assert plan.rollout_tensor_parallel_size == 1
+
+
+def _non_reference_multi_gpu_config() -> dict:
+    # Use the checked resolved snapshot as a data-only algorithm fixture. It
+    # avoids requiring local assets while keeping this test about topology
+    # planning rather than launch preflight.
+    config = yaml.safe_load(REFERENCE_FIXTURE.read_text(encoding="utf-8"))
+    config["hardware"].pop("gpu_memory_gb", None)
     config["hardware"].update(
         {
             "total_physical_gpus": 8,
-            "gpu_memory_gb": 80,
             "expected_cpu_cores": 96,
             "expected_host_ram_gb": 700,
             "ray_object_store_gb": 96,
@@ -168,9 +211,11 @@ def _eight_gpu_config() -> dict:
     return config
 
 
-def test_eight_gpu_topology_is_planned_without_python_case_logic() -> None:
-    config = _eight_gpu_config()
-    validate_config(config)
+def test_topology_plan_supports_non_reference_multi_gpu_layout() -> None:
+    """CPU-only planner coverage, not multi-GPU runtime qualification."""
+
+    config = _non_reference_multi_gpu_config()
+    validate_topology(config)
     plan = TopologyPlan.from_config(config)
     assert plan.learner_world_size == 7
     assert plan.rl_gpus_per_node == 7
@@ -192,38 +237,118 @@ def test_eight_gpu_topology_is_planned_without_python_case_logic() -> None:
 
 
 def test_portable_topology_rejects_invalid_invariants() -> None:
-    overlap = _eight_gpu_config()
+    overlap = _non_reference_multi_gpu_config()
     overlap["topology"]["roles"]["retriever"]["physical_gpu"] = 1
     with pytest.raises(ConfigError, match="overlap"):
-        validate_config(overlap)
+        validate_topology(overlap)
 
-    out_of_range = _eight_gpu_config()
+    out_of_range = _non_reference_multi_gpu_config()
     out_of_range["topology"]["roles"]["rl"]["physical_gpus_by_node"] = [
         [1, 2, 3, 4, 5, 6, 8]
     ]
     with pytest.raises(ConfigError, match="outside"):
-        validate_config(out_of_range)
+        validate_topology(out_of_range)
 
-    world_mismatch = _eight_gpu_config()
+    world_mismatch = _non_reference_multi_gpu_config()
     world_mismatch["topology"]["learner"] = {"world_size": 6}
     with pytest.raises(ConfigError, match="does not match derived"):
-        validate_config(world_mismatch)
+        validate_topology(world_mismatch)
 
-    checked_legacy = _eight_gpu_config()
+    checked_legacy = _non_reference_multi_gpu_config()
     checked_legacy["topology"]["compatibility"] = {"validate_legacy_fields": True}
     checked_legacy["hardware"]["rl_world_size"] = 3
     with pytest.raises(ConfigError, match="Deprecated"):
-        validate_config(checked_legacy)
+        validate_topology(checked_legacy)
+
+
+def _non_reference_layout_config() -> dict:
+    config = yaml.safe_load(REFERENCE_FIXTURE.read_text(encoding="utf-8"))
+    config["hardware"].pop("gpu_memory_gb", None)
+    for field in (
+        "retriever_physical_gpu",
+        "rl_physical_gpus",
+        "rl_visible_gpus",
+        "rl_world_size",
+        "vllm_data_parallel_size",
+        "vllm_tensor_parallel_size",
+    ):
+        config["hardware"].pop(field, None)
+    config["rollout"].pop("data_parallel_size", None)
+    config["rollout"].pop("tensor_parallel_size", None)
+    config["learner"].pop("world_size", None)
+    config["hardware"].update(
+        {
+            "total_physical_gpus": 2,
+            "expected_cpu_cores": 16,
+            "expected_host_ram_gb": 128,
+            "cpu_reserved_for_os": 2,
+            "ray_object_store_gb": 16,
+            "memory_safety_reserve_gb": 16,
+        }
+    )
+    config["ray"].update(
+        {
+            "retriever_pool_cpus": 2,
+            "rl_engine_cpus_per_gpu": 2,
+            "controller_cpu_workers": 2,
+            "outcome_worker_count": 1,
+            "exact_ig_task_builder_count": 1,
+            "agent_loop_worker_count": 1,
+            "placement_strategy": "STRICT_PACK",
+        }
+    )
+    config["topology"] = {
+        "cluster_mode": "local",
+        "nnodes": 1,
+        "roles": {
+            "retriever": {"physical_gpu": 0},
+            "eval": {"colocate_with": "retriever"},
+            "rl": {"physical_gpus_by_node": [[1]]},
+        },
+        "ray": {"placement_strategy": "STRICT_PACK"},
+        "rollout": {"data_parallel_size": 1, "tensor_parallel_size": 1},
+    }
+    return config
+
+
+def test_topology_plan_supports_non_reference_layout() -> None:
+    """Verify role and logical-device derivation without runtime claims."""
+
+    config = _non_reference_layout_config()
+    plan = TopologyPlan.from_config(config)
+    assert plan.total_physical_gpus == 2
+    assert plan.retriever_physical_gpu == 0
+    assert plan.eval_physical_gpu == 0
+    assert plan.rl_physical_gpus == (1,)
+    assert plan.rl_visible_gpus == (0,)
+    assert plan.learner_world_size == 1
+    assert plan.rollout_data_parallel_size == 1
+    assert plan.rollout_tensor_parallel_size == 1
+    assert plan.rl_cuda_visible_devices == "1"
+    assert plan.retriever_cuda_visible_devices == "0"
+
+    materialized = materialize_topology(config)
+    assert materialized == plan
+    assert config["hardware"]["retriever_physical_gpu"] == 0
+    assert config["hardware"]["rl_physical_gpus"] == [1]
+    assert config["hardware"]["rl_visible_gpus"] == [0]
+    assert config["hardware"]["rl_world_size"] == 1
+    assert config["rollout"]["data_parallel_size"] == 1
+    assert config["rollout"]["tensor_parallel_size"] == 1
+    assert config["learner"]["world_size"] == 1
 
 
 def test_portable_resource_guard_uses_minimums_not_exact_host_shape() -> None:
-    config = _eight_gpu_config()
+    config = _non_reference_multi_gpu_config()
+    # This value belongs only to the resource-guard arithmetic test, not to
+    # the topology-layout coverage above.
+    config["hardware"]["gpu_memory_gb"] = 1
     snapshot = {
         "memory_limit_bytes": 720 * BYTES_PER_GIB,
         "memory_current_bytes": 200 * BYTES_PER_GIB,
         "cpu_quota_cores": 100.0,
         "gpu_count": 8,
-        "gpu_memory_gib": 80.0,
+        "gpu_memory_gib": 1.0,
         "memory_events": {},
     }
     result = validate_runtime_resource_budget(config, snapshot=snapshot)
@@ -233,7 +358,8 @@ def test_portable_resource_guard_uses_minimums_not_exact_host_shape() -> None:
     with pytest.raises(RuntimeError, match="CPU count exceeds"):
         validate_runtime_resource_budget(config, snapshot=snapshot)
 
-    config = _eight_gpu_config()
+    config = _non_reference_multi_gpu_config()
+    config["hardware"]["gpu_memory_gb"] = 1
     with pytest.raises(RuntimeError, match="Physical GPU count"):
         validate_runtime_resource_budget(
             config,
@@ -242,33 +368,36 @@ def test_portable_resource_guard_uses_minimums_not_exact_host_shape() -> None:
     with pytest.raises(RuntimeError, match="GPU memory"):
         validate_runtime_resource_budget(
             config,
-            snapshot={**snapshot, "gpu_memory_gib": 40.0},
+            snapshot={**snapshot, "gpu_memory_gib": 0.5},
         )
 
 
 def test_backend_and_resource_negative_paths_are_explicit() -> None:
-    bad_tp = _eight_gpu_config()
+    bad_tp = _non_reference_multi_gpu_config()
     bad_tp["topology"]["rollout"].update(
         {"data_parallel_size": 1, "tensor_parallel_size": 7}
     )
+    bad_tp_plan = TopologyPlan.from_config(bad_tp)
     with pytest.raises(ConfigError, match="backend compatibility"):
-        validate_config(bad_tp)
+        validate_backend_compatibility(bad_tp, bad_tp_plan)
 
-    invalid_parallel_product = _eight_gpu_config()
+    invalid_parallel_product = _non_reference_multi_gpu_config()
     invalid_parallel_product["topology"]["rollout"].update(
         {"data_parallel_size": 7, "tensor_parallel_size": 2}
     )
     with pytest.raises(ConfigError, match="must divide"):
-        validate_config(invalid_parallel_product)
+        validate_topology(invalid_parallel_product)
 
-    bad_bundles = _eight_gpu_config()
+    bad_bundles = _non_reference_multi_gpu_config()
+    bad_bundles["hardware"]["gpu_memory_gb"] = 1
     bad_bundles["ray"]["rl_engine_cpus_per_gpu"] = 100
+    bad_bundle_plan = TopologyPlan.from_config(bad_bundles)
     with pytest.raises(ConfigError, match="CPU budget"):
-        validate_config(bad_bundles)
+        validate_resources(bad_bundles, bad_bundle_plan)
 
 
 def test_reference_qualification_is_separate_from_portable_validation() -> None:
-    config = _eight_gpu_config()
+    config = _non_reference_multi_gpu_config()
     with pytest.raises(QualificationError, match="topology"):
         validate_reference_qualification(
             config,

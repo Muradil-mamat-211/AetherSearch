@@ -7,7 +7,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from agentic_rl.config import DEFAULT_CONFIG, load_config
+from agentic_rl.config import load_config
 from agentic_rl.controller.attempt_state import TrainingState
 from agentic_rl.controller.transaction import StrictUpdateTransaction
 from agentic_rl.runtime.verl_config import (
@@ -30,9 +30,11 @@ from agentic_rl.runtime.fsdp_worker import (
     _uniform_sample_indices,
 )
 
+from config_support import MICA_CONFIG, TEST_CONFIG
+
 
 def test_exact_ig_structural_audit_replaces_old_numeric_hard_gate() -> None:
-    config = load_config(DEFAULT_CONFIG)
+    config = load_config(TEST_CONFIG)
     summary = config["exact_ig"]["structural_audit_path"]
     payload = json.loads(open(summary, encoding="utf-8").read())
     assert payload["allow_fast_path_training"] is True
@@ -83,7 +85,7 @@ def test_global_exact_ig_dispatch_asserts_same_prompt_target_consistency() -> No
 
 
 def test_verl_mapping_resolves_four_independent_tp1_replicas() -> None:
-    config = load_config(DEFAULT_CONFIG)
+    config = load_config(TEST_CONFIG)
     resolved = build_verl_config(config, require_optimizer=False)
     assert effective_rollout_topology(resolved) == {
         "worker_world_size": 4,
@@ -172,7 +174,7 @@ def test_runtime_imports_installed_verl_061_not_legacy_search_r1_copy() -> None:
 
 
 def test_formal_runtime_fails_closed_on_unapproved_hyperparameters() -> None:
-    config = load_config(DEFAULT_CONFIG)
+    config = load_config(TEST_CONFIG)
     unresolved = unresolved_formal_fields(config)
     assert "learning_rate" in unresolved
     assert "maximum_prompt_length" in unresolved
@@ -187,13 +189,9 @@ def test_formal_runtime_fails_closed_on_unapproved_hyperparameters() -> None:
 
 
 def test_optimizer_debug_shape_uses_largest_compatible_micro_batch() -> None:
-    mica_config_path = (
-        Path(__file__).resolve().parents[1]
-        / "configs"
-        / "formal_train_answer_only_ragen2_mica_ig_v1.yaml"
-    )
+    mica_config_path = MICA_CONFIG
     for config_path, expected_world_size, expected_micro_batch in (
-        (DEFAULT_CONFIG, 4, 4),
+        (TEST_CONFIG, 4, 4),
         (mica_config_path, 3, 3),
     ):
         config = load_config(config_path)
@@ -237,7 +235,7 @@ def test_optimizer_debug_shape_uses_largest_compatible_micro_batch() -> None:
 
 
 def test_stage_d_uses_runtime_schedule_without_changing_production_shape() -> None:
-    config = load_config(DEFAULT_CONFIG)
+    config = load_config(TEST_CONFIG)
     stage_d = _with_runtime_smoke_schedule(config)
 
     assert stage_d["rollout"]["candidate_prompts_initial"] == 64
@@ -343,7 +341,7 @@ def test_stage_a_provenance_canary_masks_non_model_tokens() -> None:
 
 
 def test_runtime_smoke_stages_never_write_model_checkpoints() -> None:
-    config = load_config(DEFAULT_CONFIG)
+    config = load_config(TEST_CONFIG)
     for stage in ("A", "B", "C", "D"):
         adapter = VerlAttemptRuntimeAdapter(config)
         adapter.stage = stage
@@ -358,7 +356,7 @@ def test_runtime_smoke_stages_never_write_model_checkpoints() -> None:
 
 
 def test_pilot_and_formal_checkpoint_policies_remain_separate_from_smoke() -> None:
-    config = load_config(DEFAULT_CONFIG)
+    config = load_config(TEST_CONFIG)
     adapter = VerlAttemptRuntimeAdapter(config)
     adapter.stage = "PILOT50"
     assert adapter._should_checkpoint(1) is True

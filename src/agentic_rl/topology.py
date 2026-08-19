@@ -352,8 +352,10 @@ def materialize_topology(config: dict[str, Any]) -> TopologyPlan:
     hardware["rl_visible_gpus"] = list(plan.rl_visible_gpus)
     hardware["rl_world_size"] = plan.learner_world_size
     hardware["vllm_data_parallel_size"] = plan.rollout_data_parallel_size
+    hardware["vllm_tensor_parallel_size"] = plan.rollout_tensor_parallel_size
     rollout["data_parallel_size"] = plan.rollout_data_parallel_size
     rollout["tensor_parallel_size"] = plan.rollout_tensor_parallel_size
+    rollout["replicas"] = plan.rollout_data_parallel_size
     learner["world_size"] = plan.learner_world_size
     ray["placement_strategy"] = plan.placement_strategy
     ray["cluster_mode"] = plan.cluster_mode

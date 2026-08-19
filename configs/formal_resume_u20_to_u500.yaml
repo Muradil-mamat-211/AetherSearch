@@ -24,7 +24,6 @@ formal_schedule:
   optimizer_epsilon: 1.0e-8
   scheduler: constant
   warmup: 2
-  learner_micro_batch_size: 6
   total_successful_updates: 500
   checkpoint_every_successful_updates: 20
   fixed_eval_every_successful_updates: 20
@@ -47,11 +46,9 @@ evaluation:
   role: eval
   batch_size: 1
   retry_seconds: 300
-  minimum_free_memory_gib: 10
   expected_manifest_sha256: a37096d3cab04dfee994318a7059e1151eef1a0df4eb444d6f8544f57ea65baa
   model_dtype: bfloat16
   attention_backend: flash_attention_2
-  max_memory_fraction: 0.24
 
 monitoring:
   interval_seconds: 600

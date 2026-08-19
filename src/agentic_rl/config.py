@@ -316,7 +316,6 @@ def validate_algorithm_contract(config: Mapping[str, Any]) -> None:
     _require_equal(rollout["candidate_prompts_initial"], 64, "rollout.candidate_prompts_initial")
     _require_equal(rollout["refill_prompts"], 32, "rollout.refill_prompts")
     _require_equal(rollout["candidate_prompts_max"], 128, "rollout.candidate_prompts_max")
-    _require_equal(rollout["max_num_seqs"], 64, "rollout.max_num_seqs")
     _require_equal(
         data["logical_view_mode"],
         "deterministic_nq_hotpotqa_40_60",
