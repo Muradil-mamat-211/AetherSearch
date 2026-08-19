@@ -40,6 +40,7 @@
 
 - [Overview](#overview)
 - [Training Pipeline](#training-pipeline)
+- [Evaluation Results](#evaluation-results)
 - [Agentic RL Method](#agentic-rl-method)
 - [Quick Start](#quick-start)
 - [Repository Layout](#repository-layout)
@@ -61,6 +62,14 @@ repository. Large data and model artifacts are hosted on Hugging Face.
 | DPO warm start | externally produced actor/reference initialization | `AETHERSEARCH_ACTOR_MODEL`, `AETHERSEARCH_REFERENCE_MODEL` |
 | RL | search-augmented rollout and policy optimization | `src/agentic_rl/`, `scripts/`, `recipes/rl/` |
 
+## Evaluation Results
+
+| Model | NQ | TriviaQA | PopQA | HotpotQA | 2WikiMultiHopQA | Musique | Bamboogle | Overall / Avg. EM |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| Search-R1 (Qwen2.5-3B Base, PPO) | **0.406** | 0.587 | **0.435** | 0.284 | 0.273 | 0.049 | 0.088 | 0.303 |
+| Search-R1 (Qwen2.5-3B Instruct, PPO) | 0.341 | 0.545 | 0.378 | 0.324 | 0.319 | 0.103 | **0.264** | 0.325 |
+| AetherSearch | 0.3977 | **0.5877** | 0.4229 | **0.3333** | **0.3985** | **0.1200** | 0.2320 | **0.3560** |
+
 ## Agentic RL Method
 
 > **Method status.** This section describes the final Agentic-RL credit-assignment path used by AetherSearch:
@@ -77,19 +86,19 @@ repository. Large data and model artifacts are hosted on Hugging Face.
 ### 1. Overview
 
 For a prompt $p$, the current policy samples a group of trajectories
-$$
+```math
 \{\tau_{p,i}\}_{i=1}^{G}.
-$$
+```
 
 A trajectory may contain multiple search actions:
-$$
+```math
 \tau_{p,i}=(s_{p,i,1},o_{p,i,1},\ldots,s_{p,i,T_i},o_{p,i,T_i},a_{p,i}),
-$$
+```
 where $s_{p,i,t}$ is the $t$-th model-generated Search turn,
 $o_{p,i,t}$ is the retrieved observation, and $a_{p,i}$ is the final Answer turn.
 
 The final pipeline is
-$$
+```math
 \boxed{
 \text{Rollout}\rightarrow
 \text{terminal outcome}\rightarrow
@@ -98,7 +107,7 @@ $$
 \text{MICA-IG credit}\rightarrow
 \text{policy update}
 }
-$$
+```
 
 Exact-IG scoring is deferred until **after prompt selection**, so non-selected prompt groups do not incur the expensive Exact-IG model forward.
 
@@ -109,29 +118,29 @@ Exact-IG scoring is deferred until **after prompt selection**, so non-selected p
 Prompt filtering uses only the dispersion of terminal task outcomes. Exact IG does **not** enter prompt selection.
 
 For prompt $p$, let $O_{p,i}$ be the terminal task outcome of trajectory $i$. With $G$ rollouts,
-$$
+```math
 \bar O_p=\frac{1}{G}\sum_{i=1}^{G}O_{p,i},
-$$
+```
 and the prompt score is the sample variance
-$$
+```math
 V_p^{O}
 =
 \frac{1}{G-1}
 \sum_{i=1}^{G}
 \left(O_{p,i}-\bar O_p\right)^2.
-$$
+```
 
 Prompts are sorted in descending order of $V_p^{O}$. With variance-mass threshold $\rho$, the selected set is the shortest prefix satisfying
-$$
+```math
 \sum_{j=1}^{K^\star}V_{\sigma(j)}^{O}
 \ge
 \rho\sum_p V_p^{O}.
-$$
+```
 
 In our training configuration,
-$$
+```math
 \boxed{\rho=0.9}.
-$$
+```
 
 Filtering is performed at the **prompt-group level**: if a prompt is selected, its rollout group is retained for the subsequent credit-assignment stage.
 
@@ -147,28 +156,28 @@ Let:
 - $a_p^\star$: the canonical answer.
 
 We construct the fixed target
-$$
+```math
 y_p=
 \texttt{<think>The retrieved evidence now supports the answer.</think><answer>}
 +a_p^\star+
 \texttt{</answer>}.
-$$
+```
 
 The scaffold and answer tags are teacher-forced context, while the score is averaged only over the token positions belonging to the **answer body**.
 
 For a prefix $h$,
-$$
+```math
 \Phi_p(h)
 =
 \frac{1}{|B_p|}
 \sum_{j\in B_p}
 \log\pi_{\theta_{\mathrm{snap}}}
 \left(y_{p,j}\mid h,y_{p,<j}\right),
-$$
+```
 where $B_p$ is the answer-body token span and $\theta_{\mathrm{snap}}$ is the rollout-start policy snapshot.
 
 The immediate process reward is
-$$
+```math
 \boxed{
 r^{IG}_{p,i,t}
 =
@@ -176,7 +185,7 @@ r^{IG}_{p,i,t}
 -
 \Phi_p(h^-_{p,i,t})
 }.
-$$
+```
 
 There is **no exponentiation**. Exact IG is a detached reward signal; gradients do not flow through this scoring forward. A Search turn without a valid pre/post retrieval state is not Exact-IG eligible.
 
@@ -185,31 +194,31 @@ There is **no exponentiation**. Exact IG is a detached reward signal; gradients 
 ### 4. Raw suffix return
 
 For each valid Search position, MICA-IG forms a raw future-return channel. Let
-$$
+```math
 \mathcal V_{p,i}=\{t:\text{Search }t\text{ has valid Exact IG}\}.
-$$
+```
 
 Then
-$$
+```math
 G^{IG}_{p,i,t}
 =
 \sum_{\substack{k\ge t\\k\in\mathcal V_{p,i}}}
 \gamma^{k-t}r^{IG}_{p,i,k}.
-$$
+```
 
 The final V1 configuration fixes
-$$
+```math
 \boxed{\gamma=1},
-$$
+```
 hence
-$$
+```math
 \boxed{
 G^{IG}_{p,i,t}
 =
 \sum_{\substack{k\ge t\\k\in\mathcal V_{p,i}}}
 r^{IG}_{p,i,k}.
 }
-$$
+```
 
 This is a **raw suffix sum**. The MICA branch does not apply the older $1/\sqrt n$ future-credit rescaling. Missing/invalid Search positions are omitted from the suffix return rather than inserted as zero-reward positions.
 
@@ -218,12 +227,12 @@ This is a **raw suffix sum**. The MICA branch does not apply the older $1/\sqrt 
 ### 5. MICA-IG credit assignment
 
 For each selected prompt group, raw Exact-IG values and their suffix returns are normalized independently by Search depth across the prompt group. For a Search turn with at least two eligible peers, the final Search advantage is
-$$
+```math
 A^{search}_{p,i,t}
 =
 \alpha A^{return}_{p,i,t}
 +(1-\alpha)A^{local}_{p,i,t},
-$$
+```
 with $\alpha=0.5$ in V1.
 
 If a Search depth has only one eligible peer, the implementation uses the normalized terminal outcome as the singleton fallback. A policy-credit-eligible Search turn without a valid Exact-IG reward receives zero MICA Search advantage.
