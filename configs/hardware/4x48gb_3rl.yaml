@@ -17,7 +17,30 @@ hardware:
   ray_object_store_gb: 48
   memory_safety_reserve_gb: 64
 
+# Canonical topology input. Legacy hardware fields above remain for readers of
+# older configs; runtime code derives all duplicate fields from this block.
+topology:
+  cluster_mode: local
+  nnodes: 1
+  compatibility:
+    # The included reference recipe keeps deprecated legacy fields only as a
+    # checked migration aid. New user profiles should omit those duplicates.
+    validate_legacy_fields: true
+  roles:
+    retriever:
+      physical_gpu: 0
+    eval:
+      colocate_with: retriever
+    rl:
+      physical_gpus_by_node: [[1, 2, 3]]
+  ray:
+    placement_strategy: STRICT_PACK
+  rollout:
+    data_parallel_size: 3
+    tensor_parallel_size: 1
+
 ray:
+  cluster_mode: local
   address: local
   retriever_pool_cpus: 8
   rl_engine_cpus_per_gpu: 3
@@ -26,6 +49,8 @@ ray:
   exact_ig_task_builder_count: 2
   agent_loop_worker_count: 12
   placement_strategy: STRICT_PACK
+  memory_monitor_refresh_ms: 1000
+  memory_usage_threshold: 0.80
   object_spilling_directory: runtime/ray_spill
 
 rollout:

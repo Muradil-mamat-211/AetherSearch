@@ -89,16 +89,24 @@ Validate the only released hardware recipe without starting services:
 bash scripts/train_rl.sh --dry-run
 ```
 
+The default recipe is an **Official Qualified** reproduction. It enables
+`configs/qualification/official_4x48gb_v1.yaml`, which checks the published
+4x48GB/48-CPU/360-GiB host contract and the release asset checksums. The
+portable runtime path is separate: a user-defined hardware profile sets
+`qualification.mode: portable` and is checked by resource minimums and generic
+topology invariants.
+
 Start RL training on the validated four-GPU topology:
 
 ```bash
 bash scripts/train_rl.sh
 ```
 
-The included recipe assigns physical GPU 0 to retrieval and asynchronous
-training-time evaluation, and physical GPUs 1-3 to the three-rank vLLM/FSDP2
-runtime. Every 20-update evaluation uses the complete 51,713-row Search-R1
-`test.parquet`. See `recipes/rl/README.md` for the configuration boundary.
+The included reference recipe assigns the Retriever and asynchronous
+evaluation roles to the same dedicated physical GPU and assigns three RL
+roles to the remaining GPUs. Every 20-update evaluation uses the complete
+51,713-row Search-R1 `test.parquet`. See `recipes/rl/README.md` for the
+configuration boundary.
 The resolved configuration is materialized inside each new run directory.
 
 ## Repository Layout
@@ -111,8 +119,8 @@ The resolved configuration is materialized inside each new run directory.
   the RL training stage; see `scripts/README.md` for public versus historical
   entrypoints.
 - `recipes/rl/`: the single validated public RL recipe and its usage boundary.
-- `configs/`: base, formal, hardware, retriever, stage configs, and the Exact-IG
-  runtime gate;
+- `configs/`: algorithm, hardware/topology, asset-manifest, qualification,
+  retriever, stage configs, and the Exact-IG runtime gate;
   see `configs/README.md` for their portability boundary.
 - `runtime_assets/`: local runtime assets required by the training launcher.
 - `tests/`: unit and integration checks for the training code.
@@ -123,3 +131,17 @@ The resolved configuration is materialized inside each new run directory.
 Large model weights, optimizer-state checkpoints, eval result bundles, report
 archives, and runtime snapshots are intentionally not committed to this GitHub
 repository. Public model and data artifacts are linked from Hugging Face above.
+
+## Configuration Boundary
+
+`environment/env.local.sh` supplies machine-local paths and Python interpreters.
+The asset manifest in `configs/assets/` keeps model, data, tokenizer, and
+retriever checksums independent from experiment settings. Hardware roles and
+Ray resources live in YAML; `TopologyPlan` derives visible CUDA IDs, FSDP2
+world size, Ray bundles, and the runtime mapping from that single input.
+
+For another server, copy the reference hardware block into a user-owned YAML,
+change its physical resources and role mapping, set `qualification.mode` to
+`portable`, and keep the algorithm configuration unchanged. The repository
+tests exercise an 8-GPU planning/dry-run path only; that topology is not
+claimed as a formally trained or production-qualified result.

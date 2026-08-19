@@ -28,7 +28,7 @@ def test_pilot_20_resolved_contract() -> None:
     assert config["pilot"]["checkpoints"] == [20]
     assert config["pilot"]["evaluations"] == []
     assert config["evaluation"]["asynchronous"] is True
-    assert config["evaluation"]["physical_gpu"] == 0
+    assert config["evaluation"]["role"] == "eval"
     assert config["advantage"]["external_ig_multiplier"] is None
     assert config["advantage"]["future_ig_accumulation"] is True
     assert config["advantage"]["sqrt_n_rescale"] is True
@@ -47,7 +47,7 @@ def test_formal_total_remains_user_supplied() -> None:
     assert config["formal_schedule"]["learner_micro_batch_size"] == 8
     assert config["rollout"]["candidate_prompts_max"] == 128
     assert config["evaluation"]["asynchronous"] is True
-    assert config["evaluation"]["physical_gpu"] == 0
+    assert config["evaluation"]["role"] == "eval"
     assert config["checkpoint"]["formal_limit"] == 2
 
 

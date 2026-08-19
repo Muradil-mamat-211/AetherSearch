@@ -356,4 +356,4 @@ def test_formal_launcher_has_independent_lifecycle_processes() -> None:
     assert "recipes/rl/train_4x48gb.yaml" in launcher
     assert "preflight_mica_formal.py" in launcher
     assert "launch_retriever.sh" in supervisor
-    assert "async_eval_gpu0_worker.sh" in supervisor
+    assert "async_eval_worker.sh" in supervisor

@@ -3,15 +3,15 @@ project:
   schema_version: "2.1"
 
 paths:
-  search_r1_root: /root/autodl-tmp/search-r1-workspace/code/Search-R1
-  environment_script: /root/autodl-tmp/search-r1-workspace/env.sh
-  rl_python: /root/autodl-tmp/search-r1-workspace/envs/igpo-ragen2-fsdp2-vllm011/bin/python
-  retriever_python: /root/autodl-tmp/search-r1-workspace/envs/retriever/bin/python
-  actor_model: /root/autodl-tmp/search-r1-workspace/models/dpo_v2_final_model
-  reference_model: /root/autodl-tmp/search-r1-workspace/models/dpo_v2_final_model
-  train_data: /root/autodl-tmp/search-r1-workspace/data/nq_hotpotqa_train/train.parquet
-  validation_data: /root/autodl-tmp/search-r1-workspace/data/nq_hotpotqa_train/test.parquet
-  runtime_root: /root/autodl-tmp/search-r1-workspace/projects/igpo_ragen2_a2tgpo_strict_onpolicy_v1/runtime
+  search_r1_root: ${AETHERSEARCH_SEARCH_R1_ROOT}
+  environment_script: ${AETHERSEARCH_ENV_SCRIPT}
+  rl_python: ${AETHERSEARCH_RL_PYTHON}
+  retriever_python: ${AETHERSEARCH_RETRIEVER_PYTHON}
+  actor_model: ${AETHERSEARCH_ACTOR_MODEL}
+  reference_model: ${AETHERSEARCH_REFERENCE_MODEL}
+  train_data: ${AETHERSEARCH_TRAIN_DATA}
+  validation_data: ${AETHERSEARCH_VALIDATION_DATA}
+  runtime_root: ${AETHERSEARCH_RUNTIME_ROOT}
 
 runtime:
   framework: verl_ray

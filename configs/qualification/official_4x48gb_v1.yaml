@@ -1,0 +1,27 @@
+profile: official_4x48gb_v1
+
+topology:
+  nnodes: 1
+  retriever_gpu: 0
+  rl_gpus: [1, 2, 3]
+  learner_world_size: 3
+  rollout_dp: 3
+  rollout_tp: 1
+
+hardware:
+  total_physical_gpus: 4
+  gpu_memory_gb: 48
+  expected_cpu_cores: 48
+  expected_host_ram_gb: 360
+
+ray:
+  cluster_mode: local
+  placement_strategy: STRICT_PACK
+
+training:
+  total_successful_updates: 500
+
+backend:
+  learner_strategy: fsdp2
+  learner_micro_batch_size: 6
+  gpu_memory_utilization: 0.48

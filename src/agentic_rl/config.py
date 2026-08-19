@@ -30,6 +30,7 @@ from agentic_rl.exact_ig.target_schema import (
     TARGET_SCHEMA_SUFFIX,
     TARGET_TOKENIZATION_POLICY,
 )
+from agentic_rl.topology import TopologyError, TopologyPlan, materialize_topology
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -102,6 +103,7 @@ def _load_config_tree(config_path: Path, stack: tuple[Path, ...] = ()) -> dict[s
 def load_config(path: str | Path = DEFAULT_CONFIG) -> dict[str, Any]:
     config_path = Path(path).resolve()
     config = _expand_environment(_load_config_tree(config_path))
+    materialize_topology(config)
     validate_config(config)
     return config
 
@@ -121,7 +123,9 @@ def _require_paths(config: Mapping[str, Any], keys: Iterable[str]) -> None:
             raise ConfigError(f"Path does not exist: paths.{key}={raw}")
 
 
-def validate_config(config: Mapping[str, Any]) -> None:
+def validate_schema(config: Mapping[str, Any]) -> None:
+    """Validate the resolved schema and required local asset paths."""
+
     _require_equal(
         config.get("project", {}).get("schema_version"),
         "2.1",
@@ -140,7 +144,158 @@ def validate_config(config: Mapping[str, Any]) -> None:
             "validation_data",
         ),
     )
+    for section in (
+        "hardware",
+        "ray",
+        "rollout",
+        "selection",
+        "advantage",
+        "policy",
+        "learner",
+        "exact_ig",
+        "retriever",
+        "data",
+    ):
+        if not isinstance(config.get(section), Mapping):
+            raise ConfigError(f"Missing configuration section: {section}")
+    evaluation = config.get("evaluation")
+    if evaluation is None:
+        return
+    if not isinstance(evaluation, Mapping):
+        raise ConfigError("evaluation must be a mapping")
+    manifest_mode = str(evaluation.get("manifest_mode", "full_validation"))
+    if manifest_mode != "full_validation":
+        raise ConfigError("evaluation.manifest_mode must be full_validation")
+    expected_row_count = int(evaluation.get("expected_row_count", 0))
+    expected_source_counts = evaluation.get("expected_source_counts")
+    if expected_row_count < 1:
+        raise ConfigError("Full validation requires evaluation.expected_row_count")
+    if not isinstance(expected_source_counts, Mapping):
+        raise ConfigError(
+            "Full validation requires evaluation.expected_source_counts"
+        )
+    normalized_counts = {
+        str(key).lower(): int(value)
+        for key, value in expected_source_counts.items()
+    }
+    if any(value < 1 for value in normalized_counts.values()):
+        raise ConfigError("Full-validation dataset counts must be positive")
+    if sum(normalized_counts.values()) != expected_row_count:
+        raise ConfigError("Full-validation dataset counts do not match row count")
+    for key in ("expected_validation_sha256", "expected_manifest_sha256"):
+        value = str(evaluation.get(key, ""))
+        if len(value) != 64:
+            raise ConfigError(f"evaluation.{key} must be SHA-256")
+
+
+def validate_topology(config: Mapping[str, Any]) -> TopologyPlan:
+    """Validate portable topology invariants and return the single plan."""
+
+    try:
+        plan = TopologyPlan.from_config(config)
+    except TopologyError as exc:
+        raise ConfigError(str(exc)) from exc
+    if isinstance(config, dict):
+        materialize_topology(config)
+    return plan
+
+
+def validate_resources(config: Mapping[str, Any], plan: TopologyPlan) -> None:
+    """Validate resource arithmetic without reference-machine assumptions."""
+
     hardware = config["hardware"]
+    ray_config = config["ray"]
+    expected_cpu = int(hardware["expected_cpu_cores"])
+    if expected_cpu < 1:
+        raise ConfigError("hardware.expected_cpu_cores must be positive")
+    expected_ram = float(hardware["expected_host_ram_gb"])
+    minimum_gpu_memory = float(hardware.get("gpu_memory_gb", 0))
+    if expected_ram <= 0:
+        raise ConfigError("hardware.expected_host_ram_gb must be positive")
+    if minimum_gpu_memory <= 0:
+        raise ConfigError("hardware.gpu_memory_gb must be positive")
+    for key in (
+        "cpu_reserved_for_os",
+        "ray_object_store_gb",
+    ):
+        if float(hardware[key]) <= 0:
+            raise ConfigError(f"hardware.{key} must be positive")
+    if float(hardware.get("memory_safety_reserve_gb", 64)) <= 0:
+        raise ConfigError("hardware.memory_safety_reserve_gb must be positive")
+    if (
+        float(hardware["ray_object_store_gb"])
+        + float(hardware.get("memory_safety_reserve_gb", 64))
+        >= expected_ram
+    ):
+        raise ConfigError(
+            "hardware Ray object store plus memory reserve must fit in host RAM"
+        )
+    for key in (
+        "retriever_pool_cpus",
+        "rl_engine_cpus_per_gpu",
+        "controller_cpu_workers",
+        "outcome_worker_count",
+        "exact_ig_task_builder_count",
+    ):
+        if int(ray_config.get(key, 0)) < 1:
+            raise ConfigError(f"ray.{key} must be positive")
+    if int(ray_config.get("agent_loop_worker_count", 32)) < 1:
+        raise ConfigError("ray.agent_loop_worker_count must be positive")
+    cpu_budget = (
+        int(hardware["cpu_reserved_for_os"])
+        + int(ray_config["retriever_pool_cpus"])
+        + plan.learner_world_size * int(ray_config["rl_engine_cpus_per_gpu"])
+        + int(ray_config["controller_cpu_workers"])
+    )
+    if cpu_budget > expected_cpu:
+        raise ConfigError(
+            "hardware/ray CPU budget exceeds expected CPU cores: "
+            f"required={cpu_budget} available={expected_cpu}"
+        )
+    bundle_cpu = plan.learner_world_size * int(ray_config["rl_engine_cpus_per_gpu"])
+    if bundle_cpu > expected_cpu:
+        raise ConfigError(
+            "Ray FSDP bundles exceed configured CPU resources: "
+            f"required={bundle_cpu} available={expected_cpu}"
+        )
+
+
+def validate_backend_compatibility(
+    config: Mapping[str, Any], plan: TopologyPlan
+) -> None:
+    """Validate current veRL/FSDP2/vLLM adapter limits, not algorithm rules."""
+
+    learner = config["learner"]
+    if str(learner.get("strategy")) != "fsdp2":
+        raise ConfigError("The current runtime adapter requires learner.strategy=fsdp2")
+    if int(learner.get("world_size", plan.learner_world_size)) != plan.learner_world_size:
+        raise ConfigError(
+            "learner.world_size must match the derived TopologyPlan world size"
+        )
+    if plan.rollout_tensor_parallel_size != 1:
+        raise ConfigError(
+            "The current veRL/vLLM adapter supports tensor_parallel_size=1; "
+            "this is a backend compatibility limit, not an algorithm invariant"
+        )
+    if plan.rollout_data_parallel_size != plan.learner_world_size:
+        raise ConfigError(
+            "The current aggregate vLLM replica adapter requires rollout "
+            "data_parallel_size to match learner world size; use an explicit "
+            "backend profile for other TP/DP combinations"
+        )
+
+
+def validate_config(config: Mapping[str, Any]) -> None:
+    validate_schema(config)
+    plan = validate_topology(config)
+    validate_resources(config, plan)
+    validate_backend_compatibility(config, plan)
+    validate_algorithm_contract(config)
+
+
+def validate_algorithm_contract(config: Mapping[str, Any]) -> None:
+    """Validate A²TGPO/MICA/Exact-IG and training-semantic invariants."""
+
     rollout = config["rollout"]
     selection = config["selection"]
     advantage = config["advantage"]
@@ -149,130 +304,19 @@ def validate_config(config: Mapping[str, Any]) -> None:
     exact_ig = config["exact_ig"]
     retriever = config["retriever"]
     data = config["data"]
-    evaluation = config.get("evaluation")
 
-    if evaluation is not None:
-        manifest_mode = str(evaluation.get("manifest_mode", "full_validation"))
-        if manifest_mode != "full_validation":
-            raise ConfigError(
-                "evaluation.manifest_mode must be full_validation"
-            )
-        expected_row_count = int(evaluation.get("expected_row_count", 0))
-        expected_source_counts = evaluation.get("expected_source_counts")
-        if expected_row_count < 1:
-            raise ConfigError(
-                "Full validation requires evaluation.expected_row_count"
-            )
-        if not isinstance(expected_source_counts, Mapping):
-            raise ConfigError(
-                "Full validation requires evaluation.expected_source_counts"
-            )
-        normalized_counts = {
-            str(key).lower(): int(value)
-            for key, value in expected_source_counts.items()
-        }
-        if any(value < 1 for value in normalized_counts.values()):
-            raise ConfigError(
-                "Full-validation dataset counts must be positive"
-            )
-        if sum(normalized_counts.values()) != expected_row_count:
-            raise ConfigError(
-                "Full-validation dataset counts do not match row count"
-            )
-        for key in (
-            "expected_validation_sha256",
-            "expected_manifest_sha256",
-        ):
-            value = str(evaluation.get(key, ""))
-            if len(value) != 64:
-                raise ConfigError(f"evaluation.{key} must be SHA-256")
-
-    _require_equal(hardware["retriever_physical_gpu"], 0, "hardware.retriever_physical_gpu")
-    migration_mode = bool(hardware.get("allow_world_size_change_on_resume", False))
-    rl_world_size = int(hardware["rl_world_size"])
-    expected_cpu_cores = int(hardware["expected_cpu_cores"])
-    if migration_mode:
-        if rl_world_size not in {3, 4}:
-            raise ConfigError("Resume world-size migration supports only 3 or 4 ranks")
-        if expected_cpu_cores == 48:
-            _require_equal(
-                hardware["rl_physical_gpus"],
-                [1, 2, 3],
-                "hardware.rl_physical_gpus",
-            )
-            _require_equal(
-                hardware["rl_visible_gpus"],
-                [0, 1, 2],
-                "hardware.rl_visible_gpus",
-            )
-            _require_equal(rl_world_size, 3, "hardware.rl_world_size")
-        elif expected_cpu_cores != 125:
-            raise ConfigError(
-                "World-size migration CPU profiles must use 125 or 48 cores"
-            )
-    else:
-        _require_equal(hardware["rl_physical_gpus"], [1, 2, 3, 4], "hardware.rl_physical_gpus")
-        _require_equal(rl_world_size, 4, "hardware.rl_world_size")
-        _require_equal(expected_cpu_cores, 125, "hardware.expected_cpu_cores")
-    ray_config = config["ray"]
-    agent_loop_worker_count = int(ray_config.get("agent_loop_worker_count", 32))
-    if agent_loop_worker_count < 1:
-        raise ConfigError("ray.agent_loop_worker_count must be positive")
-    if expected_cpu_cores == 48:
-        _require_equal(
-            hardware["cpu_reserved_for_os"],
-            4,
-            "hardware.cpu_reserved_for_os",
-        )
-        _require_equal(ray_config["retriever_pool_cpus"], 8, "ray.retriever_pool_cpus")
-        _require_equal(ray_config["rl_engine_cpus_per_gpu"], 3, "ray.rl_engine_cpus_per_gpu")
-        _require_equal(ray_config["controller_cpu_workers"], 5, "ray.controller_cpu_workers")
-        _require_equal(ray_config["outcome_worker_count"], 4, "ray.outcome_worker_count")
-        _require_equal(
-            ray_config["exact_ig_task_builder_count"],
-            2,
-            "ray.exact_ig_task_builder_count",
-        )
-        _require_equal(agent_loop_worker_count, 12, "ray.agent_loop_worker_count")
-    else:
-        _require_equal(ray_config["retriever_pool_cpus"], 20, "ray.retriever_pool_cpus")
-        _require_equal(ray_config["rl_engine_cpus_per_gpu"], 6, "ray.rl_engine_cpus_per_gpu")
-        _require_equal(ray_config["controller_cpu_workers"], 71, "ray.controller_cpu_workers")
-        _require_equal(ray_config["outcome_worker_count"], 24, "ray.outcome_worker_count")
-        _require_equal(
-            ray_config["exact_ig_task_builder_count"],
-            20,
-            "ray.exact_ig_task_builder_count",
-        )
-    cpu_budget = (
-        int(hardware["cpu_reserved_for_os"])
-        + int(ray_config["retriever_pool_cpus"])
-        + int(hardware["rl_world_size"])
-        * int(ray_config["rl_engine_cpus_per_gpu"])
-        + int(ray_config["controller_cpu_workers"])
-    )
-    if cpu_budget > int(hardware["expected_cpu_cores"]):
-        raise ConfigError("hardware/ray CPU budget exceeds expected CPU cores")
-    _require_equal(rollout["data_parallel_size"], rl_world_size, "rollout.data_parallel_size")
-    _require_equal(rollout["tensor_parallel_size"], 1, "rollout.tensor_parallel_size")
+    rl_world_size = TopologyPlan.from_config(config).learner_world_size
+    training = config.get("training")
+    if training is not None:
+        total_updates = int(training.get("total_successful_updates", 0))
+        if total_updates < 1:
+            raise ConfigError("training.total_successful_updates must be positive")
     _require_equal(rollout["group_size"], 16, "rollout.group_size")
     _require_equal(rollout["prompt_wave_size"], 32, "rollout.prompt_wave_size")
     _require_equal(rollout["candidate_prompts_initial"], 64, "rollout.candidate_prompts_initial")
     _require_equal(rollout["refill_prompts"], 32, "rollout.refill_prompts")
     _require_equal(rollout["candidate_prompts_max"], 128, "rollout.candidate_prompts_max")
     _require_equal(rollout["max_num_seqs"], 64, "rollout.max_num_seqs")
-    expected_gpu_memory_utilization = 0.48 if expected_cpu_cores == 48 else 0.46
-    _require_equal(
-        float(rollout["gpu_memory_utilization"]),
-        expected_gpu_memory_utilization,
-        "rollout.gpu_memory_utilization",
-    )
-    if expected_cpu_cores == 48:
-        _require_equal(
-            int(config["formal_schedule"]["learner_micro_batch_size"]),
-            6,
-            "formal_schedule.learner_micro_batch_size",
-        )
     _require_equal(
         data["logical_view_mode"],
         "deterministic_nq_hotpotqa_40_60",

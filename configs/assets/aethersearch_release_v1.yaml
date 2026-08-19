@@ -1,0 +1,44 @@
+version: 1
+name: aethersearch_release_v1
+
+# Paths are supplied by environment/env.local.sh.  The checksums remain part
+# of the release contract and are verified by the official preflight.
+assets:
+  actor:
+    kind: tree
+    path: ${AETHERSEARCH_ACTOR_MODEL}
+    sha256: a2cf15da06b06eb84a74182853f9c9a697aa0cce047ff34369b5fb737cdbd08f
+  reference:
+    kind: tree
+    path: ${AETHERSEARCH_REFERENCE_MODEL}
+    sha256: a2cf15da06b06eb84a74182853f9c9a697aa0cce047ff34369b5fb737cdbd08f
+  tokenizer:
+    kind: tokenizer
+    path: ${AETHERSEARCH_ACTOR_MODEL}
+    sha256: 22a5d06ea8962e1236779430602bd1871519c4bd0debfaaa53827f252fcb9019
+  train:
+    kind: file
+    path: ${AETHERSEARCH_TRAIN_DATA}
+    sha256: c3cc21e862a8469105de666101578cbff23cdc77e91a803cef102622c89cc4f6
+  validation:
+    kind: file
+    path: ${AETHERSEARCH_VALIDATION_DATA}
+    sha256: 30aa887b6d47e06e8c0f6f5307c88fe4e13461ac25a20ec0a5433ad7a4fe25dc
+    manifest_sha256: a37096d3cab04dfee994318a7059e1151eef1a0df4eb444d6f8544f57ea65baa
+    expected_row_count: 51713
+    expected_source_counts:
+      2wikimultihopqa: 12576
+      bamboogle: 125
+      hotpotqa: 7405
+      musique: 2417
+      nq: 3610
+      popqa: 14267
+      triviaqa: 11313
+  retriever_index:
+    kind: file
+    path: ${AETHERSEARCH_DENSE_INDEX_PATH}
+    sha256: 69c98463fdb41fc08737d88513c597725f311c44f7ba4dca4b05d8c7c658d166
+  retriever_config:
+    kind: file
+    path: ${AETHERSEARCH_PROJECT_ROOT}/runtime_assets/retriever/retriever.yaml
+    sha256: 151c3d85d30ca52b68a98b74ae86f5bbf99dc9c16c48e71b7474e40584190c22

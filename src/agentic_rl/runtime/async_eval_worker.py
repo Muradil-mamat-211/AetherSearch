@@ -20,6 +20,7 @@ from agentic_rl.outcome.parser import parse_model_action, parse_model_trajectory
 from agentic_rl.outcome.workers import score_trajectory_outcome
 from agentic_rl.retriever.client import HybridRetrieverClient
 from agentic_rl.retriever.health import query_health
+from agentic_rl.topology import TopologyPlan
 
 from .fixed_eval import create_or_validate_eval_manifest_from_config, load_eval_rows
 from .formal_state import (
@@ -41,7 +42,7 @@ def _sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
-def _gpu_zero_snapshot() -> dict[str, Any]:
+def _gpu_snapshot(physical_gpu: int) -> dict[str, Any]:
     completed = subprocess.run(
         [
             "nvidia-smi",
@@ -55,15 +56,17 @@ def _gpu_zero_snapshot() -> dict[str, Any]:
     )
     for line in completed.stdout.splitlines():
         values = [item.strip() for item in line.split(",")]
-        if values and int(values[0]) == 0:
+        if values and int(values[0]) == int(physical_gpu):
             return {
-                "physical_gpu": 0,
+                "physical_gpu": int(physical_gpu),
                 "memory_used_mib": int(values[1]),
                 "memory_free_mib": int(values[2]),
                 "memory_total_mib": int(values[3]),
                 "temperature_c": int(values[4]),
             }
-    raise RuntimeError("Physical GPU0 was not reported by nvidia-smi")
+    raise RuntimeError(
+        f"Configured eval GPU {int(physical_gpu)} was not reported by nvidia-smi"
+    )
 
 
 def _information_token_ids(
@@ -263,7 +266,7 @@ def _aggregate(
                 "manifest_sha256": str(manifest_sha256),
                 "actor_checksum": str(actor_checksum),
                 "wall_seconds": float(wall_seconds),
-                "evaluation_device": "physical_gpu0",
+                "evaluation_device": f"physical_gpu_{int(config['_eval_physical_gpu'])}",
             }
         )
     return records
@@ -407,6 +410,11 @@ def _target_successful_update(config: Mapping[str, Any]) -> int:
 
 def run_worker(config_path: Path, run_dir: Path) -> int:
     config = load_config(config_path)
+    topology = TopologyPlan.from_config(config)
+    if topology.eval_physical_gpu is None:
+        raise RuntimeError("Async evaluation requires a configured eval role")
+    config = dict(config)
+    config["_eval_physical_gpu"] = int(topology.eval_physical_gpu)
     target_successful_update = _target_successful_update(config)
     stop_requested = False
 
@@ -451,10 +459,10 @@ def run_worker(config_path: Path, run_dir: Path) -> int:
         update = int(task["update"])
         try:
             query_health(str(config["retriever"]["service_url"]))
-            gpu = _gpu_zero_snapshot()
+            gpu = _gpu_snapshot(int(config["_eval_physical_gpu"]))
             if int(gpu["memory_free_mib"]) < minimum_free_mib:
                 reason = (
-                    f"gpu0_free_memory_{gpu['memory_free_mib']}MiB_below_"
+                    f"gpu{gpu['physical_gpu']}_free_memory_{gpu['memory_free_mib']}MiB_below_"
                     f"{minimum_free_mib}MiB"
                 )
                 defer_eval(run_dir, update=update, reason=reason)
@@ -478,7 +486,7 @@ def run_worker(config_path: Path, run_dir: Path) -> int:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Serialized GPU0 formal-eval worker")
+    parser = argparse.ArgumentParser(description="Serialized topology-routed eval worker")
     parser.add_argument("--config", required=True)
     parser.add_argument("--run-dir", required=True)
     arguments = parser.parse_args()

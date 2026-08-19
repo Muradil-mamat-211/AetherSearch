@@ -6946,7 +6946,10 @@ class VerlAttemptRuntimeAdapter:
         counts = self.worker_group.execute_all_sync("strict_attempt_counts")
         expected_world_size = int(self.config["learner"]["world_size"])
         if len(checksums) != expected_world_size or len(digests) != expected_world_size:
-            raise RuntimeError("3-rank validation returned an incomplete worker set")
+            raise RuntimeError(
+                "Resume validation returned an incomplete worker set for the "
+                f"configured world size {expected_world_size}"
+            )
         configured_resume_step = int(
             self.config.get("formal", {}).get(
                 "resume_from_successful_update", 0
@@ -7096,15 +7099,22 @@ class VerlAttemptRuntimeAdapter:
             "optimizer_scheduler_digests_after": post_export_digests,
             "strict_attempt_counts_after": post_export_counts,
         }
+        checkpoint_metadata = json.loads(
+            (checkpoint / "metadata.json").read_text()
+        )
+        source_fsdp_world_size = int(
+            checkpoint_metadata["fsdp_world_size"]
+        )
+        if source_fsdp_world_size < 1:
+            raise RuntimeError("Checkpoint metadata has an invalid FSDP world size")
         return {
             "status": "PASS",
             "checkpoint": str(checkpoint),
-            "source_fsdp_world_size": int(
-                json.loads((checkpoint / "metadata.json").read_text())["fsdp_world_size"]
-            ),
+            "source_fsdp_world_size": source_fsdp_world_size,
             "target_fsdp_world_size": expected_world_size,
             "source_to_target_rng_mapping": {
-                str(rank): str(rank % 4) for rank in range(expected_world_size)
+                str(rank): str(rank % source_fsdp_world_size)
+                for rank in range(expected_world_size)
             },
             "successful_update_step": int(restored.successful_update_step),
             "data_cursor": int(restored.data_cursor),

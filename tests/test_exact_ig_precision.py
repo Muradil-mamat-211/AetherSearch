@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import inspect
 import math
+import os
 from types import SimpleNamespace
 
 import torch
@@ -126,9 +127,11 @@ def test_target_schema_is_exactly_locked() -> None:
 def test_real_dpo_tokenizer_uses_official_answer_covering_offsets() -> None:
     from transformers import AutoTokenizer
 
-    model_path = (
-        "/root/autodl-tmp/search-r1-workspace/models/dpo_v2_final_model"
-    )
+    model_path = os.environ.get("AETHERSEARCH_ACTOR_MODEL", "")
+    if not model_path:
+        import pytest
+
+        pytest.skip("AETHERSEARCH_ACTOR_MODEL is required for asset-backed tests")
     tokenizer = AutoTokenizer.from_pretrained(
         model_path,
         trust_remote_code=True,

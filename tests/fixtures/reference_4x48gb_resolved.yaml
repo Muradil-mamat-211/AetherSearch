@@ -1,0 +1,532 @@
+project:
+  name: AetherSearch
+  schema_version: '2.1'
+paths:
+  search_r1_root: ${AETHERSEARCH_SEARCH_R1_ROOT}
+  environment_script: ${AETHERSEARCH_ENV_SCRIPT}
+  rl_python: ${AETHERSEARCH_RL_PYTHON}
+  retriever_python: ${AETHERSEARCH_RETRIEVER_PYTHON}
+  actor_model: ${AETHERSEARCH_ACTOR_MODEL}
+  reference_model: ${AETHERSEARCH_ACTOR_MODEL}
+  train_data: ${AETHERSEARCH_TRAIN_DATA}
+  validation_data: ${AETHERSEARCH_VALIDATION_DATA}
+  runtime_root: ${AETHERSEARCH_RUNTIME_ROOT}
+runtime:
+  framework: verl_ray
+  require_clean_preflight: true
+  fail_on_backend_fallback: true
+  require_vllm_import: true
+  require_fsdp2_public_api: true
+  require_vllm_sleep_wake: true
+  require_current_verl_agent_loop: true
+  adapter_factory: agentic_rl.runtime.verl_runtime_adapter:create_runtime_adapter
+data:
+  immutable: true
+  prompt_key: prompt
+  id_key: id
+  aliases_key: golden_answers
+  reward_target_key: reward_model.ground_truth.target
+  data_source_key: data_source
+  logical_view_mode: deterministic_nq_hotpotqa_40_60
+  source_rows: 169615
+  source_sha256: c3cc21e862a8469105de666101578cbff23cdc77e91a803cef102622c89cc4f6
+  selection_seed: 20260708
+  nq_ratio: 0.4
+  expected_rows: 150745
+  expected_source_counts:
+    nq: 60298
+    hotpotqa: 90447
+  ordered_view_identity_sha256: b8bc8792a85e1172e52ceb5eaefb9c6065aa9c0dabf5fe4cb6004ddc4281710e
+  shuffle: true
+  shuffle_seed: 20260724
+  derive_or_copy_data: false
+rollout:
+  engine: vllm
+  group_size: 16
+  prompt_wave_size: 32
+  candidate_prompts_initial: 64
+  refill_prompts: 32
+  candidate_prompts_max: 128
+  data_parallel_size: 3
+  tensor_parallel_size: 1
+  replicas: 3
+  sticky_trajectory_sessions: true
+  strict_rollout_start_snapshot: true
+  enable_sleep_mode: true
+  enable_prefix_caching: true
+  enable_chunked_prefill: true
+  gpu_memory_utilization: 0.48
+  max_num_seqs: 64
+  temperature: 1.0
+  top_p: 0.95
+  top_k: 0
+  max_search_turns: 5
+  max_new_tokens_per_turn: 500
+  max_information_tokens_per_turn: 500
+  do_sample: true
+  sampling_top_p: 0.95
+  min_p: 0.0
+  repetition_penalty: 1.0
+  presence_penalty: 0.0
+  frequency_penalty: 0.0
+  max_model_tokens_per_turn: 500
+selection:
+  mode: answer_outcome_only_scaled_top_p
+  top_p_mass: 0.9
+  include_zero: false
+  selection_epsilon: 0.0
+  minimum_selected_prompts: 32
+  target_selected_prompts: 36
+  maximum_selected_prompts: 36
+  alpha_ig: 0.5
+  alpha_outcome: 0.5
+  noise_floor_ig: 1.0e-12
+  noise_floor_outcome: 1.0e-12
+  stats_dtype: float64
+  minimum_positive_prompts: 4
+  scale_ema_half_life: 10
+  health_reference_valid_updates: 10
+  health_threshold_ratio: 0.1
+  retain_all_trajectories: true
+  recompute_after_refill_on_full_pool: true
+  variance_mass_top_p: 0.9
+  min_selected: 32
+  max_selected: 36
+  signal: answer_outcome_only
+advantage:
+  mode: mica_ig_v1
+  search_task_mode: answer_only_ragen2_mica_ig_v1_singleton_outcome
+  gamma: 1.0
+  lambda_outcome: 1.0
+  lambda_format: 1.0
+  probe_epsilon: 1.0e-06
+  search_advantage_formula: Z_O if peer_count == 1 else 0.5*A_ret + 0.5*A_loc
+  outcome_fallback_to_search: true
+  normalization_epsilon: 1.0e-06
+  zero_variance_tolerance: 1.0e-12
+  future_ig_accumulation: false
+  sqrt_n_rescale: false
+  external_ig_multiplier: null
+  search_formula_terms:
+  - raw_exact_ig
+  - literal_raw_ig_suffix_return
+  - prompt_search_depth_local_advantage
+  - prompt_search_depth_return_advantage
+  - singleton_normalized_terminal_outcome
+  answer_formula_terms:
+  - normalized_outcome
+  - centered_format_indicator
+  rescale_count_mode: none_mica_raw_suffix_return
+  sufficiency_probe:
+    enabled: false
+    pre_search_enabled: false
+    post_search_enabled: false
+    do_sample: false
+    temperature: 0.0
+    top_p: 1.0
+    top_k: -1
+    min_p: 0.0
+    n: 1
+    max_tokens: 500
+    stop:
+    - </answer>
+    exact_match_only: true
+  sc:
+    enabled: false
+    shadow_only: true
+    actor_loss_enabled: false
+policy:
+  strict_on_policy: true
+  ppo_epochs: 1
+  optimizer_mini_steps: 1
+  zero_grad_calls_per_successful_update: 1
+  optimizer_steps_per_successful_update: 1
+  scheduler_steps_per_successful_update: 1
+  ratio_level: turn
+  ratio_hardcoded: false
+  clipping_mode: a2tgpo_adaptive_turn_level
+  adaptive_clip_beta: 0.3
+  adaptive_clip_epsilon_low: 0.003
+  adaptive_clip_epsilon_high: 0.004
+  answer_clip_scale: 1.0
+  task_reduction: prompt_trajectory_action_token_mean
+  kl_reduction: prompt_trajectory_action_token_mean
+  full_vocab_reference_kl: true
+  kl_action_state_chunk_size: 16
+  kl_vocabulary_chunk_size: 8192
+  kl_coefficient: 0.01
+  entropy_coefficient: 0.0
+  value_coefficient: 0.0
+  max_grad_norm: 1.0
+formal_schedule:
+  optimizer_family: AdamW
+  learning_rate: 2.0e-07
+  weight_decay: 0.0
+  optimizer_betas:
+  - 0.9
+  - 0.999
+  optimizer_epsilon: 1.0e-08
+  scheduler: constant
+  warmup: 10
+  learner_micro_batch_size: 6
+  total_successful_updates: 500
+  checkpoint_every_successful_updates: 20
+  fixed_eval_every_successful_updates: 20
+  maximum_prompt_length: 2048
+  maximum_response_length: 6144
+  maximum_model_length: 8192
+  maximum_extended_sequence_length: 16384
+  maximum_position_id_exclusive: 32768
+  sampling_temperature_approval: 1.0
+  sampling_top_p_approval: 0.95
+  source: user_frozen_formal_training_preflight
+runtime_smoke_schedule:
+  optimizer_family: AdamW
+  learning_rate: 2.0e-07
+  weight_decay: 0.0
+  optimizer_betas:
+  - 0.9
+  - 0.999
+  optimizer_epsilon: 1.0e-08
+  scheduler: constant
+  warmup: 0
+  learner_micro_batch_size: 6
+  total_successful_updates: 5
+  maximum_prompt_length: 2048
+  maximum_response_length: 6144
+  maximum_model_length: 8192
+  maximum_extended_sequence_length: 16384
+  maximum_position_id_exclusive: 32768
+  sampling_temperature_approval: 1.0
+  sampling_top_p_approval: 0.95
+  source: isolated_runtime_smoke_from_historically_executed_exact_igpo_config
+learner:
+  strategy: fsdp2
+  world_size: 3
+  mixed_precision: bfloat16
+  reshard_after_forward: false
+  reference_reshard_after_forward: false
+  actor_is_weight_source_of_truth: true
+  exact_ig_no_grad: true
+  exact_ig_use_cache: false
+  gradient_checkpointing: true
+checkpoint:
+  smoke_model_checkpoints: false
+  save_on_successful_update_only: true
+  atomic_directory_commit: true
+  include_optimizer: true
+  include_scheduler: true
+  include_rng: true
+  include_data_cursor: true
+  include_channel_state: true
+  reject_post_step_precommit_failure: true
+  formal_limit: null
+  readonly_subprocess_verification: true
+  live_distributed_reload_verification: false
+  materialize_missing_cadence_artifacts_on_resume: false
+hardware:
+  total_physical_gpus: 4
+  gpu_memory_gb: 48
+  retriever_physical_gpu: 0
+  rl_physical_gpus:
+  - 1
+  - 2
+  - 3
+  rl_visible_gpus:
+  - 0
+  - 1
+  - 2
+  rl_world_size: 3
+  allow_world_size_change_on_resume: true
+  vllm_data_parallel_size: 3
+  vllm_tensor_parallel_size: 1
+  forbid_retriever_in_rl_process_group: true
+  expected_host_ram_gb: 360
+  expected_cpu_cores: 48
+  cpu_reserved_for_os: 4
+  ray_object_store_gb: 48
+  memory_safety_reserve_gb: 64
+ray:
+  address: local
+  retriever_pool_cpus: 8
+  rl_engine_cpus_per_gpu: 3
+  controller_cpu_workers: 5
+  outcome_worker_count: 4
+  exact_ig_task_builder_count: 2
+  agent_loop_worker_count: 12
+  placement_strategy: STRICT_PACK
+  object_spilling_directory: runtime/ray_spill
+update_stages:
+  attempt_counter:
+    increments_on: candidate_pool_begin
+  successful_update_counter:
+    increments_on: optimizer_transaction_commit
+  update_1:
+    selection_scale_source: final_pool_positive_median
+    bootstrap_activation_controls_current_selection_only: true
+    bootstrap_activation_controls_scale_commit: false
+    commit_scale_after_optimizer_commit: true
+    append_health_observation_after_commit: true
+  update_2_to_health_ready:
+    selection_scale_source: previously_committed_scale
+    current_pool_scale_cannot_affect_current_selection: true
+    scale_update: log_ema_after_optimizer_commit
+    bootstrap_activation_controls_current_selection_only: true
+    bootstrap_activation_controls_scale_update: false
+  health_ready:
+    valid_observations_per_channel: 10
+    reference: median_first_10_valid_successful_observations
+    threshold_ratio: 0.1
+    minimum_positive_prompts: 4
+    independent_per_channel: true
+    inactive_channel_freezes_scale_update: true
+  skip:
+    when_selected_below_minimum_after_refill: true
+    optimizer_step: false
+    scheduler_step: false
+    scale_commit: false
+    health_commit: false
+    successful_update_increment: false
+exact_ig:
+  enabled: true
+  exact_ig_version: exact_ig_official_offset_fp32_no_anchor_v4
+  implementation: igpo_official_vectorized_structural_attention
+  official_igpo_commit_sha: 64165e2741ed8801f977948c8128080ce87b4101
+  official_fast_path_source: scrl/llm_agent/vectorized_gt_logprob.py
+  official_generation_source: scrl/llm_agent/generation.py
+  oracle_interface_available: true
+  oracle_validation_in_this_stage: true
+  fast_oracle_comparison_in_this_stage: true
+  reward_policy: rollout_start_actor
+  stop_gradient: true
+  use_cache: false
+  production_precision_mode: fp32_exact_ig
+  numerical_gate_status: PASS
+  numerical_gate_reason: structural_and_semantic_audit_pass_numeric_drift_is_telemetry
+  structural_audit_status: PASS
+  structural_audit_path: ${AETHERSEARCH_EXACT_IG_AUDIT_ROOT}/audit_status.json
+  numerical_gate_path: ${AETHERSEARCH_EXACT_IG_AUDIT_ROOT}/audit_status.json
+  attention_backend: sdpa_math
+  parameter_dtype: float32
+  activation_dtype: float32
+  logits_dtype: float32
+  log_probs_dtype: float32
+  autocast_enabled: false
+  autocast_dtype: null
+  allow_tf32: false
+  allow_bf16_reduced_precision_reduction: false
+  allow_fp16_reduced_precision_reduction: false
+  float32_matmul_precision: highest
+  temperature: 1.0
+  scoring_logits_mode: official_full_logits
+  selected_positions_enabled: false
+  selected_positions_gate_status: FAIL
+  attention_mask_mode: official_additive
+  boolean_4d_enabled: false
+  boolean_4d_gate_status: PASS
+  sequential_oracle_is_production_path: false
+  parity_rtol: 1.0e-05
+  parity_atol: 2.0e-05
+  maximum_token_log_prob_abs_diff: 2.0e-05
+  maximum_phi_abs_diff: 2.0e-05
+  maximum_ig_abs_diff: 2.0e-05
+  maximum_phi_safety_abs_diff: 0.001
+  maximum_ig_safety_abs_diff: 0.001
+  numeric_ambiguity_epsilon: 0.0005174198001623147
+  calibration_p99_ig_abs_diff: 0.00017247326672077158
+  minimum_canary_samples_for_p99: 8
+  oracle_numeric_difference_policy: telemetry_only_unless_semantic_or_safety_drift
+  maximum_telescoping_error: 1.0e-10
+  logits_element_size: 4
+  oracle_canary_rate: 0.01
+  oracle_canary_fail_closed: false
+  runtime_smoke_oracle_canary_fail_closed: false
+  canonical_alias_policy: first
+  info_gain_type: log_prob_diff
+  score_mask_policy: igpo_official_answer_covering_span
+  fast_path_structure: official_no_anchor
+  target_template: <think>The retrieved evidence now supports the answer.</think><answer>{answer}</answer>
+  scaffold_text: <think>The retrieved evidence now supports the answer.</think><answer>
+  scaffold_sha256: 27ce85b1c8197c302e1fe4d754897142ab0257cba57341dc56a7d9478d01d22e
+  target_schema_prefix: <think>The retrieved evidence now supports the answer.</think><answer>
+  target_schema_suffix: </answer>
+  include_eos_in_target: false
+  tokenizer_add_special_tokens: false
+  encode_complete_target_once_per_prompt: true
+  tokenizer_requires_offset_mapping: true
+  target_tokenization_policy: official_full_string_single_tokenization
+  score_answer_body_tokens_only: true
+  answer_span_resolution: igpo_official_offset_covering
+  structural_attention_mask: true
+  logical_position_ids: true
+  causal_target_shift: true
+  mask_builder_version: exact_ig_structural_mask_official_no_anchor_v4
+  position_builder_version: exact_ig_logical_positions_official_no_anchor_v4
+  max_records_per_forward: 2
+  max_attention_cost_per_batch: 67108864
+  max_extended_tokens_per_batch: 16384
+  max_full_logits_bytes: 4294967296
+  max_selected_logits_bytes: 1073741824
+  context_overflow_policy: official_sequential_then_fail_closed
+  maximum_extended_sequence_length: null
+  maximum_position_id_exclusive: null
+  runtime_status:
+    static_structure: PASS
+    numerical_parity: TELEMETRY_WITHIN_SAFETY_LIMIT
+    gpu_runtime: PASS_STRUCTURAL_AND_SEMANTIC
+    fsdp_window_restore: PASS_REAL_4_RANK
+    allow_next_stage: true
+outcome:
+  scorer: igpo_official_set_token_f1
+  official_commit: 64165e2741ed8801f977948c8128080ce87b4101
+  official_source: verl/utils/reward_score/info_gain.py
+  aliases_delimiter: <|answer_split|>
+  remove_english_articles: false
+  token_collection: set
+retriever:
+  service_url: http://127.0.0.1:8000
+  retrieve_endpoint: /retrieve
+  health_endpoint: /health
+  mode: hybrid
+  top_k: 3
+  server_source: ${AETHERSEARCH_PROJECT_ROOT}/runtime_assets/retriever/hybrid_retrieval_server.py
+  server_config_source: ${AETHERSEARCH_PROJECT_ROOT}/runtime_assets/retriever/retriever.yaml
+  corpus_path: ${AETHERSEARCH_CORPUS_PATH}
+  bm25_index_path: ${AETHERSEARCH_BM25_INDEX_PATH}
+  dense_index_path: ${AETHERSEARCH_DENSE_INDEX_PATH}
+  dense_encoder_path: ${AETHERSEARCH_DENSE_ENCODER_PATH}
+  dense_encoder_name: e5
+  dense_index_type: GpuIndexFlatIP
+  require_faiss_gpu: true
+  faiss_device_inside_retriever_namespace: 0
+  dense_query_batch_size: 64
+  bm25_workers: 16
+  request_batch_wait_ms: 5.0
+  request_batch_max_queries: 256
+  timeout_seconds: 180.0
+  fusion_alpha: 0.5
+  bm25_top_n: 20
+  dense_top_n: 20
+logging:
+  root: metrics
+  attempt_jsonl: attempt_metrics.jsonl
+  update_jsonl: update_metrics.jsonl
+  channel_jsonl: channel_metrics.jsonl
+  prompt_jsonl: prompt_metrics.jsonl
+  trajectory_jsonl: trajectory_metrics.jsonl
+  turn_jsonl: turn_metrics.jsonl
+  behavior_jsonl: behavior_metrics.jsonl
+  system_jsonl: system_metrics.jsonl
+  checkpoint_jsonl: checkpoint_metrics.jsonl
+  fixed_eval_jsonl: eval_metrics.jsonl
+  flush_every_records: 1
+  record_parser_diagnostics: true
+  record_environment_failure_codes: true
+  record_reasoning_collapse_metrics: true
+  selection_scale_fields:
+  - scale_used
+  - scale_observation_valid
+  - scale_update_allowed_after_success
+  - channel_active
+  - gate_mode
+  - gate_reason
+  - health_ratio
+  adaptive_clipping_fields:
+  - normalized_ig
+  - clip_scale
+  - clip_lower
+  - clip_upper
+  - clipped
+  stop_continue_fields:
+  - R_C
+  - R_S1
+  - R_S2
+  - Delta_SC
+  - s_SC
+  - raw_A_SC
+  - A_SC
+  - sc_clear
+  - A_task
+  - A_search_old_shadow
+  - A_search_new
+  parser_diagnostic_fields:
+  - parser_status
+  - parser_error_type
+  - malformed_search_rate
+  - fallback_status
+  - trajectory_validity
+  - environment_failure_code
+  - search_action_span_valid
+  - search_prefix_valid
+  - ig_reward_eligible
+  - policy_credit_eligible
+  - terminal_answer_valid
+  - trajectory_system_valid
+optimizer:
+  name: adamw
+  learning_rate: 2.0e-07
+  betas:
+  - 0.9
+  - 0.999
+  epsilon: 1.0e-08
+  weight_decay: 0.0
+  max_grad_norm: 1.0
+scheduler:
+  name: constant_with_warmup
+  warmup_successful_updates: 10
+  total_successful_updates: 500
+  advance_on_skip: false
+candidate_pool:
+  initial_prompts: 64
+  refill_prompts: 32
+  max_prompts: 128
+  group_size: 16
+evaluation:
+  asynchronous: true
+  role: eval
+  batch_size: 1
+  retry_seconds: 300
+  minimum_free_memory_gib: 10
+  manifest_path: ${AETHERSEARCH_RUNTIME_ROOT}/full_search_r1_test_manifest.json
+  manifest_mode: full_validation
+  expected_validation_sha256: 30aa887b6d47e06e8c0f6f5307c88fe4e13461ac25a20ec0a5433ad7a4fe25dc
+  expected_row_count: 51713
+  expected_source_counts:
+    2wikimultihopqa: 12576
+    bamboogle: 125
+    hotpotqa: 7405
+    musique: 2417
+    nq: 3610
+    popqa: 14267
+    triviaqa: 11313
+  expected_manifest_sha256: a37096d3cab04dfee994318a7059e1151eef1a0df4eb444d6f8544f57ea65baa
+  batch_prompts: 32
+  do_sample: false
+  temperature: 0.0
+  sampling_top_p: 1.0
+  model_dtype: bfloat16
+  attention_backend: flash_attention_2
+  max_memory_fraction: 0.24
+formal:
+  total_successful_updates: 500
+  resume_from_successful_update: 0
+  fresh_start_required: true
+  actor_init_tree_sha256: a2cf15da06b06eb84a74182853f9c9a697aa0cce047ff34369b5fb737cdbd08f
+  reference_tree_sha256: a2cf15da06b06eb84a74182853f9c9a697aa0cce047ff34369b5fb737cdbd08f
+  tokenizer_sha256: 22a5d06ea8962e1236779430602bd1871519c4bd0debfaaa53827f252fcb9019
+  retriever_index_sha256: 69c98463fdb41fc08737d88513c597725f311c44f7ba6dca4b05d8c7c658d166
+  retriever_config_sha256: 151c3d85d30ca52b68a98b74ae86f5bbf99dc9c16c48e71b7474e40584190c22
+runtime_test:
+  force_refill_after_initial_pool: false
+algorithm_mode: answer_only_ragen2_mica_ig_v1_singleton_outcome
+mica:
+  gamma: 1.0
+  alpha: 0.5
+  normalization_scope: prompt_search_depth
+  singleton_fallback: normalized_terminal_outcome
+  cross_prompt_normalization: false
+  cross_depth_normalization: false
+  raw_ig_fallback: false
+  routed_outcome: false
+  role_gate: false
+  debug_answer_probes: false

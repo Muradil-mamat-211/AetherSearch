@@ -1,7 +1,7 @@
 absl-py==2.5.0
 accelerate==1.14.0
 # Editable install with no version control (agentic-rl-igpo-ragen2-a2tgpo==1.0.0)
--e /root/autodl-tmp/search-r1-workspace/projects/igpo_ragen2_a2tgpo_strict_onpolicy_v1
+-e <local-project-root>
 aiohappyeyeballs==2.7.1
 aiohttp==3.14.3
 aiohttp-cors==0.8.1
@@ -41,7 +41,7 @@ fastapi-cloud-cli==0.22.2
 fastar==0.11.0
 fastrlock==0.8.3
 filelock==3.29.0
-flash_attn @ file:///root/autodl-tmp/pip-wheelhouse/igpo-vllm011/flash_attn-2.8.1%2Bcu12torch2.8cxx11abiTRUE-cp312-cp312-linux_x86_64.whl#sha256=55331d797171973c8babf2b5e5fce5f78859b1cd298d54a136e8994147fe9e95
+flash_attn @ file:///<local-wheelhouse>/flash_attn-2.8.1%2Bcu12torch2.8cxx11abiTRUE-cp312-cp312-linux_x86_64.whl#sha256=55331d797171973c8babf2b5e5fce5f78859b1cd298d54a136e8994147fe9e95
 frozendict==2.4.7
 frozenlist==1.8.0
 fsspec==2026.4.0

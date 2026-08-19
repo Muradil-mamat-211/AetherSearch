@@ -70,7 +70,7 @@ class _PendingRetrieval:
 
 
 class AsyncHybridRetrieverClient:
-    """Bounded, pooled and micro-batched async client for the GPU0 service."""
+    """Bounded, pooled and micro-batched async client for the retriever role."""
 
     def __init__(
         self,

@@ -1,7 +1,7 @@
 extends: base.yaml
 
 paths:
-  runtime_root: /root/autodl-tmp/search-r1-workspace/projects/igpo_ragen2_a2tgpo_strict_onpolicy_v1/outputs/pilot_20_final
+  runtime_root: ${AETHERSEARCH_RUNTIME_ROOT}/pilot_20_final
 
 optimizer:
   name: adamw
@@ -60,8 +60,8 @@ exact_ig:
   numerical_gate_status: PASS
   numerical_gate_reason: structural_and_semantic_audit_pass_numeric_drift_is_telemetry
   structural_audit_status: PASS
-  structural_audit_path: /root/autodl-tmp/search-r1-workspace/projects/igpo_ragen2_a2tgpo_strict_onpolicy_v1/artifacts/exact_ig_fast_path_self_audit_20260730/audit_status.json
-  numerical_gate_path: /root/autodl-tmp/search-r1-workspace/projects/igpo_ragen2_a2tgpo_strict_onpolicy_v1/artifacts/exact_ig_fast_path_self_audit_20260730/audit_status.json
+  structural_audit_path: ${AETHERSEARCH_EXACT_IG_AUDIT_ROOT}/audit_status.json
+  numerical_gate_path: ${AETHERSEARCH_EXACT_IG_AUDIT_ROOT}/audit_status.json
   attention_backend: sdpa_math
   parameter_dtype: float32
   activation_dtype: float32
@@ -105,11 +105,11 @@ pilot:
 
 evaluation:
   asynchronous: true
-  physical_gpu: 0
+  role: eval
   batch_size: 1
   retry_seconds: 300
   minimum_free_memory_gib: 10
-  manifest_path: /root/autodl-tmp/search-r1-workspace/projects/igpo_ragen2_a2tgpo_strict_onpolicy_v1/artifacts/full_search_r1_test_manifest.json
+  manifest_path: ${AETHERSEARCH_RUNTIME_ROOT}/full_search_r1_test_manifest.json
   manifest_mode: full_validation
   expected_validation_sha256: 30aa887b6d47e06e8c0f6f5307c88fe4e13461ac25a20ec0a5433ad7a4fe25dc
   expected_row_count: 51713

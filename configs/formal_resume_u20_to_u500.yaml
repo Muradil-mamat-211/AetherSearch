@@ -1,7 +1,7 @@
 extends: pilot_20_final.yaml
 
 paths:
-  runtime_root: /root/autodl-tmp/search-r1-workspace/projects/igpo_ragen2_a2tgpo_strict_onpolicy_v1/outputs/formal_training
+  runtime_root: ${AETHERSEARCH_RUNTIME_ROOT}/formal_training
 
 # This run restores the scheduler state from Pilot Update 20. Keeping the
 # original two-update warmup in the constructor is required for exact state
@@ -44,7 +44,7 @@ checkpoint:
 
 evaluation:
   asynchronous: true
-  physical_gpu: 0
+  role: eval
   batch_size: 1
   retry_seconds: 300
   minimum_free_memory_gib: 10

@@ -6,7 +6,7 @@ project:
   name: igpo_ragen2_mica_ig_v1
 
 paths:
-  runtime_root: /root/autodl-tmp/search-r1-workspace/projects/igpo_ragen2_mica_ig_v1/outputs/formal_training
+  runtime_root: ${AETHERSEARCH_RUNTIME_ROOT}/formal_training
 
 # Reuse the active production host topology. These are infrastructure values;
 # they do not change the algorithm, optimizer, KL, rollout, or reduction.

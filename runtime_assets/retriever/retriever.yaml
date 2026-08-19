@@ -6,10 +6,10 @@ retrieval:
   bm25_top_n: 20
   dense_top_n: 20
   fusion_alpha: 0.5
-  corpus_path: /root/autodl-tmp/search-r1-workspace/data/wiki18_corpus/wiki-18.jsonl
-  bm25_index_path: /root/autodl-tmp/search-r1-workspace/data/wiki18_bm25/bm25
-  dense_index_path: /root/autodl-tmp/search-r1-workspace/data/nq_search/e5_Flat.index
-  query_encoder: /root/autodl-tmp/search-r1-workspace/models/e5-base-v2
+  corpus_path: ${AETHERSEARCH_CORPUS_PATH}
+  bm25_index_path: ${AETHERSEARCH_BM25_INDEX_PATH}
+  dense_index_path: ${AETHERSEARCH_DENSE_INDEX_PATH}
+  query_encoder: ${AETHERSEARCH_DENSE_ENCODER_PATH}
   query_encoder_name: e5
   query_max_length: 256
 scheduling:

@@ -24,4 +24,7 @@ FlashAttention wheel and the original editable project path.
 Strict environment reproduction therefore still requires a published
 container image or portable lock files plus CUDA/NCCL/JDK build details. The
 current public launcher selects the two interpreters with
-`AETHERSEARCH_RL_PYTHON` and `AETHERSEARCH_RETRIEVER_PYTHON`.
+`AETHERSEARCH_RL_PYTHON` and `AETHERSEARCH_RETRIEVER_PYTHON`. The same local
+file also selects `AETHERSEARCH_ASSET_MANIFEST` and
+`AETHERSEARCH_QUALIFICATION_MODE`; use `reference` for the official profile
+and `portable` for a user-defined hardware profile.
