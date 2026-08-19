@@ -91,7 +91,7 @@ rollout:
   frequency_penalty: 0.0
   max_model_tokens_per_turn: 500
 selection:
-  mode: answer_outcome_only_scaled_top_p
+  mode: answer_outcome_only_ragen2_paper_variance_top_p
   top_p_mass: 0.9
   include_zero: false
   selection_epsilon: 0.0
@@ -113,6 +113,8 @@ selection:
   min_selected: 32
   max_selected: 36
   signal: answer_outcome_only
+  health_gate_active_for_selection: false
+  scale_active_for_selection: false
 advantage:
   mode: mica_ig_v1
   search_task_mode: answer_only_ragen2_mica_ig_v1_singleton_outcome

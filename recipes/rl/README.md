@@ -69,9 +69,10 @@ runs the formal preflight, then starts the Retriever, asynchronous
 training-time evaluation worker, and three-rank RL runtime from the same
 resolved config.
 
-`train_4x48gb.yaml` is the only formally qualified training profile. A
-different server uses a user-owned hardware/runtime YAML and
-`qualification.mode: portable`; algorithm Python code is unchanged. The
-generic path is covered by config-only planning tests, including an 8-GPU
-fixture, but no alternate topology is claimed as formally trained or
-production-validated by this release.
+`train_4x48gb.yaml` is the only formally qualified training profile and uses
+the paper RAGEN-2 raw terminal-outcome variance selector. A different server
+uses a user-owned hardware/runtime YAML and `qualification.mode: portable`;
+algorithm Python code is unchanged. Generic non-reference layouts are covered
+only by CPU configuration-planning tests. That synthetic coverage does not
+establish GPU-memory fit, runtime compatibility, training stability,
+throughput, or production qualification.

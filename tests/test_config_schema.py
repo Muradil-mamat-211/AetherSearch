@@ -141,7 +141,9 @@ def test_resolved_config_locks_requested_topology_and_algorithm() -> None:
     assert schedule["fixed_eval_every_successful_updates"] == 20
     assert schedule["optimizer_family"] is None
     assert schedule["learning_rate"] is None
-    assert schedule["learner_micro_batch_size"] is None
+    # Capacity tuning is supplied by the explicitly composed hardware profile,
+    # not by configs/base.yaml.
+    assert schedule["learner_micro_batch_size"] == 6
     assert schedule["total_successful_updates"] is None
     smoke_schedule = config["runtime_smoke_schedule"]
     assert smoke_schedule["optimizer_family"] == "AdamW"

@@ -1,8 +1,10 @@
 <div align="center">
 
+<img src="assets/aethersearch-mark.svg" alt="AetherSearch monogram" width="130">
+
 # AetherSearch
 
-**Search-augmented post-training with SFT assets and reinforcement learning.**
+**✨ A 3B multi-turn search agent trained with full-trajectory SFT, DPO, and information-gain-guided Agentic RL.**
 
 [![Model](https://img.shields.io/badge/%F0%9F%A4%97%20Model-AetherSearch-yellow)](https://huggingface.co/muradil211/AetherSearch)
 [![SFT Data](https://img.shields.io/badge/%F0%9F%A4%97%20Data-AetherSearch%20SFT-yellow)](https://huggingface.co/datasets/muradil211/aethersearch_sft)
@@ -28,6 +30,8 @@
 
 ## Open Resources
 
+🔗 Models, datasets, and reproducibility inputs are linked directly below.
+
 | Resource | Link | Contents |
 |---|---|---|
 | 🤗 Model | [muradil211/AetherSearch](https://huggingface.co/muradil211/AetherSearch) | model weights, tokenizer, config, and model card |
@@ -43,6 +47,7 @@
 - [Evaluation Results](#evaluation-results)
 - [Agentic RL Method](#agentic-rl-method)
 - [Quick Start](#quick-start)
+- [Configuration Boundary](#configuration-boundary)
 - [Repository Layout](#repository-layout)
 - [Release Boundary](#release-boundary)
 
@@ -56,6 +61,8 @@ repository. Large data and model artifacts are hosted on Hugging Face.
 
 ## Training Pipeline
 
+🧭 The complete training lineage is SFT → DPO → Agentic RL.
+
 | Stage | Purpose | Primary locations |
 |---|---|---|
 | SFT | cold-start full-trajectory supervision | `sft_data/`, `sft_data/scripts/` |
@@ -63,6 +70,8 @@ repository. Large data and model artifacts are hosted on Hugging Face.
 | RL | search-augmented rollout and policy optimization | `src/agentic_rl/`, `scripts/`, `recipes/rl/` |
 
 ## Evaluation Results
+
+📊 Exact-match results across the released Search-R1 evaluation suites.
 
 | Model | NQ | TriviaQA | PopQA | HotpotQA | 2WikiMultiHopQA | Musique | Bamboogle | Overall / Avg. EM |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
@@ -72,24 +81,16 @@ repository. Large data and model artifacts are hosted on Hugging Face.
 
 ## Agentic RL Method
 
-> **Scope and provenance.** This section documents the public AetherSearch
+> 🧠 **Method scope.** This section documents the public AetherSearch
 > Agentic-RL recipe and the code path selected by
 > `answer_only_ragen2_mica_ig_v1_singleton_outcome`. The method is
 > **MICA-inspired**, but it is a project-specific adaptation rather than a
 > claim of verbatim reproduction of the original MICA algorithm.
 >
-> `RELEASE_RECIPE_SELECTION_MODE = answer_outcome_only_scaled_top_p`
->
-> `FINAL_MODEL_SELECTION_MODE = NOT PROVABLE FROM PUBLIC REPOSITORY`
->
-> `README_SELECTION_MODE = answer_outcome_only_scaled_top_p`
->
-> The first value is proven by
-> `recipes/rl/train_4x48gb.yaml` inheriting
-> `configs/formal_train_answer_only_ragen2_mica_ig_v1.yaml`. The
-> repository contains a separate paper-style selection config, but it does
-> not contain enough model/checkpoint provenance to prove which selection mode
-> produced the released final weights.
+> AetherSearch uses paper-style RAGEN-2 raw terminal-outcome sample variance
+> followed by cumulative raw-variance-mass Top-p filtering. Exact IG is
+> computed only after prompt selection and is used by MICA-IG for Search-turn
+> credit assignment, not for selecting prompts.
 
 ### 1. Overview
 
@@ -186,18 +187,19 @@ task reward is alias-aware token F1. Exact match is used by the separate
 deterministic sufficiency-probe path, which is disabled in this MICA V1
 configuration.
 
-### 3. Answer-only prompt selection
+### 3. Answer-only RAGEN-2 prompt filtering
 
-The public release recipe uses:
+The final recipe uses:
 
 ```text
-selection.mode   = answer_outcome_only_scaled_top_p
+selection.mode   = answer_outcome_only_ragen2_paper_variance_top_p
 selection.signal = answer_outcome_only
 top_p_mass       = 0.9
 ```
 
-Thus Exact IG is not a selection signal. The outcome channel is computed only
-from `\mathcal E_p^O`. Let `N_p = |\mathcal E_p^O|`:
+For every candidate prompt, AetherSearch samples `G` on-policy trajectories.
+Only outcome-eligible trajectories in `\mathcal E_p^O` enter the score. Let
+`N_p = |\mathcal E_p^O|`:
 
 ```math
 \bar O_p
@@ -207,85 +209,79 @@ from `\mathcal E_p^O`. Let `N_p = |\mathcal E_p^O|`:
 ```
 
 ```math
+\boxed{
 V_p^O
 =
 \frac{1}{N_p-1}
 \sum_{i\in\mathcal E_p^O}
-\left(O_{p,i}-\bar O_p\right)^2.
-```
-
-This is the within-prompt **sample variance**. The implementation returns
-zero when fewer than two eligible outcomes are available.
-
-The scaled release mode applies the channel noise floor and scale state:
-
-```math
-\widetilde V_p^O
-=
-\max\left(V_p^O-\delta_O,0\right),
-```
-
-```math
-S_p^O
-=
-\frac{\widetilde V_p^O}{s_O+\epsilon}.
-```
-
-Here `\delta_O` is the configured outcome noise floor
-(`1e-12`), `s_O` is the committed or provisional positive-median
-channel scale, and the selection-scale epsilon is `1e-12`. The scale
-is updated only through the channel-scale state; after initialization it
-follows the configured log-space EMA. The health gate can deactivate the
-channel, in which case its selection signal is zero.
-
-For Answer-only selection, the candidate-pool score is the active outcome
-signal (the code also divides by the active channel weight, which is
-irrelevant when there is only one channel):
-
-```math
-Q_p
-=
-\frac{
-\mathbf 1_{\mathrm{health\ active}}\,
-\alpha_O S_p^O
-}{
-\mathbf 1_{\mathrm{health\ active}}\,
-\alpha_O+\epsilon_{\mathrm{select}}
+\left(O_{p,i}-\bar O_p\right)^2
 }.
 ```
 
-The stable mass Top-p selector sorts positive scores in descending order
-(prompt ID breaks ties) and takes the shortest prefix satisfying:
+This is the within-prompt **sample variance** (`ddof = 1`), not standard
+deviation or population variance. The implementation returns zero when fewer
+than two eligible outcomes are available. High variance identifies prompts on
+which the current policy sometimes succeeds and sometimes fails, providing a
+lightweight group-relative signal-to-noise proxy.
+
+For intuition only:
+
+```text
+Prompt A outcomes: [1, 1, 1, 1]  -> variance = 0
+Prompt B outcomes: [0, 0, 0, 0]  -> variance = 0
+Prompt C outcomes: [1, 0, 1, 0]  -> variance > 0
+```
+
+Prompt C is prioritized because its within-group outcomes are distinguishable.
+The production outcome remains alias-aware token F1 and is not restricted to
+binary values.
+
+Prompts are ranked by descending raw variance:
 
 ```math
-\sum_{j=1}^{K^\star}Q_{\sigma(j)}
+V_{\sigma(1)}^O
 \ge
-\rho\sum_p Q_p,
+V_{\sigma(2)}^O
+\ge
+\cdots
+\ge
+V_{\sigma(P)}^O.
+```
+
+The selector keeps the smallest prefix whose cumulative raw-variance mass
+reaches `\rho` of the total mass:
+
+```math
+\boxed{
+K^\star
+=
+\min
+\left\{
+K:
+\sum_{j=1}^{K}V_{\sigma(j)}^O
+\ge
+\rho\sum_pV_p^O
+\right\},
 \qquad
-\rho=0.9.
+\rho=0.9
+}.
 ```
-
-Minimum/maximum selected-prompt counts, refill rounds, and capacity
-truncation are selector/runtime policies. They are not part of the MICA
-credit formula. The current inherited configuration uses a minimum of `32`,
-a target of `36`, a maximum of `36`, and a candidate-pool
-capacity of `128`.
-
-For comparison, the separate
-`configs/formal_train_answer_only_ragen2_paper_mica_ig_v1.yaml` selects
-with `answer_outcome_only_ragen2_paper_variance_top_p`. That mode uses
-the raw sample variance directly:
 
 ```math
-\sum_{j=1}^{K^\star}
-V_{\sigma(j)}^O
-\ge
-\rho\sum_pV_p^O,
+\mathcal P_{\mathrm{selected}}
+=
+\left\{\sigma(1),\ldots,\sigma(K^\star)\right\}.
 ```
 
-and explicitly disables scale normalization and the health gate for
-selection. It is a separate configuration boundary, not the mode proven for
-the public release recipe above.
+This means 90% of total **raw variance mass**, not the top 90% of prompts.
+Minimum/maximum prompt counts, refill rounds, and capacity truncation remain
+separate runtime policies.
+
+The final selector uses raw terminal-outcome variance only. It does not use
+Exact IG, MICA credit, standard deviation, noise-floor subtraction,
+channel-scale or median normalization, EMA scaling, health gating, or
+dual-channel weighting. Exact IG is computed only after selection for the
+retained prompt groups.
 
 ### 4. Exact information gain
 
@@ -864,10 +860,10 @@ Input:
 
 1. Score terminal outcomes.
 
-2. Answer-only prompt selection.
-   Use the release's verified selection mode:
-       answer_outcome_only_scaled_top_p
-   Select high-signal prompt groups from outcome dispersion.
+2. Paper RAGEN-2 prompt filtering.
+   Compute raw within-prompt terminal-outcome sample variance.
+   Rank prompts by raw variance and retain the shortest prefix
+   carrying at least 90% of total raw variance mass.
 
 3. Selected-only Exact IG.
    For every selected valid Search:
@@ -997,9 +993,8 @@ The source-of-truth mapping for the formulas above is:
 | Contract | Implementation |
 |---|---|
 | terminal outcome eligibility and scoring | `src/agentic_rl/outcome/workers.py`, `src/agentic_rl/outcome/token_f1.py` |
-| Answer-only selection, sample variance, scale, health gate, Top-p | `src/agentic_rl/selection/candidate_pool.py`, `src/agentic_rl/selection/prompt_variance.py`, `src/agentic_rl/selection/channel_scale.py`, `src/agentic_rl/selection/health_gate.py`, `src/agentic_rl/selection/top_p.py` |
-| release selection mode | `recipes/rl/train_4x48gb.yaml`, `configs/formal_train_answer_only_ragen2_mica_ig_v1.yaml` |
-| separate paper raw-variance mode | `configs/formal_train_answer_only_ragen2_paper_mica_ig_v1.yaml`, `src/agentic_rl/selection/paper_ragen2.py` |
+| paper RAGEN-2 sample variance and raw-variance-mass Top-p | `src/agentic_rl/selection/paper_ragen2.py`, `src/agentic_rl/selection/candidate_pool.py`, `src/agentic_rl/selection/prompt_variance.py`, `src/agentic_rl/selection/top_p.py` |
+| final release selection mode | `recipes/rl/train_4x48gb.yaml`, `configs/formal_train_answer_only_ragen2_paper_mica_ig_v1.yaml` |
 | Exact-IG target, alias policy, offsets, score span | `src/agentic_rl/exact_ig/target_schema.py` |
 | Exact-IG scorer, causal alignment, detached FP32 forward | `src/agentic_rl/exact_ig/vectorized_scorer.py`, `src/agentic_rl/exact_ig/precision_policy.py`, `src/agentic_rl/runtime/fsdp_worker.py` |
 | raw suffix, local/return normalization, singleton and missing-IG rules | `src/agentic_rl/advantage/mica_ig.py`, `src/agentic_rl/advantage/a2tgpo.py` |
@@ -1007,10 +1002,15 @@ The source-of-truth mapping for the formulas above is:
 | turn ratio and adaptive clipping | `src/agentic_rl/policy/turn_ratio.py`, `src/agentic_rl/policy/strict_onpolicy_loss.py` |
 | nested reduction and full-vocabulary reference KL | `src/agentic_rl/policy/reduction.py`, `src/agentic_rl/policy/reference_kl.py` |
 
+The repository retains earlier scaled-selection machinery for historical and
+experimental coverage, but it is not part of the final AetherSearch recipe.
 The public recipe, not this documentation, is the executable selection
 boundary. No GPU runtime test is implied by this README section.
 
 ## Quick Start
+
+🚀 The public entrypoint resolves one algorithm recipe, one asset manifest,
+and one explicit hardware/qualification profile.
 
 Install the local package inside an RL environment that already contains the
 compatible PyTorch, veRL, vLLM, Ray, and FlashAttention stack:
@@ -1039,6 +1039,12 @@ Validate the only released hardware recipe without starting services:
 bash scripts/train_rl.sh --dry-run
 ```
 
+The default recipe is an **Official Qualified** reproduction. It enables
+`configs/qualification/official_4x48gb_v1.yaml`, which checks the published
+4x48GB/48-CPU/360-GiB host contract and release asset checksums. Portable
+user-defined profiles use resource minimums and generic topology invariants
+instead of claiming official qualification.
+
 Start RL training on the validated four-GPU topology:
 
 ```bash
@@ -1051,6 +1057,30 @@ runtime. Every 20-update evaluation uses the complete 51,713-row Search-R1
 `test.parquet`. See `recipes/rl/README.md` for the configuration boundary.
 The resolved configuration is materialized inside each new run directory.
 
+## Configuration Boundary
+
+⚙️ Configuration answers five separate questions:
+
+| Layer | Responsibility |
+|---|---|
+| experiment | what algorithm and schedule to run |
+| assets | which model, data, tokenizer, and retriever artifacts to use |
+| hardware | which physical resources and role placement are available |
+| runtime | how Ray, veRL, FSDP2, and vLLM map onto those resources |
+| qualification | whether the configuration exactly matches the official reference |
+
+`environment/env.local.sh` supplies machine-local paths and Python
+interpreters. Asset checksums live in `configs/assets/`; hardware roles and
+Ray resources live in YAML. `TopologyPlan` is the runtime topology source of
+truth and derives visible CUDA IDs, learner world size, Ray bundles, and
+rollout DP/TP compatibility fields.
+
+For another server, provide a user-owned hardware/runtime YAML, set
+`qualification.mode: portable`, and keep the algorithm configuration
+unchanged. Generic non-reference layouts are covered by CPU-only synthetic
+configuration tests. That coverage does not establish GPU-memory fit, runtime
+compatibility, training stability, throughput, or production qualification.
+
 ## Repository Layout
 
 - `sft_data/`: SFT data release metadata and build scripts. The full SFT JSONL
@@ -1061,14 +1091,19 @@ The resolved configuration is materialized inside each new run directory.
   the RL training stage; see `scripts/README.md` for public versus historical
   entrypoints.
 - `recipes/rl/`: the single validated public RL recipe and its usage boundary.
-- `configs/`: base, formal, hardware, retriever, stage configs, and the Exact-IG
-  runtime gate;
+- `configs/`: algorithm, hardware/topology, asset-manifest, qualification,
+  retriever, stage configs, and the Exact-IG runtime gate;
   see `configs/README.md` for their portability boundary.
 - `runtime_assets/`: local runtime assets required by the training launcher.
 - `tests/`: unit and integration checks for the training code.
 - `environment/`: observed package versions and environment template.
 
 ## Release Boundary
+
+📦 The public repository covers SFT assets and metadata plus the complete
+Agentic-RL training layer. The DPO warm start is an externally supplied model
+checkpoint; the DPO trainer and preference-data generation pipeline are not
+part of this release.
 
 Large model weights, optimizer-state checkpoints, eval result bundles, report
 archives, and runtime snapshots are intentionally not committed to this GitHub

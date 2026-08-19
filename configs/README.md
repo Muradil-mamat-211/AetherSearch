@@ -5,6 +5,12 @@ The supported public entry configuration is
 this directory with `configs/hardware/4x48gb_3rl.yaml`, while all machine-local
 paths come from `environment/env.local.sh`.
 
+The public recipe selects
+`answer_outcome_only_ragen2_paper_variance_top_p`: paper-style RAGEN-2 raw
+terminal-outcome sample variance followed by cumulative raw-variance-mass
+Top-p. Earlier scaled-selection machinery remains available for historical
+tests and experiments, but is not part of the final AetherSearch recipe.
+
 `configs/base.yaml` and the inherited algorithm YAMLs are abstract layers; they
 intentionally do not select a GPU count, CUDA mapping, Ray capacity, rollout
 replica layout, GPU memory limit, or learner micro-batch size. Those values are

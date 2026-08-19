@@ -6,7 +6,7 @@ import yaml
 
 from agentic_rl.config import load_config
 
-from config_support import MICA_CONFIG
+from config_support import PAPER_MICA_CONFIG
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -15,9 +15,9 @@ ROOT = Path(__file__).resolve().parents[1]
 def test_public_recipe_is_u0_mica_and_full_eval() -> None:
     recipe_path = ROOT / "recipes" / "rl" / "train_4x48gb.yaml"
     recipe = yaml.safe_load(recipe_path.read_text(encoding="utf-8"))
-    config = load_config(MICA_CONFIG)
+    config = load_config(PAPER_MICA_CONFIG)
     assert recipe["extends"] == (
-        "../../configs/formal_train_answer_only_ragen2_mica_ig_v1.yaml"
+        "../../configs/formal_train_answer_only_ragen2_paper_mica_ig_v1.yaml"
     )
     assert config["formal"]["fresh_start_required"] is True
     assert config["formal"]["resume_from_successful_update"] == 0
@@ -25,6 +25,11 @@ def test_public_recipe_is_u0_mica_and_full_eval() -> None:
     assert config["advantage"]["search_task_mode"] == (
         "answer_only_ragen2_mica_ig_v1_singleton_outcome"
     )
+    assert config["selection"]["mode"] == (
+        "answer_outcome_only_ragen2_paper_variance_top_p"
+    )
+    assert config["selection"]["health_gate_active_for_selection"] is False
+    assert config["selection"]["scale_active_for_selection"] is False
     assert config["rollout"]["max_num_seqs"] == 64
     assert config["rollout"]["gpu_memory_utilization"] == 0.48
     assert config["formal_schedule"]["learner_micro_batch_size"] == 6

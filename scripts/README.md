@@ -6,6 +6,8 @@
 - `resume_rl.sh`: resume a checkpoint only after distributed restore
   validation.
 - `validate_static.sh`: lightweight source, shell, and configuration checks.
+- `validate_readme.py`: strict UTF-8, Markdown fence, link, anchor, table, and
+  repository-owned SVG checks for the root README.
 - `test_code.sh`: run selected tests, or all test modules in isolated
   processes when no paths are supplied.
 - `preflight_mica_formal.py`: validate the resolved RL contract before launch.
