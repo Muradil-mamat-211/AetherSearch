@@ -298,14 +298,10 @@ CANONICAL_ALIAS_POLICY = first
 canonical_answer = aliases[0]
 ```
 
-It is not alias-max. The fixed teacher-forced target is:
+It is not alias-max. The fixed teacher-forced target, denoted by `y_p`, is:
 
-```math
-y_p
-=
-\texttt{<think>The retrieved evidence now supports the answer.</think><answer>}
-+a_p^\star+
-\texttt{</answer>}.
+```text
+<think>The retrieved evidence now supports the answer.</think><answer>{canonical_answer}</answer>
 ```
 
 The target is tokenized once as the complete rendered string with
@@ -327,14 +323,12 @@ For a prefix `h`, the answer-body mean log-probability is:
 =
 \frac{1}{|B_p|}
 \sum_{j\in B_p}
-\log
-\pi_{\theta_{\mathrm{snap}}}
-\left(
-y_{p,j}\mid h,y_{p,<j}
-\right),
+\log \pi_{\theta_{\mathrm{snap}}}
+(y_{p,j}\mid h,y_{p,1:j-1}),
 ```
 
-where `\theta_{\mathrm{snap} }` is the rollout-start policy snapshot.
+where `\theta_{\mathrm{snap}}` is the rollout-start policy snapshot and
+`y_{p,1:j-1}` denotes the preceding target-token context.
 For the pre- and post-observation prefixes:
 
 ```math
@@ -693,9 +687,9 @@ gradients; old-policy log-probabilities are detached:
 \frac{1}{|\mathcal A_t|}
 \sum_{j\in\mathcal A_t}
 \left[
-\log\pi_\theta(x_j\mid x_{<j})
+\log\pi_\theta(x_j\mid x_{1:j-1})
 -
-\log\pi_{\mathrm{old}}(x_j\mid x_{<j})
+\log\pi_{\mathrm{old}}(x_j\mid x_{1:j-1})
 \right].
 ```
 
