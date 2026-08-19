@@ -61,11 +61,19 @@ evaluation:
   batch_size: 1
   retry_seconds: 300
   minimum_free_memory_gib: 10
-  manifest_path: /root/autodl-tmp/search-r1-workspace/projects/igpo_ragen2_a2tgpo_strict_onpolicy_v1/artifacts/fixed_eval_manifest.json
-  expected_manifest_sha256: d91fa19041c43cd44e878a044257b1e2bf9047b36b2a0e69019a29f6669a1709
-  manifest_seed: 20260724
-  nq_count: 300
-  hotpotqa_count: 300
+  manifest_path: /root/autodl-tmp/search-r1-workspace/projects/igpo_ragen2_a2tgpo_strict_onpolicy_v1/artifacts/full_search_r1_test_manifest.json
+  manifest_mode: full_validation
+  expected_validation_sha256: 30aa887b6d47e06e8c0f6f5307c88fe4e13461ac25a20ec0a5433ad7a4fe25dc
+  expected_row_count: 51713
+  expected_source_counts:
+    2wikimultihopqa: 12576
+    bamboogle: 125
+    hotpotqa: 7405
+    musique: 2417
+    nq: 3610
+    popqa: 14267
+    triviaqa: 11313
+  expected_manifest_sha256: a37096d3cab04dfee994318a7059e1151eef1a0df4eb444d6f8544f57ea65baa
   batch_prompts: 32
   do_sample: false
   temperature: 0.0

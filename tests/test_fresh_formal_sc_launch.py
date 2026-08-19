@@ -22,8 +22,10 @@ def test_fresh_formal_config_is_u0_probe_routed_cumulative_ig() -> None:
     assert config["rollout"]["gpu_memory_utilization"] == 0.46
     assert config["formal_schedule"]["learner_micro_batch_size"] == 8
     assert config["evaluation"]["expected_manifest_sha256"] == (
-        "d91fa19041c43cd44e878a044257b1e2bf9047b36b2a0e69019a29f6669a1709"
+        "a37096d3cab04dfee994318a7059e1151eef1a0df4eb444d6f8544f57ea65baa"
     )
+    assert config["evaluation"]["manifest_mode"] == "full_validation"
+    assert config["evaluation"]["expected_row_count"] == 51713
 
 
 def test_isolated_formal_entry_is_fresh_and_uses_mica_preflight() -> None:

@@ -16,6 +16,7 @@ done < <(find "${PROJECT_ROOT}/scripts" -maxdepth 1 -type f -name '*.sh' -print 
 
 for test_file in \
   test_public_config.py \
+  test_fixed_eval_full_manifest.py \
   test_config_schema.py \
   test_strict_one_step_contract.py; do
   PYTHONPATH="${PROJECT_ROOT}/src" "${RL_PYTHON}" -m pytest -q \

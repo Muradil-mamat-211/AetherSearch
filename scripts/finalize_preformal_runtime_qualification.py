@@ -476,10 +476,11 @@ def _u0_baseline(
     source_by_domain = {row["domain"]: row for row in source["metrics"]}
     eval_fields = (
         "manifest_path",
+        "manifest_mode",
+        "expected_validation_sha256",
         "expected_manifest_sha256",
-        "manifest_seed",
-        "nq_count",
-        "hotpotqa_count",
+        "expected_row_count",
+        "expected_source_counts",
         "batch_prompts",
         "do_sample",
         "temperature",
@@ -505,7 +506,17 @@ def _u0_baseline(
         and model_equal
         and manifest_equal
         and evaluator_semantics_equal
-        and set(source_by_domain) == {"nq", "hotpotqa", "overall"}
+        and set(source_by_domain)
+        == {
+            "2wikimultihopqa",
+            "bamboogle",
+            "hotpotqa",
+            "musique",
+            "nq",
+            "overall",
+            "popqa",
+            "triviaqa",
+        }
     )
     _require(passed, "The historical U0 baseline is not reusable")
     return {

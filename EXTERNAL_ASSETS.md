@@ -11,7 +11,9 @@ local locations in `environment/env.local.sh`.
 ## Training And Validation Data
 
 - Train data: `AETHERSEARCH_TRAIN_DATA`
-- Validation data: `AETHERSEARCH_VALIDATION_DATA`
+- Validation data: `AETHERSEARCH_VALIDATION_DATA`; download the complete
+  Search-R1 test parquet from
+  [muradil211/AetherSearch-Eval](https://huggingface.co/datasets/muradil211/AetherSearch-Eval)
 
 ## Retriever Assets
 

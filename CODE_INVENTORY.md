@@ -4,21 +4,21 @@ This inventory covers every non-ignored file in the AetherSearch GitHub
 release. Model weights, optimizer checkpoints, eval result bundles, report
 archives, and runtime snapshots are not included.
 
-Generated UTC: `2026-08-19T07:25:43Z`
+Generated UTC: `2026-08-19T08:09:22Z`
 
 ## Summary
 
-- `configs`: `32` files, `163845` bytes
-- `documentation`: `4` files, `11378` bytes
-- `environment`: `5` files, `11465` bytes
-- `recipes`: `2` files, `3170` bytes
+- `configs`: `20` files, `36777` bytes
+- `documentation`: `4` files, `11439` bytes
+- `environment`: `6` files, `13076` bytes
+- `recipes`: `2` files, `4158` bytes
 - `references`: `3` files, `55130` bytes
 - `repo_root`: `3` files, `1441` bytes
 - `runtime_assets`: `2` files, `28709` bytes
-- `scripts`: `91` files, `694865` bytes
+- `scripts`: `91` files, `694843` bytes
 - `sft_data`: `7` files, `17029` bytes
-- `src`: `84` files, `1248902` bytes
-- `tests`: `37` files, `308514` bytes
+- `src`: `84` files, `1251564` bytes
+- `tests`: `38` files, `311341` bytes
 - `third_party`: `5` files, `125893` bytes
 
 ## Files
@@ -27,26 +27,14 @@ Generated UTC: `2026-08-19T07:25:43Z`
 
 | path | bytes | sha256 |
 |---|---:|---|
-| `configs/README.md` | 691 | `0f4b17e623efc8058c5d8980dc7b6e7e9be1899f84d34ec463c4ef82fbec82ee` |
+| `configs/README.md` | 459 | `ae2646c76719dac7e4d60f9cc087bc316d3389cb957b5144404dbde17713a34f` |
 | `configs/base.yaml` | 7215 | `47b0a8cf16332e3a49fe2fc7b9471e7c050cc695d4dfa26e07877d272ac9900a` |
 | `configs/exact_ig.yaml` | 4275 | `949ca3d5ada0d442bb89bf91ad47aece7dacd6d46f3e514febf130c21a6951ba` |
 | `configs/forced_refill_96_test.yaml` | 84 | `41da07ebaf0143c99c123cc4f63dcba01fbbda5d1969402c6b0ab985f4b97427` |
-| `configs/formal_resolved/formal_resume_u040_to_u500_answer_ragen2_mica_ig_v1_g16_20260812_030537/launch_command.sh` | 654 | `5bcc26e468bf7c7b1093fd32fafe46686c821f641123d65d33ae51f404331701` |
-| `configs/formal_resolved/formal_resume_u040_to_u500_answer_ragen2_mica_ig_v1_g16_20260812_030537/resolved_config.yaml` | 17800 | `3d3e1da7428dd48195aa41210784dcdc445e7e649d9fd3b6c92f4c65dfbdecff` |
-| `configs/formal_resolved/formal_resume_u040_to_u500_answer_ragen2_mica_ig_v1_g16_20260812_030537/source_resolved_config.yaml` | 17729 | `416a319a19471eaea1049da44dd760551ed0faaec5ce4f8257e029e9b80fb37d` |
-| `configs/formal_resolved/formal_resume_u180_to_u500_answer_ragen2_mica_ig_v1_g16_20260813_004642/launch_command.sh` | 663 | `a26f04741d2c62df27cb4a26d177d104cef988a9c6481e43ae360a84c6bb6ac4` |
-| `configs/formal_resolved/formal_resume_u180_to_u500_answer_ragen2_mica_ig_v1_g16_20260813_004642/resolved_config.yaml` | 17801 | `e48864b90c27d03a755b24f479c7f6817b7ec43e9d36c996c3a88539f43db4c1` |
-| `configs/formal_resolved/formal_resume_u180_to_u500_answer_ragen2_mica_ig_v1_g16_20260813_004642/source_resolved_config.yaml` | 17801 | `367adf7875a5563178d89cffe906009ed82ea2b501146c9c3b69ac760b6b8a53` |
-| `configs/formal_resolved/formal_resume_u320_to_u500_answer_ragen2_mica_ig_v1_g16_20260814_183801/launch_command.sh` | 663 | `8b3c6da4ea0e934a47c8ebad4577d292425a54d08f5fa39335b73b2356bec7a5` |
-| `configs/formal_resolved/formal_resume_u320_to_u500_answer_ragen2_mica_ig_v1_g16_20260814_183801/resolved_config.yaml` | 18036 | `8336273d4f9529502198f687a4d5b9e193d6d289ce37452e7d73ce5ff8586491` |
-| `configs/formal_resolved/formal_resume_u320_to_u500_answer_ragen2_mica_ig_v1_g16_20260814_183801/source_resolved_config.yaml` | 17801 | `74e1e7816e1adb0f35f25b960f19d3cc00d3883cb6337a032b7f54be2fd55b51` |
-| `configs/formal_resolved/formal_u000_answer_ragen2_paper_mica_ig_v1_g16_20260811_130634/formal_train.yaml` | 233 | `96ce72b40d0bccbb6a8e5683d55db8fd78ddf0500958c88876e0f7cd17dca925` |
-| `configs/formal_resolved/formal_u000_answer_ragen2_paper_mica_ig_v1_g16_20260811_130634/launch_command.sh` | 451 | `c16153a8540bebb31af495bd8a0858f182334462c2bfe964e217fcdc80a960af` |
-| `configs/formal_resolved/formal_u000_answer_ragen2_paper_mica_ig_v1_g16_20260811_130634/resolved_config.yaml` | 17724 | `a25e21a79129add15938e1365804343b966220cf4c58e3adda236bab14d13681` |
 | `configs/formal_resume_u20_3rank.yaml` | 758 | `59aacb416b972e0b0e4925caf28cbde88b8499173e4a277be566d8789aa54d27` |
 | `configs/formal_resume_u20_3rank_48cpu.yaml` | 1340 | `5097c3c8f1100531874dfa36a3629212fc50213a9ad2f69fb2bde517216196c4` |
-| `configs/formal_resume_u20_to_u500.yaml` | 1774 | `72239de195b48935da947faaa94d3d6aa9665cb97080c36633718209e6b15748` |
-| `configs/formal_train.yaml` | 3116 | `bfcda634cebcace153f7fc494f487a5dd84fb94b72c0856ca370d325e352e154` |
+| `configs/formal_resume_u20_to_u500.yaml` | 1774 | `ce410c481c3dc1e91d4aea64e0cd2a225157d0e64d30f8c1b88d6657d8d5a1be` |
+| `configs/formal_train.yaml` | 3376 | `6d4e7799d04e5155c54822549bd23c7da2eb3fca49d6291680b134b8d39b5157` |
 | `configs/formal_train_answer_only_ragen2_mica_ig_v1.yaml` | 3146 | `a73a9e2796cf2a6aecd0c107a1b3c8fb981afdbff03044a230d89236565d22a4` |
 | `configs/formal_train_answer_only_ragen2_paper_mica_ig_v1.yaml` | 233 | `96ce72b40d0bccbb6a8e5683d55db8fd78ddf0500958c88876e0f7cd17dca925` |
 | `configs/formal_train_role_localized_gate.yaml` | 1528 | `5f8e41becdd7d05d2997e0be7622e6a3013ad19074d08d27f1ab4327bbafe552` |
@@ -54,7 +42,7 @@ Generated UTC: `2026-08-19T07:25:43Z`
 | `configs/hardware/4x48gb_3rl.yaml` | 1023 | `318421ae8a12a8896f7d454f92c741f26ca14fa742452cf14b4dade5abd93a5a` |
 | `configs/hardware_5x48gb.yaml` | 699 | `f8f3244b33245d41223f162fb04e958c4486400bebb01252539e626a1cf57b14` |
 | `configs/logging.yaml` | 1389 | `59e27ba62355340a12bc0cb5fce372b5cb42f8722aa9d6a339c6b28f8e6d26a5` |
-| `configs/pilot_20_final.yaml` | 4399 | `a8d1b07c35d82f9d56a65209bfe7ce81719f467c3da2bfa8ab27fa75659a9f4c` |
+| `configs/pilot_20_final.yaml` | 4659 | `e4ddb59849dcacc7260693b5b0d59f98a668027605f48473079aa65af70b9da2` |
 | `configs/retriever_external.yaml` | 1080 | `742b087010af3154be6adc70ed44a6a6eb62168c15c883623da4a9f92bae2ffc` |
 | `configs/update_stages.yaml` | 1194 | `5a4c9603e68898708d1d4ed82912ee9892ab3c584e8693842437c684f65ad580` |
 | `configs/verl_agent_loop.yaml` | 452 | `4215f59b7472b24c573f313f18d907c78aacf59bdbfab8530ad3b37d82cf59e8` |
@@ -64,18 +52,19 @@ Generated UTC: `2026-08-19T07:25:43Z`
 
 | path | bytes | sha256 |
 |---|---:|---|
-| `EXTERNAL_ASSETS.md` | 1084 | `06f0bf6a6845a7223eb5fa01602dcf92f90e3f3ec33e3240978ad9e8583354d8` |
-| `README.md` | 4802 | `ee523fb5b2a3bd4e5157c41cdb982bc2921d5b9a4900987a7e8e8105ad1e4392` |
+| `EXTERNAL_ASSETS.md` | 1232 | `1e81e6002e0b035b2d257ab6c35fe7a355af78d8c88a8e3cbdfd774b637caf87` |
+| `README.md` | 5288 | `38fa2da48c0cd7c3e030b24f0b731812530e0f6959fcd5fc50b82f732dfb9814` |
 | `THIRD_PARTY_NOTICES.md` | 4092 | `09c4e8e0e4c97f56361c9bd97959398b21a9ff27f0497e9ca7a6cf0cefc3d605` |
-| `TRAINING_REPRODUCTION.md` | 1400 | `ad38126e1bf5265a0a94bf2a17909f0f2ee3c119ce2120b846f0a239ac9d778d` |
+| `TRAINING_REPRODUCTION.md` | 827 | `0f459c3f741801007d21d4d505039486efcfc67fd1affc71cdb179dbc81d06c2` |
 
 ### environment
 
 | path | bytes | sha256 |
 |---|---:|---|
-| `environment/RUNTIME_VERSIONS.md` | 475 | `6aa7fd7a11d47b8d78f5714433e6a2f46e4b78d89c706e8ce641cc8c1de7a0ca` |
-| `environment/env.template.sh` | 2393 | `347db23489ad964e192e70250b1e05e5f6507eae2d7192d002a336f734c400da` |
-| `environment/requirements-core-observed.txt` | 312 | `9873346cde73b88f492bed5bc7088011b27c71eb137b3a8f5ef402ff14277324` |
+| `environment/README.md` | 1423 | `d4003b30caabae7ed408ee6688835da9c95ac1f09204d5067c83bbefcb686655` |
+| `environment/RUNTIME_VERSIONS.md` | 522 | `e52951f548ed1f590b7bc391b07cc5243ae5a9a7708cbe69c5bac811cc4b2d97` |
+| `environment/env.template.sh` | 2458 | `c121016cec7736984e5e20749963d7726223eaa1620053e1323f76f9ca8aca45` |
+| `environment/requirements-core-observed.txt` | 388 | `e1b7c50395c6326deea04daefea70257a19370235c477559952f425ea96c4338` |
 | `environment/retriever_pip_freeze.txt` | 3812 | `3d5f5a804cfcc3d31b72b10a81a44a40cd99808282d620106b363b3bb9dc84ad` |
 | `environment/rl_pip_freeze.txt` | 4473 | `f1ffe7736d219a7fbe4b57456e0d8200ca8d5eb9f1b185a0d8fb5e4dafbd8c0d` |
 
@@ -83,8 +72,8 @@ Generated UTC: `2026-08-19T07:25:43Z`
 
 | path | bytes | sha256 |
 |---|---:|---|
-| `recipes/rl/README.md` | 1667 | `9208bc27a5252944a2828d1e4e7806292253d6c4c030b4ebbe78cbbe6bc9800d` |
-| `recipes/rl/train_4x48gb.yaml` | 1503 | `5f56d5ce132691b2b2e9fdd4dc736706864d2f093f866713975985b01a199e68` |
+| `recipes/rl/README.md` | 2238 | `ef00c8443f5d2bbcc5a4441ef719590d8c92389a6210a4868ab725dfc3f3781d` |
+| `recipes/rl/train_4x48gb.yaml` | 1920 | `70bef8028c391a19d423c68557c27a6f297357244204fef8b5ca1832e6aca71a` |
 
 ### references
 
@@ -144,7 +133,7 @@ Generated UTC: `2026-08-19T07:25:43Z`
 | `scripts/export_exact_ig_batch_budget_tests_v4.py` | 10252 | `0d61a4483a153f474f872af7c48dc6314e7ce9ffca9e8acfea5545679116198a` |
 | `scripts/export_update_metrics_u1_to_current.py` | 9585 | `57a3283020f03d0c6675b21f77ba18233f988b3ade9d2fcdc57681bd564a19a2` |
 | `scripts/finalize_final_pretrain.py` | 25952 | `479963eb2bd44b3cc1902d898ad66fcadd9b65e0a51262d7555770daf6437068` |
-| `scripts/finalize_preformal_runtime_qualification.py` | 30403 | `ff8bb0c99f9af7192b32d6a844f9a16645bf401e7222a48fc1b0506b8d7d07ff` |
+| `scripts/finalize_preformal_runtime_qualification.py` | 30638 | `2fe94e67f97789ed5dbf818f609b9b47ebf373cbc888145f871aebc2759077fa` |
 | `scripts/finalize_role_localized_gate_config.py` | 2806 | `a249b879d931117c98998a2832d4c3d1537bfb37f451c825e7b486f66c91f7f5` |
 | `scripts/formal_training_watchdog.sh` | 767 | `b523d926e0d1d0a50d6bd9d5026ba5264c503f647f4cb724f06be8be123ee479` |
 | `scripts/launch_retriever.sh` | 3411 | `e5b709d0f9ec7f21964795506faea818305d35713ecda71e6bec870a1bca38ab` |
@@ -152,8 +141,8 @@ Generated UTC: `2026-08-19T07:25:43Z`
 | `scripts/launch_rl_gpu1_4.sh` | 581 | `8e31cfe65f0913e4b11d91964a5cbcefc19766fa186aa5b4c6d3a5279cb6982f` |
 | `scripts/launch_train.sh` | 151 | `25d8ced298d391f49158e1af29d8bd23ac08e99e3d78c5434237badfe4571b9e` |
 | `scripts/monitor_formal_training_10min.sh` | 857 | `8bae99da164f9351ed5295c989449e598dc0a2b321b5f3126e0a8d759f7e07b8` |
-| `scripts/preflight_fresh_formal_sc.py` | 10971 | `d8dbc543a69c1593ffc99620a5578977086acc66eadd22c019212bda643f37c8` |
-| `scripts/preflight_mica_formal.py` | 7277 | `4c93e6d07905700076e7e049b93d81133c99d37d362483ad5851adb63cb706d2` |
+| `scripts/preflight_fresh_formal_sc.py` | 10824 | `2b769cc1c8e0d9373744e2973556a9d250582674623de1e1f88d371079558b34` |
+| `scripts/preflight_mica_formal.py` | 7130 | `25abb6ff223e8df572cbde78972108acc96a1d7ae666a431823505118a5608d6` |
 | `scripts/prepare_formal_resume_from_checkpoint.py` | 8404 | `b7784b402421b5899aa832618044102be20782cefa593437f542e916acff962b` |
 | `scripts/prepare_formal_resume_run.py` | 11837 | `d609bce7145e9b28cb577980b0d2e968713e60c2e508f2c594fd06a452121aac` |
 | `scripts/prepare_verified_resume_recovery.py` | 13841 | `3a815e65163dfeb8ab6525806720118c5ea26f378e4d12a0dac979211917063c` |
@@ -202,7 +191,7 @@ Generated UTC: `2026-08-19T07:25:43Z`
 | `scripts/validate_exact_ig_official_alignment_v3.py` | 35425 | `68ad98f686663ec2ff22ee3959e487c0d50b3231dc28b309ea9229ac73e62446` |
 | `scripts/validate_resume_3rank.sh` | 1197 | `46765340fe500a36ad995f52b7b25acd00b86750506233adf4a4b0256019b160` |
 | `scripts/validate_resume_3rank_48cpu.sh` | 1209 | `0574dd2ca060a368d49eb0e185fd6eed5a4516d39e1307fa96fa581e0f61e45c` |
-| `scripts/validate_static.sh` | 745 | `cfad6c21c8784ccac8909f295a8908d1099796a6bce87f2e40f4ebbdddedf90a` |
+| `scripts/validate_static.sh` | 782 | `9359809c99235e87ec09262075016fe57773e6b1652e541aa00d9acde0efe41b` |
 | `scripts/verify_checkpoint_readonly.py` | 2659 | `c8af6683b6f6e09e96fa91c16cf679706b4673d947e5437428239d542e6ad9d2` |
 
 ### sft_data
@@ -231,7 +220,7 @@ Generated UTC: `2026-08-19T07:25:43Z`
 | `src/agentic_rl/checkpoint/atomic_commit.py` | 8441 | `68e487e5f7a0ec53f74f26a052d3bfc480755ea38872a06d73d9f8cde582f466` |
 | `src/agentic_rl/checkpoint/fsdp2_dcp.py` | 2494 | `48cd9009ab11f3a6a202c3bcd16a9aa128650f577af3a3174cf6a8a0bd4fb5a7` |
 | `src/agentic_rl/checkpoint/state_schema.py` | 2307 | `8d0660762daf08cdb1ea14a7077215d86abb1456f335ac2396bb6ea2b47a2303` |
-| `src/agentic_rl/config.py` | 45441 | `e4e507e64ee3485d826a67fe20380f967ca826c90a1a2c99a7fbd51866253c2c` |
+| `src/agentic_rl/config.py` | 47007 | `f84f8c95864a696c46efd8665d765f9f04698f49fcf32bf855a9e73e7cb2ad85` |
 | `src/agentic_rl/controller/__init__.py` | 360 | `e90831d047994fb4bf3b7231d1451b92576b71da06b0bc82cb534cc3655485d6` |
 | `src/agentic_rl/controller/attempt_state.py` | 2233 | `1da533ef6c2eb4c62a1a40dc971d66060d30db0a7a39ac1f1d0580ee51db6da7` |
 | `src/agentic_rl/controller/dataset_view.py` | 7776 | `cb127681e3f3e53274c10bbfc199cde7818d2568bb15d5f34955b1401e6225d4` |
@@ -276,10 +265,10 @@ Generated UTC: `2026-08-19T07:25:43Z`
 | `src/agentic_rl/rollout/trajectory_schema.py` | 25751 | `885677df7d0ac2e7b0341594f23b9baccb55a12204425f6e0ccd745ff61e34c3` |
 | `src/agentic_rl/rollout/vllm_manager.py` | 2624 | `497a365e83eae4ffb48319db313da983ccd7c1e72d918238c6927f001f230ee9` |
 | `src/agentic_rl/runtime/__init__.py` | 725 | `831726e72cf248b236926bddd60917d4302927f6bf42a06fe1b1fd3be017d7bf` |
-| `src/agentic_rl/runtime/async_eval_worker.py` | 19079 | `b5ef930bf12d0eedbc4c92111ba3a08eab30a9b634ff512adf5ec04fe09876bb` |
+| `src/agentic_rl/runtime/async_eval_worker.py` | 18932 | `268eaab4648c91a98089c5aaf587d39b1a483b8667dc696d33e25c910e6f58f3` |
 | `src/agentic_rl/runtime/capped_vllm.py` | 29560 | `29da4d78680a80e75629c549ce1d075c546f84aac74ad4500de020b5a56856ee` |
 | `src/agentic_rl/runtime/entrypoint.py` | 491 | `b89c28df1a5f9ac848cb3b77487efe614d680b1f908a5ffc6d0bc4b0347bb68d` |
-| `src/agentic_rl/runtime/fixed_eval.py` | 4919 | `fa1b8ff6591e1c47d0dc6ebb38ab4e2694378beb6362d74e2930973c280dd9e1` |
+| `src/agentic_rl/runtime/fixed_eval.py` | 6321 | `bdae94ea5243746f826c75930637eb01353df75a127ddb281f5886a6f95b308c` |
 | `src/agentic_rl/runtime/formal_monitor.py` | 24244 | `b882461908033497e172f154b1724a5dbdeb2375dc2a64618bf78b7aaf119947` |
 | `src/agentic_rl/runtime/formal_state.py` | 6516 | `0b3ed21fff94fa9274074eb3097ebfe80116213b518d049533d32728f7368c37` |
 | `src/agentic_rl/runtime/formal_watchdog.py` | 9164 | `f052ef2332c99fcfaf2727a76022638ea163ee797c28c2f49e220718d549921c` |
@@ -292,7 +281,7 @@ Generated UTC: `2026-08-19T07:25:43Z`
 | `src/agentic_rl/runtime/search_agent_loop.py` | 31492 | `084008de78ed0a8da53d22a5d6a83178c2ff1088778ac444032d902f0a954a0f` |
 | `src/agentic_rl/runtime/stop_branching.py` | 57123 | `dbc79ac154d6882b2328001a4f02d50182f56ca1f676776712331b0bc889591b` |
 | `src/agentic_rl/runtime/verl_config.py` | 14501 | `8680940c59198c9601190ca77a63a80748619ac6546a8dee45800b87be43a463` |
-| `src/agentic_rl/runtime/verl_runtime_adapter.py` | 309933 | `b0d3a21da9dbd67356dfe5dc69c95d11340601a0a1a07ee9208e7681050cc916` |
+| `src/agentic_rl/runtime/verl_runtime_adapter.py` | 309774 | `d9f3de53662eb5de0a00d1378c6876414eceea77edf064de6938c2e255d5085e` |
 | `src/agentic_rl/selection/__init__.py` | 931 | `bdb9c618bd263a4ffc39a2da3f8f176ccb422c0319731cbd375caafed94165c9` |
 | `src/agentic_rl/selection/candidate_pool.py` | 15734 | `c88b723b6c14fa538989017d613961231ef9d9d75d214fd6674211c3b2aab192` |
 | `src/agentic_rl/selection/channel_scale.py` | 6344 | `b869bc5b269be447465e9c8a12532593bdfee45280b77d5a091dc58d450a2991` |
@@ -322,9 +311,10 @@ Generated UTC: `2026-08-19T07:25:43Z`
 | `tests/test_exact_ig_v4_fp32.py` | 10101 | `031a22082c511526f83a9a3e23a8c4963d6c3c8f23906b37f674981b3301cff6` |
 | `tests/test_final_asearch_production_contract.py` | 9220 | `86c732d393bfb88e64187e6ef543973d5745fb972cee8bef0a6831a5eca90e2a` |
 | `tests/test_final_pretrain_controls.py` | 3686 | `d3626e0e165caf02820c199711c75f9c89730cd71c072a4489227d8f53419228` |
+| `tests/test_fixed_eval_full_manifest.py` | 2694 | `d672b557a60dfc4c890942cff402f3d7c5f1387b77a3d827937c83d04402e6cd` |
 | `tests/test_formal_resume_runtime.py` | 13299 | `85c9e3391aae5182de79a9269668af55e1e3425fa3103d065ae1702b2a438175` |
 | `tests/test_format_advantage.py` | 4810 | `efaff86d140521e142b2c003022d9ca7c16940692099f1415ae496fb00822c06` |
-| `tests/test_fresh_formal_sc_launch.py` | 2280 | `6b9ab0b29349371ae955af1313fc0b516d0c77eae6a400ac35bce8300f3e50a8` |
+| `tests/test_fresh_formal_sc_launch.py` | 2413 | `ec599d0e77ea3062a5bed547f0d3b09570717967722c9405af9286bb87c31a6e` |
 | `tests/test_igpo_f1_parity.py` | 1651 | `d2abb6cd8637921af94e1529d8dcf3c9607abb4d6777c0453a17c5d46f53f4fa` |
 | `tests/test_mica_ig_v1.py` | 10622 | `66a9f40d6b553fa438955808a5ec409a4d60c09f338733d537cb1f3aec3f37ce` |
 | `tests/test_paper_ragen2_selection.py` | 8483 | `ba929267ec2545abd659c1798b4ea6cb1c25b03648715e2f4f75f9550e545f1e` |

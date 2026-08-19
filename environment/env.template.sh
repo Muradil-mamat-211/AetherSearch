@@ -7,8 +7,9 @@ AETHERSEARCH_ENV_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 export AETHERSEARCH_PROJECT_ROOT=${AETHERSEARCH_PROJECT_ROOT:-$(dirname "${AETHERSEARCH_ENV_DIR}")}
 export AETHERSEARCH_WORKSPACE=${AETHERSEARCH_WORKSPACE:-/path/to/aethersearch-workspace}
 
-# Python environments. The RL environment contains PyTorch, veRL, vLLM, Ray,
-# and this package; the retriever environment contains FAISS GPU and Pyserini.
+# The RL interpreter is shared by the Ray controller, vLLM rollout engine, and
+# FSDP2 training/reference engines. Retriever uses a separate FAISS/Pyserini
+# interpreter. See environment/README.md for the exact boundary.
 export AETHERSEARCH_RL_PYTHON=${AETHERSEARCH_RL_PYTHON:-/path/to/rl-env/bin/python}
 export AETHERSEARCH_RETRIEVER_PYTHON=${AETHERSEARCH_RETRIEVER_PYTHON:-/path/to/retriever-env/bin/python}
 export AETHERSEARCH_ENV_SCRIPT=${AETHERSEARCH_ENV_SCRIPT:-${BASH_SOURCE[0]}}

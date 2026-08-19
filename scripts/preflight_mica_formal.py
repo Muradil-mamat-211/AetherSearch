@@ -12,7 +12,7 @@ from agentic_rl.advantage import (
 )
 from agentic_rl.config import load_config
 from agentic_rl.controller.dataset_view import DeterministicNQHotpotLogicalView
-from agentic_rl.runtime.fixed_eval import create_or_validate_eval_manifest
+from agentic_rl.runtime.fixed_eval import create_or_validate_eval_manifest_from_config
 from agentic_rl.runtime.resource_guard import validate_runtime_resource_budget
 from agentic_rl.runtime.verl_config import assert_formal_hyperparameters_approved
 from agentic_rl.runtime.verl_runtime_adapter import _sha256_file, _sha256_tree
@@ -126,12 +126,9 @@ def run_preflight(config_path: Path) -> dict[str, Any]:
         ),
     )
     evaluation = config["evaluation"]
-    manifest = create_or_validate_eval_manifest(
+    manifest = create_or_validate_eval_manifest_from_config(
         validation_path=paths["validation_data"],
-        manifest_path=evaluation["manifest_path"],
-        seed=int(evaluation["manifest_seed"]),
-        nq_count=int(evaluation["nq_count"]),
-        hotpotqa_count=int(evaluation["hotpotqa_count"]),
+        evaluation=evaluation,
     )
     _require(
         manifest["manifest_sha256"] == evaluation["expected_manifest_sha256"],

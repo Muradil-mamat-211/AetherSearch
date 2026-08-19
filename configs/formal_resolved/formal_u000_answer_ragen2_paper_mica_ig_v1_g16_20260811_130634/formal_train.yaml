@@ -1,7 +1,0 @@
-extends: formal_train_answer_only_ragen2_mica_ig_v1.yaml
-
-selection:
-  mode: answer_outcome_only_ragen2_paper_variance_top_p
-  signal: answer_outcome_only
-  health_gate_active_for_selection: false
-  scale_active_for_selection: false

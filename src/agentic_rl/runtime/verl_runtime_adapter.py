@@ -104,7 +104,7 @@ from agentic_rl.selection.candidate_pool import (
 from agentic_rl.selection.channel_scale import ChannelScaleState
 
 from .ray_topology import RuntimeRayTopology
-from .fixed_eval import create_or_validate_eval_manifest, load_eval_rows
+from .fixed_eval import create_or_validate_eval_manifest_from_config, load_eval_rows
 from .formal_state import atomic_write_json, atomic_write_text, enqueue_eval
 from .pretrain_controls import exercise_forced_skip_transaction
 from .resource_guard import (
@@ -1215,12 +1215,9 @@ class VerlAttemptRuntimeAdapter:
 
     def _fixed_eval_manifest(self) -> dict[str, Any]:
         evaluation = self.config["evaluation"]
-        return create_or_validate_eval_manifest(
+        return create_or_validate_eval_manifest_from_config(
             validation_path=self.config["paths"]["validation_data"],
-            manifest_path=evaluation["manifest_path"],
-            seed=int(evaluation["manifest_seed"]),
-            nq_count=int(evaluation["nq_count"]),
-            hotpotqa_count=int(evaluation["hotpotqa_count"]),
+            evaluation=evaluation,
         )
 
     def _run_fixed_eval(

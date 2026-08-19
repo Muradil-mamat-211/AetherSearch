@@ -153,6 +153,43 @@ def validate_config(config: Mapping[str, Any]) -> None:
     exact_ig = config["exact_ig"]
     retriever = config["retriever"]
     data = config["data"]
+    evaluation = config.get("evaluation")
+
+    if evaluation is not None:
+        manifest_mode = str(evaluation.get("manifest_mode", "full_validation"))
+        if manifest_mode != "full_validation":
+            raise ConfigError(
+                "evaluation.manifest_mode must be full_validation"
+            )
+        expected_row_count = int(evaluation.get("expected_row_count", 0))
+        expected_source_counts = evaluation.get("expected_source_counts")
+        if expected_row_count < 1:
+            raise ConfigError(
+                "Full validation requires evaluation.expected_row_count"
+            )
+        if not isinstance(expected_source_counts, Mapping):
+            raise ConfigError(
+                "Full validation requires evaluation.expected_source_counts"
+            )
+        normalized_counts = {
+            str(key).lower(): int(value)
+            for key, value in expected_source_counts.items()
+        }
+        if any(value < 1 for value in normalized_counts.values()):
+            raise ConfigError(
+                "Full-validation dataset counts must be positive"
+            )
+        if sum(normalized_counts.values()) != expected_row_count:
+            raise ConfigError(
+                "Full-validation dataset counts do not match row count"
+            )
+        for key in (
+            "expected_validation_sha256",
+            "expected_manifest_sha256",
+        ):
+            value = str(evaluation.get(key, ""))
+            if len(value) != 64:
+                raise ConfigError(f"evaluation.{key} must be SHA-256")
 
     _require_equal(hardware["retriever_physical_gpu"], 0, "hardware.retriever_physical_gpu")
     migration_mode = bool(hardware.get("allow_world_size_change_on_resume", False))

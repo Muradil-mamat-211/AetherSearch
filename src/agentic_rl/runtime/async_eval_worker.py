@@ -21,7 +21,7 @@ from agentic_rl.outcome.workers import score_trajectory_outcome
 from agentic_rl.retriever.client import HybridRetrieverClient
 from agentic_rl.retriever.health import query_health
 
-from .fixed_eval import create_or_validate_eval_manifest, load_eval_rows
+from .fixed_eval import create_or_validate_eval_manifest_from_config, load_eval_rows
 from .formal_state import (
     append_jsonl,
     atomic_write_json,
@@ -311,12 +311,9 @@ def _run_task(
         low_cpu_mem_usage=True,
     ).to("cuda")
     model.eval()
-    manifest = create_or_validate_eval_manifest(
+    manifest = create_or_validate_eval_manifest_from_config(
         validation_path=config["paths"]["validation_data"],
-        manifest_path=evaluation["manifest_path"],
-        seed=int(evaluation["manifest_seed"]),
-        nq_count=int(evaluation["nq_count"]),
-        hotpotqa_count=int(evaluation["hotpotqa_count"]),
+        evaluation=evaluation,
     )
     if manifest["manifest_sha256"] != str(evaluation["expected_manifest_sha256"]):
         raise RuntimeError("Fixed Eval manifest SHA-256 differs from Pilot")

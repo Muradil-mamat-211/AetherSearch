@@ -5,6 +5,7 @@ RL/training environment used for the released run:
 ```text
 python 3.12.13
 torch 2.8.0+cu128
+FSDP2 torch.distributed (bundled with PyTorch)
 ray 2.51.2
 transformers 4.57.1
 vllm 0.11.0

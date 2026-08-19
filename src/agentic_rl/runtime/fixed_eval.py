@@ -5,7 +5,6 @@ import json
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
-import numpy as np
 import pandas as pd
 
 from agentic_rl.controller.dataset_view import (
@@ -39,72 +38,85 @@ def create_or_validate_eval_manifest(
     *,
     validation_path: str | Path,
     manifest_path: str | Path,
-    seed: int,
-    nq_count: int,
-    hotpotqa_count: int,
+    manifest_mode: str = "full_validation",
+    expected_validation_sha256: str | None = None,
+    expected_row_count: int | None = None,
+    expected_source_counts: Mapping[str, int] | None = None,
 ) -> dict[str, Any]:
     source = Path(validation_path).resolve()
     destination = Path(manifest_path).resolve()
     source_sha256 = _sha256_file(source)
+    mode = str(manifest_mode)
+    if mode != "full_validation":
+        raise RuntimeError("Fixed evaluation requires full_validation mode")
+    if (
+        expected_validation_sha256 is not None
+        and source_sha256 != str(expected_validation_sha256)
+    ):
+        raise RuntimeError("Fixed-eval source parquet SHA-256 changed")
+
+    frame = pd.read_parquet(source, columns=["id", "data_source"])
+    frame = frame.reset_index(drop=True)
+    source_counts = {
+        str(key): int(value)
+        for key, value in frame["data_source"]
+        .astype(str)
+        .str.lower()
+        .value_counts()
+        .sort_index()
+        .items()
+    }
+    normalized_expected_counts = (
+        {
+            str(key).lower(): int(value)
+            for key, value in expected_source_counts.items()
+        }
+        if expected_source_counts is not None
+        else None
+    )
+    if expected_row_count is not None and len(frame) != int(expected_row_count):
+        raise RuntimeError("Fixed-eval source parquet row count changed")
+    if (
+        normalized_expected_counts is not None
+        and source_counts != normalized_expected_counts
+    ):
+        raise RuntimeError("Fixed-eval source dataset counts changed")
+
+    selected = [
+        {
+            "source_index": int(source_index),
+            "id": str(row.id),
+            "data_source": str(row.data_source),
+        }
+        for source_index, row in enumerate(frame.itertuples(index=False))
+    ]
+
+    expected_manifest_sha256 = _manifest_digest(selected)
     if destination.is_file():
         payload = json.loads(destination.read_text(encoding="utf-8"))
         if payload["validation_path"] != str(source):
             raise RuntimeError("Fixed-eval validation path changed")
         if payload["validation_sha256"] != source_sha256:
             raise RuntimeError("Fixed-eval source parquet changed")
-        if int(payload["seed"]) != int(seed):
-            raise RuntimeError("Fixed-eval seed changed")
-        if len(payload["rows"]) != int(nq_count) + int(hotpotqa_count):
+        if str(payload.get("manifest_mode")) != mode:
+            raise RuntimeError("Fixed-eval manifest mode changed")
+        if len(payload["rows"]) != len(selected):
             raise RuntimeError("Fixed-eval cardinality changed")
         if _manifest_digest(payload["rows"]) != payload["manifest_sha256"]:
             raise RuntimeError("Fixed-eval manifest identity changed")
+        if payload["manifest_sha256"] != expected_manifest_sha256:
+            raise RuntimeError("Fixed-eval manifest rows changed")
+        if payload["rows"] != selected:
+            raise RuntimeError("Fixed-eval manifest does not match source parquet")
         return payload
-
-    frame = pd.read_parquet(
-        source,
-        columns=["id", "data_source"],
-    )
-    rng = np.random.default_rng(int(seed))
-    selected: list[dict[str, Any]] = []
-    for data_source, count in (
-        ("nq", int(nq_count)),
-        ("hotpotqa", int(hotpotqa_count)),
-    ):
-        indices = frame.index[
-            frame["data_source"].astype(str).str.lower() == data_source
-        ].to_numpy(dtype=np.int64)
-        if indices.size < count:
-            raise RuntimeError(
-                f"Fixed-eval source has only {indices.size} {data_source} rows"
-            )
-        sampled = np.sort(rng.choice(indices, size=count, replace=False))
-        for source_index in sampled.tolist():
-            row = frame.loc[int(source_index)]
-            selected.append(
-                {
-                    "source_index": int(source_index),
-                    "id": str(row["id"]),
-                    "data_source": str(row["data_source"]),
-                }
-            )
-    selected.sort(
-        key=lambda row: (
-            str(row["data_source"]),
-            int(row["source_index"]),
-            str(row["id"]),
-        )
-    )
     payload = {
-        "schema_version": 1,
+        "schema_version": 2,
+        "manifest_mode": mode,
         "validation_path": str(source),
         "validation_sha256": source_sha256,
-        "seed": int(seed),
-        "counts": {
-            "nq": int(nq_count),
-            "hotpotqa": int(hotpotqa_count),
-        },
+        "counts": source_counts,
         "rows": selected,
-        "manifest_sha256": _manifest_digest(selected),
+        "manifest_sha256": expected_manifest_sha256,
     }
     destination.parent.mkdir(parents=True, exist_ok=True)
     destination.write_text(
@@ -112,6 +124,27 @@ def create_or_validate_eval_manifest(
         encoding="utf-8",
     )
     return payload
+
+
+def create_or_validate_eval_manifest_from_config(
+    *,
+    validation_path: str | Path,
+    evaluation: Mapping[str, Any],
+) -> dict[str, Any]:
+    return create_or_validate_eval_manifest(
+        validation_path=validation_path,
+        manifest_path=evaluation["manifest_path"],
+        manifest_mode=str(evaluation.get("manifest_mode", "full_validation")),
+        expected_validation_sha256=evaluation.get(
+            "expected_validation_sha256"
+        ),
+        expected_row_count=(
+            int(evaluation["expected_row_count"])
+            if evaluation.get("expected_row_count") is not None
+            else None
+        ),
+        expected_source_counts=evaluation.get("expected_source_counts"),
+    )
 
 
 def load_eval_rows(

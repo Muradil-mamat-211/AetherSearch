@@ -6,11 +6,13 @@
 
 [![Model](https://img.shields.io/badge/%F0%9F%A4%97%20Model-AetherSearch-yellow)](https://huggingface.co/muradil211/AetherSearch)
 [![SFT Data](https://img.shields.io/badge/%F0%9F%A4%97%20Data-AetherSearch%20SFT-yellow)](https://huggingface.co/datasets/muradil211/aethersearch_sft)
+[![Eval Data](https://img.shields.io/badge/%F0%9F%A4%97%20Eval-Search--R1%20Full-yellow)](https://huggingface.co/datasets/muradil211/AetherSearch-Eval)
 [![Code](https://img.shields.io/badge/GitHub-Code-181717?logo=github)](https://github.com/Muradil-mamat-211/AetherSearch)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue?logo=python&logoColor=white)](pyproject.toml)
 
 🤗 [AetherSearch Model](https://huggingface.co/muradil211/AetherSearch) |
-🤗 [AetherSearch SFT Data](https://huggingface.co/datasets/muradil211/aethersearch_sft)
+🤗 [AetherSearch SFT Data](https://huggingface.co/datasets/muradil211/aethersearch_sft) |
+🤗 [Full Eval Data](https://huggingface.co/datasets/muradil211/AetherSearch-Eval)
 
 </div>
 
@@ -29,6 +31,7 @@
 |---|---|---|
 | 🤗 Model | [muradil211/AetherSearch](https://huggingface.co/muradil211/AetherSearch) | model weights, tokenizer, config, and model card |
 | 🤗 SFT data | [muradil211/aethersearch_sft](https://huggingface.co/datasets/muradil211/aethersearch_sft) | full JSONL payload, provenance manifest, checksums, and dataset card |
+| 🤗 Full eval data | [muradil211/AetherSearch-Eval](https://huggingface.co/datasets/muradil211/AetherSearch-Eval) | complete 51,713-row Search-R1 `test.parquet`, provenance, and checksums |
 | Code | this repository | SFT build scripts, DPO/RL training code, configs, runtime assets, and tests |
 
 ## Table of Contents
@@ -53,7 +56,7 @@ hosted on Hugging Face.
 |---|---|---|
 | SFT | cold-start full-trajectory supervision | `sft_data/`, `sft_data/scripts/` |
 | DPO | preference-style alignment stage | `src/agentic_rl/`, `configs/`, `scripts/` |
-| RL | search-augmented rollout and policy optimization | `src/agentic_rl/`, `scripts/`, `configs/formal_resolved/` |
+| RL | search-augmented rollout and policy optimization | `src/agentic_rl/`, `scripts/`, `recipes/rl/` |
 
 ## Quick Start
 
@@ -92,8 +95,9 @@ bash scripts/train_rl.sh
 
 The included recipe assigns physical GPU 0 to retrieval and asynchronous
 training-time evaluation, and physical GPUs 1-3 to the three-rank vLLM/FSDP2
-runtime. See `recipes/rl/README.md` for the configuration boundary. Historical
-formal configs and commands remain documented in `TRAINING_REPRODUCTION.md`.
+runtime. Every 20-update evaluation uses the complete 51,713-row Search-R1
+`test.parquet`. See `recipes/rl/README.md` for the configuration boundary.
+The resolved configuration is materialized inside each new run directory.
 
 ## Repository Layout
 

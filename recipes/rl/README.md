@@ -8,6 +8,18 @@ hybrid retriever and asynchronous worker, while physical GPUs 1-3 host the
 three-rank vLLM/FSDP2 RL runtime. Other topologies are not yet claimed as
 validated.
 
+Every evaluation scheduled at a 20-update checkpoint uses all 51,713 rows of
+the configured Search-R1 `test.parquet`, in original parquet row order. The
+manifest locks the parquet SHA-256, total row count, seven source counts, and
+all row identities.
+
+Download the exact validation parquet from Hugging Face:
+
+```bash
+hf download muradil211/AetherSearch-Eval test.parquet \
+  --repo-type dataset --local-dir /path/to/eval-data
+```
+
 Prepare a local environment file without committing machine paths:
 
 ```bash
@@ -46,6 +58,8 @@ runs the formal preflight, then starts the Retriever, asynchronous
 training-time evaluation worker, and three-rank RL runtime from the same
 resolved config.
 
-Users with a different topology should copy this recipe and hardware profile,
-then update the hardware/Ray fields together. Only the included 4x48GB profile
-is asserted as validated by this release.
+Only the included 4x48GB profile is asserted as validated by this release.
+Different GPU counts, GPU memory, host RAM, or CPU capacity require coordinated
+changes to the hardware/Ray profile, batch and memory settings, resource
+guards, and currently strict topology validation. Editing a few YAML numbers
+is not claimed to be sufficient.

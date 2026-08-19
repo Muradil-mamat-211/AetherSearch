@@ -1,35 +1,25 @@
-# Training Reproduction Notes
+# RL Training Reproduction
 
-The production entrypoint used by the persisted formal runs was:
+The supported public entrypoint is:
 
 ```bash
-bash scripts/_run_runtime_job.sh FORMAL <resolved_config.yaml> <run_dir> [resume_checkpoint]
+bash scripts/train_rl.sh
 ```
 
-`_run_runtime_job.sh` reads the Retriever and RL GPU assignments from the
-resolved config, starts both services, then runs:
+The launcher resolves `recipes/rl/train_4x48gb.yaml`, writes an immutable
+`configs/resolved_config.yaml` inside the new run directory, performs the
+formal preflight, and then starts the Retriever, asynchronous full-data eval
+worker, and RL runtime supervisor.
+
+Every 20 successful updates, the runtime exports a model and queues evaluation
+over all 51,713 rows of the configured Search-R1 `test.parquet`. The same full
+manifest is used at every cadence point through update 500.
+
+The internal runtime command is:
 
 ```bash
 python -m agentic_rl.runtime.entrypoint --config <resolved_config.yaml>
 ```
 
-The package exposes the same runtime adapter as `aethersearch-runtime`, but the
-formal training runs used the shell supervisor above so the Retriever and
-training-time evaluation worker shared its lifecycle.
-
-`scripts/launch_train.sh` is a compatibility wrapper around the public
-`scripts/train_rl.sh` entrypoint. For exact reproduction of a persisted run,
-use `_run_runtime_job.sh` with its resolved config.
-
-The actual resolved configs and launch commands preserved for the primary
-formal run chain are under `configs/formal_resolved/<run>/`.
-
-Primary formal run chain:
-
-1. `formal_u000_answer_ragen2_paper_mica_ig_v1_g16_20260811_130634`
-2. `formal_resume_u040_to_u500_answer_ragen2_mica_ig_v1_g16_20260812_030537`
-3. `formal_resume_u180_to_u500_answer_ragen2_mica_ig_v1_g16_20260813_004642`
-4. `formal_resume_u320_to_u500_answer_ragen2_mica_ig_v1_g16_20260814_183801`
-
-Eval result bundles, report archives, and training run snapshots were removed
-from this code-only GitHub package.
+Use `scripts/resume_rl.sh` only with a checkpoint that has passed the required
+fresh-runtime distributed restore validation.
