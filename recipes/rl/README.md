@@ -20,6 +20,17 @@ hf download muradil211/AetherSearch-Eval test.parquet \
   --repo-type dataset --local-dir /path/to/eval-data
 ```
 
+Download the upstream Search-R1 training parquet; it is not duplicated in this
+repository:
+
+```bash
+hf download PeterJinGo/nq_hotpotqa_train train.parquet \
+  --repo-type dataset --local-dir /path/to/train-data
+```
+
+The recipe's train-data contract is the upstream file SHA-256 recorded in
+`configs/base.yaml` and `EXTERNAL_ASSETS.md`.
+
 Prepare a local environment file without committing machine paths:
 
 ```bash

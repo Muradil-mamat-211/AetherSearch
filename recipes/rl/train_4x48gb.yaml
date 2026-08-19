@@ -5,8 +5,6 @@ includes:
 
 project:
   name: AetherSearch
-  design_report: ${AETHERSEARCH_PROJECT_ROOT}/references/AGENTIC_RL_IGPO_RAGEN2_A2TGPO_SYSTEM_DESIGN_V1_2_UPDATE_STAGED.md
-  algorithm_overrides: ${AETHERSEARCH_PROJECT_ROOT}/references/ALGORITHM_OVERRIDES_V2_1.md
 
 paths:
   search_r1_root: ${AETHERSEARCH_SEARCH_R1_ROOT}
@@ -20,8 +18,8 @@ paths:
   runtime_root: ${AETHERSEARCH_RUNTIME_ROOT}
 
 exact_ig:
-  structural_audit_path: ${AETHERSEARCH_PROJECT_ROOT}/references/exact_ig_fast_path_audit_status.json
-  numerical_gate_path: ${AETHERSEARCH_PROJECT_ROOT}/references/exact_ig_fast_path_audit_status.json
+  structural_audit_path: ${AETHERSEARCH_PROJECT_ROOT}/configs/exact_ig_fast_path_audit_status.json
+  numerical_gate_path: ${AETHERSEARCH_PROJECT_ROOT}/configs/exact_ig_fast_path_audit_status.json
 
 retriever:
   server_source: ${AETHERSEARCH_PROJECT_ROOT}/runtime_assets/retriever/hybrid_retrieval_server.py

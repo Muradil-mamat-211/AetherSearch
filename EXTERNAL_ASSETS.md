@@ -10,7 +10,10 @@ local locations in `environment/env.local.sh`.
 
 ## Training And Validation Data
 
-- Train data: `AETHERSEARCH_TRAIN_DATA`
+- Train data: `AETHERSEARCH_TRAIN_DATA`; use the upstream Search-R1 dataset
+  [`PeterJinGo/nq_hotpotqa_train`](https://huggingface.co/datasets/PeterJinGo/nq_hotpotqa_train),
+  file `train.parquet`. The released source identity is 169,615 rows and
+  SHA-256 `c3cc21e862a8469105de666101578cbff23cdc77e91a803cef102622c89cc4f6`.
 - Validation data: `AETHERSEARCH_VALIDATION_DATA`; download the complete
   Search-R1 test parquet from
   [muradil211/AetherSearch-Eval](https://huggingface.co/datasets/muradil211/AetherSearch-Eval)

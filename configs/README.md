@@ -8,3 +8,7 @@ paths come from `environment/env.local.sh`.
 The other root YAML files are inherited algorithm, retriever, schedule, gate,
 and historical qualification layers. Public launches should use the recipe,
 not invoke those layers independently.
+
+`exact_ig_fast_path_audit_status.json` is a small runtime safety gate consumed
+by the Exact-IG worker. It is kept with the configs because it is an executable
+preflight input, not a design document.

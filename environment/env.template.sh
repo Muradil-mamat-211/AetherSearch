@@ -14,8 +14,10 @@ export AETHERSEARCH_RL_PYTHON=${AETHERSEARCH_RL_PYTHON:-/path/to/rl-env/bin/pyth
 export AETHERSEARCH_RETRIEVER_PYTHON=${AETHERSEARCH_RETRIEVER_PYTHON:-/path/to/retriever-env/bin/python}
 export AETHERSEARCH_ENV_SCRIPT=${AETHERSEARCH_ENV_SCRIPT:-${BASH_SOURCE[0]}}
 
-# Model and Search-R1 data. Actor and Reference may point to the same immutable
-# starting model, matching the released formal run.
+# Model and Search-R1 data. Download train.parquet from
+# PeterJinGo/nq_hotpotqa_train and the full test.parquet from the AetherSearch
+# eval dataset before launching. Actor and Reference may point to the same
+# immutable starting model, matching the released formal run.
 export AETHERSEARCH_ACTOR_MODEL=${AETHERSEARCH_ACTOR_MODEL:-/path/to/actor-model}
 export AETHERSEARCH_REFERENCE_MODEL=${AETHERSEARCH_REFERENCE_MODEL:-${AETHERSEARCH_ACTOR_MODEL}}
 export AETHERSEARCH_TRAIN_DATA=${AETHERSEARCH_TRAIN_DATA:-/path/to/train.parquet}

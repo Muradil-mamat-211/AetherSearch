@@ -127,10 +127,6 @@ def validate_config(config: Mapping[str, Any]) -> None:
         "2.1",
         "project.schema_version",
     )
-    for key in ("design_report", "algorithm_overrides"):
-        raw = config.get("project", {}).get(key)
-        if not raw or not Path(str(raw)).exists():
-            raise ConfigError(f"Path does not exist: project.{key}={raw}")
     _require_paths(
         config,
         (

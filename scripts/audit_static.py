@@ -46,11 +46,6 @@ def main() -> None:
     from torch.distributed.fsdp import FSDPModule, fully_shard
 
     paths = {
-        "design_report": Path(
-            "/root/autodl-tmp/search-r1-workspace/projects/"
-            "igpo_ragen2_a2tgpo_strict_onpolicy_v1/references/"
-            "AGENTIC_RL_IGPO_RAGEN2_A2TGPO_SYSTEM_DESIGN_V1_2_UPDATE_STAGED.md"
-        ),
         "actor_model": MODEL,
         "train_data": Path(
             "/root/autodl-tmp/search-r1-workspace/data/nq_search/train.parquet"
@@ -88,7 +83,6 @@ def main() -> None:
     small_file_hashes = {
         name: sha256(paths[name])
         for name in (
-            "design_report",
             "train_data",
             "validation_data",
             "retriever_server",

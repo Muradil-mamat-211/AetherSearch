@@ -1,8 +1,6 @@
 project:
   name: igpo_ragen2_a2tgpo_strict_onpolicy_v1
   schema_version: "2.1"
-  design_report: /root/autodl-tmp/search-r1-workspace/projects/igpo_ragen2_a2tgpo_strict_onpolicy_v1/references/AGENTIC_RL_IGPO_RAGEN2_A2TGPO_SYSTEM_DESIGN_V1_2_UPDATE_STAGED.md
-  algorithm_overrides: /root/autodl-tmp/search-r1-workspace/projects/igpo_ragen2_a2tgpo_strict_onpolicy_v1/ALGORITHM_OVERRIDES_V2_1.md
 
 paths:
   search_r1_root: /root/autodl-tmp/search-r1-workspace/code/Search-R1

@@ -150,8 +150,6 @@ def _repo_assignment_matches() -> list[dict[str, Any]]:
             category = "test_prechange_comparator"
         elif relative.startswith("outputs/"):
             category = "immutable_historical_run"
-        elif relative.startswith("references/"):
-            category = "historical_design_reference"
         elif relative in {
             "FINAL_ALGORITHM_SPEC_V2_1.md",
             "EFFECTIVE_ALGORITHM_FROM_CODE_V2_1.md",

@@ -9,6 +9,11 @@
 - `test_code.sh`: run selected tests, or all test modules in isolated
   processes when no paths are supplied.
 
+Training-time evaluation is launched automatically by the runtime supervisor
+on physical GPU 0. `async_eval_gpu0_worker.sh` is an internal worker entrypoint;
+this release does not yet expose a separate one-command standalone model-test
+launcher.
+
 `launch_retriever.sh` and the underscore-prefixed process scripts are internal
 building blocks used by the public launchers. They read machine paths and GPU
 assignments from the resolved configuration.
