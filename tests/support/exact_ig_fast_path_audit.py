@@ -2026,7 +2026,7 @@ def build_report(output_dir: Path) -> dict[str, Any]:
 - `ALLOW_FAST_PATH_TRAINING = {"YES" if allow else "NO"}`
 
 The independent expected mask, logical positions, target span, and predicting
-rows were rebuilt in `scripts/audit_exact_ig_fast_path_production.py`; those
+rows were rebuilt in the independent test-support auditor; those
 expected values do not call the production mask builder, position builder,
 task builder, task validator, or Fast score-position builder.
 
@@ -2126,7 +2126,7 @@ and multi-row batch shape. No target, mask, position, or shift rule is changed.
     }
     _write_json(output_dir / "audit_status.json", status)
     changed_files = (
-        "scripts/audit_exact_ig_fast_path_production.py",
+        "tests/support/exact_ig_fast_path_audit.py",
         "tests/test_exact_ig_fast_path_independent_contract.py",
         "src/agentic_rl/exact_ig/vectorized_scorer.py",
         "src/agentic_rl/runtime/fsdp_worker.py",

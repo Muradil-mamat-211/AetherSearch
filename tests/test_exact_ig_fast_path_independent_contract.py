@@ -18,8 +18,9 @@ from agentic_rl.runtime.fsdp_worker import _classify_exact_ig_canary
 
 _AUDIT_PATH = (
     Path(__file__).resolve().parents[1]
-    / "scripts"
-    / "audit_exact_ig_fast_path_production.py"
+    / "tests"
+    / "support"
+    / "exact_ig_fast_path_audit.py"
 )
 _AUDIT_SPEC = importlib.util.spec_from_file_location(
     "exact_ig_independent_auditor",

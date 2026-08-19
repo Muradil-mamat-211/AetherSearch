@@ -64,11 +64,12 @@ def test_resource_guard_rejects_unsafe_object_store_reserve_sum() -> None:
 
 def test_formal_launchers_do_not_disable_ray_memory_monitor() -> None:
     root = Path(__file__).resolve().parents[1]
-    for name in ("_run_runtime_job.sh", "_formal_trainer_process.sh"):
-        text = (root / "scripts" / name).read_text(encoding="utf-8")
-        assert "RAY_memory_monitor_refresh_ms=0" not in text
-        assert "RAY_memory_monitor_refresh_ms=1000" in text
-        assert "RAY_memory_usage_threshold=0.80" in text
+    text = (root / "scripts" / "_run_runtime_job.sh").read_text(
+        encoding="utf-8"
+    )
+    assert "RAY_memory_monitor_refresh_ms=0" not in text
+    assert "RAY_memory_monitor_refresh_ms=1000" in text
+    assert "RAY_memory_usage_threshold=0.80" in text
 
 
 def _checkpoint_snapshot(*, current_gib: int = 200) -> dict:

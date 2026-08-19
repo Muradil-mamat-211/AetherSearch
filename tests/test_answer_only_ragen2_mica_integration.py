@@ -379,38 +379,16 @@ def test_formal_checkpoint_validation_does_not_reload_live_workers(
     assert restored_called is False
 
 
-def test_preformal_runtime_stages_call_the_production_mica_path() -> None:
+def test_public_runtime_uses_the_production_mica_path() -> None:
     adapter = (ROOT / "src/agentic_rl/runtime/verl_runtime_adapter.py").read_text(
         encoding="utf-8"
     )
-    runner = (ROOT / "scripts/run_mica_preformal_gate.sh").read_text(
-        encoding="utf-8"
-    )
-    for stage in (
-        "MICA_E2E_NOUPDATE",
-        "MICA_ONE_UPDATE",
-        "MICA_FORMAL_SHAPE",
-    ):
-        assert stage in adapter
-        assert stage in runner
+    launcher = (ROOT / "scripts/train_rl.sh").read_text(encoding="utf-8")
     assert "self.finalize_selected_exact_ig(selected)" in adapter
     assert "self.selected_microbatches(selected)" in adapter
     assert "self._validate_mica_search_advantages()" in adapter
-    assert "AGENTIC_RL_SMOKE_MODEL_CHECKPOINTS=0" in runner
-    assert "resolve_mica_formal_config.py" in runner
-
-
-def test_formal_operational_wrappers_resolve_the_isolated_project() -> None:
-    historical_root = "igpo_ragen2_a2tgpo_strict_onpolicy_v1"
-    for name in (
-        "async_eval_gpu0_worker.sh",
-        "monitor_formal_training_10min.sh",
-        "formal_training_watchdog.sh",
-        "status_formal_training.sh",
-    ):
-        source = (ROOT / "scripts" / name).read_text(encoding="utf-8")
-        assert 'dirname "${BASH_SOURCE[0]}"' in source
-        assert historical_root not in source
+    assert "preflight_mica_formal.py" in launcher
+    assert "resolve_mica_formal_config.py" in launcher
 
 
 def test_preformal_resolver_preserves_formal_schedule(tmp_path: Path) -> None:

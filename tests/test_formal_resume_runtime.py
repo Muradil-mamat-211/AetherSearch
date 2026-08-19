@@ -351,8 +351,9 @@ def test_reward_scorer_and_export_are_explicit_and_nonmutating() -> None:
 
 
 def test_formal_launcher_has_independent_lifecycle_processes() -> None:
-    launcher = (ROOT / "scripts/train_formal_from_pilot20_to_500.sh").read_text()
-    for window in ("retriever", "eval", "monitor", "trainer", "watchdog"):
-        assert f"-n {window}" in launcher
-    assert "PILOT_CHECKPOINT" in launcher
-    assert "formal_resume_u20_to_u500.yaml" in launcher
+    launcher = (ROOT / "scripts/train_rl.sh").read_text()
+    supervisor = (ROOT / "scripts/_run_runtime_job.sh").read_text()
+    assert "recipes/rl/train_4x48gb.yaml" in launcher
+    assert "preflight_mica_formal.py" in launcher
+    assert "launch_retriever.sh" in supervisor
+    assert "async_eval_gpu0_worker.sh" in supervisor
