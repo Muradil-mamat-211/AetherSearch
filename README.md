@@ -797,7 +797,7 @@ D_{\mathrm{KL}}
 \pi_\theta(v\mid s_j)
 \log
 \frac{\pi_\theta(v\mid s_j)}
-\pi_{\mathrm{ref}}(v\mid s_j)}.
+{\pi_{\mathrm{ref}}(v\mid s_j)}.
 ```
 
 This is a **full-vocabulary** KL. It is not a sampled-token log-ratio proxy.
