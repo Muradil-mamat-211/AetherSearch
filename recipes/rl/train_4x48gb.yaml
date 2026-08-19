@@ -1,0 +1,35 @@
+extends: ../../configs/formal_train_answer_only_ragen2_mica_ig_v1.yaml
+
+includes:
+  - ../../configs/hardware/4x48gb_3rl.yaml
+
+project:
+  name: AetherSearch
+  design_report: ${AETHERSEARCH_PROJECT_ROOT}/references/AGENTIC_RL_IGPO_RAGEN2_A2TGPO_SYSTEM_DESIGN_V1_2_UPDATE_STAGED.md
+  algorithm_overrides: ${AETHERSEARCH_PROJECT_ROOT}/references/ALGORITHM_OVERRIDES_V2_1.md
+
+paths:
+  search_r1_root: ${AETHERSEARCH_SEARCH_R1_ROOT}
+  environment_script: ${AETHERSEARCH_ENV_SCRIPT}
+  rl_python: ${AETHERSEARCH_RL_PYTHON}
+  retriever_python: ${AETHERSEARCH_RETRIEVER_PYTHON}
+  actor_model: ${AETHERSEARCH_ACTOR_MODEL}
+  reference_model: ${AETHERSEARCH_REFERENCE_MODEL}
+  train_data: ${AETHERSEARCH_TRAIN_DATA}
+  validation_data: ${AETHERSEARCH_VALIDATION_DATA}
+  runtime_root: ${AETHERSEARCH_RUNTIME_ROOT}
+
+exact_ig:
+  structural_audit_path: ${AETHERSEARCH_PROJECT_ROOT}/references/exact_ig_fast_path_audit_status.json
+  numerical_gate_path: ${AETHERSEARCH_PROJECT_ROOT}/references/exact_ig_fast_path_audit_status.json
+
+retriever:
+  server_source: ${AETHERSEARCH_PROJECT_ROOT}/runtime_assets/retriever/hybrid_retrieval_server.py
+  server_config_source: ${AETHERSEARCH_PROJECT_ROOT}/runtime_assets/retriever/retriever.yaml
+  corpus_path: ${AETHERSEARCH_CORPUS_PATH}
+  bm25_index_path: ${AETHERSEARCH_BM25_INDEX_PATH}
+  dense_index_path: ${AETHERSEARCH_DENSE_INDEX_PATH}
+  dense_encoder_path: ${AETHERSEARCH_DENSE_ENCODER_PATH}
+
+evaluation:
+  manifest_path: ${AETHERSEARCH_RUNTIME_ROOT}/fixed_eval_manifest.json

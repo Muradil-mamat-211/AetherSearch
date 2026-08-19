@@ -2,4 +2,4 @@
 set -euo pipefail
 
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-exec "${PROJECT_ROOT}/scripts/train_rl.sh" "$@"
+exec "${PROJECT_ROOT}/scripts/resume_verified_formal_checkpoint.sh" "$@"

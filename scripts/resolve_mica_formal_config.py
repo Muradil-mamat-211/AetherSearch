@@ -14,6 +14,7 @@ def main() -> None:
     parser.add_argument("--input", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--total-successful-updates", type=int, required=True)
+    parser.add_argument("--runtime-root", type=Path)
     args = parser.parse_args()
 
     config = load_config(args.input)
@@ -21,6 +22,8 @@ def main() -> None:
     config["formal"]["total_successful_updates"] = total
     config["formal_schedule"]["total_successful_updates"] = total
     config["scheduler"]["total_successful_updates"] = total
+    if args.runtime_root is not None:
+        config["paths"]["runtime_root"] = str(args.runtime_root.resolve())
     if total != 500:
         raise SystemExit("The locked fresh MICA experiment must target U500")
     if config["formal"].get("fresh_start_required") is not True:

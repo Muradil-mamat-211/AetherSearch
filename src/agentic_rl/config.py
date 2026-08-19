@@ -6,6 +6,7 @@ import hashlib
 import json
 import math
 import os
+import re
 from pathlib import Path
 from typing import Any, Iterable, Mapping
 
@@ -33,6 +34,7 @@ from agentic_rl.exact_ig.target_schema import (
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_CONFIG = PROJECT_ROOT / "configs" / "base.yaml"
+_ENV_REFERENCE = re.compile(r"\$\{([A-Za-z_][A-Za-z0-9_]*)\}")
 
 
 class ConfigError(ValueError):
@@ -61,6 +63,22 @@ def _read_yaml(path: Path) -> dict[str, Any]:
     return value
 
 
+def _expand_environment(value: Any) -> Any:
+    if isinstance(value, dict):
+        return {key: _expand_environment(item) for key, item in value.items()}
+    if isinstance(value, list):
+        return [_expand_environment(item) for item in value]
+    if not isinstance(value, str):
+        return value
+    names = _ENV_REFERENCE.findall(value)
+    missing = sorted({name for name in names if name not in os.environ})
+    if missing:
+        joined = ", ".join(missing)
+        raise ConfigError(f"Missing configuration environment variables: {joined}")
+    expanded = os.path.expandvars(value)
+    return os.path.expanduser(expanded)
+
+
 def _load_config_tree(config_path: Path, stack: tuple[Path, ...] = ()) -> dict[str, Any]:
     config_path = config_path.resolve()
     if config_path in stack:
@@ -83,7 +101,7 @@ def _load_config_tree(config_path: Path, stack: tuple[Path, ...] = ()) -> dict[s
 
 def load_config(path: str | Path = DEFAULT_CONFIG) -> dict[str, Any]:
     config_path = Path(path).resolve()
-    config = _load_config_tree(config_path)
+    config = _expand_environment(_load_config_tree(config_path))
     validate_config(config)
     return config
 
@@ -1282,8 +1300,28 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", default=str(DEFAULT_CONFIG))
     parser.add_argument("--format", choices=("json", "yaml"), default="yaml")
+    parser.add_argument(
+        "--get",
+        dest="get_path",
+        help="Print one dot-separated configuration value",
+    )
     args = parser.parse_args()
     config = load_config(args.config)
+    if args.get_path:
+        value: Any = config
+        for part in args.get_path.split("."):
+            if not isinstance(value, Mapping) or part not in value:
+                raise ConfigError(f"Unknown configuration field: {args.get_path}")
+            value = value[part]
+        if isinstance(value, (dict, list)):
+            print(json.dumps(value, separators=(",", ":")))
+        elif value is None:
+            print("null")
+        elif isinstance(value, bool):
+            print("true" if value else "false")
+        else:
+            print(value)
+        return
     if args.format == "json":
         print(json.dumps(config, indent=2, sort_keys=True))
     else:

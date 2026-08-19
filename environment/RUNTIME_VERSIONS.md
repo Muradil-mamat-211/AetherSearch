@@ -1,6 +1,6 @@
 # Runtime Versions Observed Locally
 
-RL/training environment: `/root/autodl-tmp/search-r1-workspace/envs/igpo-ragen2-fsdp2-vllm011`
+RL/training environment used for the released run:
 
 ```text
 python 3.12.13
@@ -17,7 +17,7 @@ PyYAML 6.0.3
 safetensors 0.8.0
 ```
 
-Retriever environment: `/root/autodl-tmp/search-r1-workspace/envs/retriever`
+Retriever environment used for the released run:
 
 ```text
 python 3.10.20

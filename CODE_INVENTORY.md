@@ -1,22 +1,24 @@
 # Code Inventory
 
-This inventory covers the AetherSearch GitHub repository tree after packaging.
-Model weights, optimizer checkpoints, eval result bundles, report archives, and runtime snapshots are not included.
+This inventory covers every non-ignored file in the AetherSearch GitHub
+release. Model weights, optimizer checkpoints, eval result bundles, report
+archives, and runtime snapshots are not included.
 
-Generated UTC: `2026-08-19T05:37:06Z`
+Generated UTC: `2026-08-19T07:25:43Z`
 
 ## Summary
 
-- `configs`: `30` files, `162131` bytes
-- `documentation`: `4` files, `10942` bytes
-- `environment`: `5` files, `9748` bytes
-- `references`: `1` files, `51625` bytes
-- `repo_root`: `3` files, `1274` bytes
+- `configs`: `32` files, `163845` bytes
+- `documentation`: `4` files, `11378` bytes
+- `environment`: `5` files, `11465` bytes
+- `recipes`: `2` files, `3170` bytes
+- `references`: `3` files, `55130` bytes
+- `repo_root`: `3` files, `1441` bytes
 - `runtime_assets`: `2` files, `28709` bytes
-- `scripts`: `71` files, `401863` bytes
+- `scripts`: `91` files, `694865` bytes
 - `sft_data`: `7` files, `17029` bytes
-- `src`: `84` files, `1247130` bytes
-- `tests`: `36` files, `307686` bytes
+- `src`: `84` files, `1248902` bytes
+- `tests`: `37` files, `308514` bytes
 - `third_party`: `5` files, `125893` bytes
 
 ## Files
@@ -25,6 +27,7 @@ Generated UTC: `2026-08-19T05:37:06Z`
 
 | path | bytes | sha256 |
 |---|---:|---|
+| `configs/README.md` | 691 | `0f4b17e623efc8058c5d8980dc7b6e7e9be1899f84d34ec463c4ef82fbec82ee` |
 | `configs/base.yaml` | 7215 | `47b0a8cf16332e3a49fe2fc7b9471e7c050cc695d4dfa26e07877d272ac9900a` |
 | `configs/exact_ig.yaml` | 4275 | `949ca3d5ada0d442bb89bf91ad47aece7dacd6d46f3e514febf130c21a6951ba` |
 | `configs/forced_refill_96_test.yaml` | 84 | `41da07ebaf0143c99c123cc4f63dcba01fbbda5d1969402c6b0ab985f4b97427` |
@@ -48,6 +51,7 @@ Generated UTC: `2026-08-19T05:37:06Z`
 | `configs/formal_train_answer_only_ragen2_paper_mica_ig_v1.yaml` | 233 | `96ce72b40d0bccbb6a8e5683d55db8fd78ddf0500958c88876e0f7cd17dca925` |
 | `configs/formal_train_role_localized_gate.yaml` | 1528 | `5f8e41becdd7d05d2997e0be7622e6a3013ad19074d08d27f1ab4327bbafe552` |
 | `configs/gate_calibration_role_localized.yaml` | 1605 | `24c23b9525530fb0ba445f86baecfd565bf7d9ff5108828956ad40a6c79a867b` |
+| `configs/hardware/4x48gb_3rl.yaml` | 1023 | `318421ae8a12a8896f7d454f92c741f26ca14fa742452cf14b4dade5abd93a5a` |
 | `configs/hardware_5x48gb.yaml` | 699 | `f8f3244b33245d41223f162fb04e958c4486400bebb01252539e626a1cf57b14` |
 | `configs/logging.yaml` | 1389 | `59e27ba62355340a12bc0cb5fce372b5cb42f8722aa9d6a339c6b28f8e6d26a5` |
 | `configs/pilot_20_final.yaml` | 4399 | `a8d1b07c35d82f9d56a65209bfe7ce81719f467c3da2bfa8ab27fa75659a9f4c` |
@@ -60,34 +64,43 @@ Generated UTC: `2026-08-19T05:37:06Z`
 
 | path | bytes | sha256 |
 |---|---:|---|
-| `EXTERNAL_ASSETS.md` | 1356 | `52c3829f90797ba6b3999c1cdf8f5d907b9a137bc60b8f96c95e6e80fdd0374d` |
-| `README.md` | 4105 | `ec743d742bd45da2398c9b51de8c2dc44200720ca226c1a1f09ddc72a4d78c8d` |
+| `EXTERNAL_ASSETS.md` | 1084 | `06f0bf6a6845a7223eb5fa01602dcf92f90e3f3ec33e3240978ad9e8583354d8` |
+| `README.md` | 4802 | `ee523fb5b2a3bd4e5157c41cdb982bc2921d5b9a4900987a7e8e8105ad1e4392` |
 | `THIRD_PARTY_NOTICES.md` | 4092 | `09c4e8e0e4c97f56361c9bd97959398b21a9ff27f0497e9ca7a6cf0cefc3d605` |
-| `TRAINING_REPRODUCTION.md` | 1389 | `b0c292aa4b2847ebf018a45ca46d14200978a8f650af5e9b91c4be13ade9dc4c` |
+| `TRAINING_REPRODUCTION.md` | 1400 | `ad38126e1bf5265a0a94bf2a17909f0f2ee3c119ce2120b846f0a239ac9d778d` |
 
 ### environment
 
 | path | bytes | sha256 |
 |---|---:|---|
-| `environment/RUNTIME_VERSIONS.md` | 547 | `aead4e0617709a062455c1bfbaaec21b0ba373b26ac825782b92840f469b3451` |
-| `environment/env.template.sh` | 604 | `09a0636554730ff86737de4f9bddad3ac437412363a903aef2c2adcff5145921` |
+| `environment/RUNTIME_VERSIONS.md` | 475 | `6aa7fd7a11d47b8d78f5714433e6a2f46e4b78d89c706e8ce641cc8c1de7a0ca` |
+| `environment/env.template.sh` | 2393 | `347db23489ad964e192e70250b1e05e5f6507eae2d7192d002a336f734c400da` |
 | `environment/requirements-core-observed.txt` | 312 | `9873346cde73b88f492bed5bc7088011b27c71eb137b3a8f5ef402ff14277324` |
 | `environment/retriever_pip_freeze.txt` | 3812 | `3d5f5a804cfcc3d31b72b10a81a44a40cd99808282d620106b363b3bb9dc84ad` |
 | `environment/rl_pip_freeze.txt` | 4473 | `f1ffe7736d219a7fbe4b57456e0d8200ca8d5eb9f1b185a0d8fb5e4dafbd8c0d` |
+
+### recipes
+
+| path | bytes | sha256 |
+|---|---:|---|
+| `recipes/rl/README.md` | 1667 | `9208bc27a5252944a2828d1e4e7806292253d6c4c030b4ebbe78cbbe6bc9800d` |
+| `recipes/rl/train_4x48gb.yaml` | 1503 | `5f56d5ce132691b2b2e9fdd4dc736706864d2f093f866713975985b01a199e68` |
 
 ### references
 
 | path | bytes | sha256 |
 |---|---:|---|
 | `references/AGENTIC_RL_IGPO_RAGEN2_A2TGPO_SYSTEM_DESIGN_V1_2_UPDATE_STAGED.md` | 51625 | `c32ee11d65cc5a841ab273ba3e5c9587d2edbaed18ba96723445306581107af6` |
+| `references/ALGORITHM_OVERRIDES_V2_1.md` | 2398 | `bec2b01855153bb31024f1b76a2d8403438222f4cc9bd0ceec11f46ecc9d8737` |
+| `references/exact_ig_fast_path_audit_status.json` | 1107 | `de7b1386e33e9743f930cb398c39e6445055fda1a95cddc761e3d9bc184ff8c8` |
 
 ### repo_root
 
 | path | bytes | sha256 |
 |---|---:|---|
 | `.gitattributes` | 220 | `3a62a151b7887ee92f18a8813b4dd7257ae8864d820910233fce1d6b799b6a88` |
-| `.gitignore` | 379 | `d69e1f80c17e381ab0020769e8002eeae8c799885851aaab6408aa667c60ac39` |
-| `pyproject.toml` | 675 | `b72702e46b75a4e637f4e3d92fd25114ba40be43c0a60e724cc1930c3bd4f6d0` |
+| `.gitignore` | 522 | `7e46b7f10dfc419fde3ed30ab797d192fbf4c806bd20cf1de411f236a44f87f3` |
+| `pyproject.toml` | 699 | `9d56ccd76f2c5b6ec4ea56022340c87fe070e3ed9ba02801ed2ec9df48efb9cd` |
 
 ### runtime_assets
 
@@ -100,11 +113,26 @@ Generated UTC: `2026-08-19T05:37:06Z`
 
 | path | bytes | sha256 |
 |---|---:|---|
-| `scripts/_formal_retriever_process.sh` | 441 | `a496c292a2ed3ad984e6bdf380488a9f1f218a87801a12918d1a739d3afeb5f8` |
-| `scripts/_formal_trainer_process.sh` | 2400 | `03581cb06cd2b96eea665eeb3298f0fc38583588f8455a76584d18e20a9d6de6` |
-| `scripts/_run_runtime_job.sh` | 4371 | `f67d4725730c9ae92a0b29fa5917f358de63985921a62953d45f1d472cf1b420` |
-| `scripts/async_eval_gpu0_worker.sh` | 713 | `e87467adf1ff599e46bc5b806c3e97b0337ee27d8abc97c2b72a8009d5b92708` |
-| `scripts/bootstrap_env.sh` | 616 | `222247fe5f495fa3b433b712f432ac0f880e944435a22865739c9c26ec16fce0` |
+| `scripts/README.md` | 1105 | `420f7f7c32465de553b5cc826a5cfcc41b24446bb6e70111ac5e4613f72c639f` |
+| `scripts/_formal_retriever_process.sh` | 654 | `383c12ca79e5ecff826357832afe9c04587fb7809e18908300ee663182417922` |
+| `scripts/_formal_trainer_process.sh` | 2670 | `69da2580b5da64e20f13103b29374fa02e62f429b3f0d5908f76d46293882dcd` |
+| `scripts/_run_runtime_job.sh` | 5064 | `87b5eae9ac488eb5cf743977578fd1bb9a304722b2320fd6e8f0c9d3f0d21162` |
+| `scripts/async_eval_gpu0_worker.sh` | 869 | `c606d034f9dc66feb1f926ca7b426514da285c644cfe63d49841328ee74f858d` |
+| `scripts/audit_asearch_lambda_ig_03.py` | 20218 | `e33684156ea0a9483fc5300db57c37b700eef3ed82d05822233eafa87131eeb3` |
+| `scripts/audit_exact_ig_fast_path_production.py` | 81208 | `0f2b18ba111643c0880c2e5adb0464765a9661cca8de4c06ca6f804c92433e38` |
+| `scripts/audit_exact_ig_target_tokenization_v3.py` | 7252 | `6e8db2472d91480f5ab06db53b9dd6b333e6cb3585fceefead6ae88c69fd1989` |
+| `scripts/audit_final_algorithm_v2_1.py` | 22278 | `49b9406d46471e99a4ceef285d41390beb1ead922771e57c825b2776cd4e6235` |
+| `scripts/audit_final_asearch_production.py` | 33611 | `3af15de5fa554cb51aacd3e77cd7f777e408553d441ee6496319844c191fdb37` |
+| `scripts/audit_igpo_f1_parity.py` | 3170 | `72ff76522317f5ab09e8f8c5e7b46b91da1278ec546b29072e9dae2fb25e9777` |
+| `scripts/audit_mica_ig_v1_offline.py` | 25534 | `cd172c0374d303c0076b2c0e9822a8206854119dfe9933e0183b81c0238a5507` |
+| `scripts/audit_paper_ragen2_restart.py` | 7025 | `1819ee72fcf73abaacfcccd942d108bc7f424c827cce53195c0f15ac957190cf` |
+| `scripts/audit_probe_routed_search_advantage.py` | 3196 | `139876d7b1eb1729e305a1a0ab32a4285c0cd3fb4a3709310ce4139dd1963831` |
+| `scripts/audit_role_localized_gate.py` | 4408 | `c45180c0be0e0a9a220b5f6e32ba6433918675e7651dca84c7eca7a502dd8809` |
+| `scripts/audit_role_localized_gate_root_cause_u1_u139.py` | 59542 | `19695aee515c2048b90e55e5805b9b3bd6714a325eee7dfc1b2df62a2bb9ebf3` |
+| `scripts/audit_static.py` | 5285 | `84da553654031bac7ebe6bc699db8e72418a2f7244ad59c43aabe4b5cbe5138c` |
+| `scripts/audit_stop_continue_search_advantage.py` | 6229 | `abd778072d0cfce2268a8b28f11c0fe77470e6d56f907f6528318532d2d8cac9` |
+| `scripts/bootstrap_env.sh` | 947 | `d1e17970e9ed9746625d67d207115e99ecce8281cfdbc905d82ccfaf9bc07376` |
+| `scripts/build_code_inventory.py` | 2856 | `75e4320117711f34b5d892c90699e00948825a75e41597e03ddb194ec1e978d8` |
 | `scripts/build_manifest.py` | 2068 | `12d2e24ef42d915cae8b40810f1b1fc76355aedd068bf9da2cf83ffe992e0a11` |
 | `scripts/check_algorithm_boundary.py` | 5836 | `02757b9d3252ff495d4e751c201cb1e62237086c841c0786507bc8479d24a5a3` |
 | `scripts/exact_ig_layer_diagnosis.py` | 168 | `35439412616e05bd05513f94b6eea01e63acd32f7a5e9376f67ae88cf55b4384` |
@@ -119,9 +147,10 @@ Generated UTC: `2026-08-19T05:37:06Z`
 | `scripts/finalize_preformal_runtime_qualification.py` | 30403 | `ff8bb0c99f9af7192b32d6a844f9a16645bf401e7222a48fc1b0506b8d7d07ff` |
 | `scripts/finalize_role_localized_gate_config.py` | 2806 | `a249b879d931117c98998a2832d4c3d1537bfb37f451c825e7b486f66c91f7f5` |
 | `scripts/formal_training_watchdog.sh` | 767 | `b523d926e0d1d0a50d6bd9d5026ba5264c503f647f4cb724f06be8be123ee479` |
-| `scripts/launch_retriever_gpu0.sh` | 2250 | `e29462c63c32dd0f7b086385ec592e3ff219cbc5e1d4f5101cb9f9565caba9ea` |
+| `scripts/launch_retriever.sh` | 3411 | `e5b709d0f9ec7f21964795506faea818305d35713ecda71e6bec870a1bca38ab` |
+| `scripts/launch_retriever_gpu0.sh` | 159 | `e000c23b1d3fa1f5d010c083f67a2792b3fea6e010614dde9449b25ac6a1e9eb` |
 | `scripts/launch_rl_gpu1_4.sh` | 581 | `8e31cfe65f0913e4b11d91964a5cbcefc19766fa186aa5b4c6d3a5279cb6982f` |
-| `scripts/launch_train.sh` | 162 | `b480cfa92f0a8a2eab91d3506044cad19796a492412f42b6c82c1fe748d95880` |
+| `scripts/launch_train.sh` | 151 | `25d8ced298d391f49158e1af29d8bd23ac08e99e3d78c5434237badfe4571b9e` |
 | `scripts/monitor_formal_training_10min.sh` | 857 | `8bae99da164f9351ed5295c989449e598dc0a2b321b5f3126e0a8d759f7e07b8` |
 | `scripts/preflight_fresh_formal_sc.py` | 10971 | `d8dbc543a69c1593ffc99620a5578977086acc66eadd22c019212bda643f37c8` |
 | `scripts/preflight_mica_formal.py` | 7277 | `4c93e6d07905700076e7e049b93d81133c99d37d362483ad5851adb63cb706d2` |
@@ -129,11 +158,12 @@ Generated UTC: `2026-08-19T05:37:06Z`
 | `scripts/prepare_formal_resume_run.py` | 11837 | `d609bce7145e9b28cb577980b0d2e968713e60c2e508f2c594fd06a452121aac` |
 | `scripts/prepare_verified_resume_recovery.py` | 13841 | `3a815e65163dfeb8ab6525806720118c5ea26f378e4d12a0dac979211917063c` |
 | `scripts/print_resolved_config.sh` | 365 | `6632c076645aa662f45c62f74614cdd89ce45a549d7748dbb02a996b1a616818` |
-| `scripts/resolve_mica_formal_config.py` | 1479 | `f29325e304a393a0d5b3d797ea6d59b9631a92195f752e3b84d4381ae21b5f08` |
+| `scripts/resolve_mica_formal_config.py` | 1645 | `a0de4c38f746dce5ac10d3ec0ba64efb31b3fa305c8b7c0383d8bee8ef96a5a1` |
 | `scripts/resume_formal_from_u80_no_monitor.sh` | 3646 | `d0285759875d7a7c65d8278930add31adba1e81376eb57fbc985f1b0d8c9c383` |
 | `scripts/resume_formal_manual.sh` | 2386 | `e6f6168d585e9e3a139107fae451b414138f62b4e427b06e652cfa8217cbd901` |
 | `scripts/resume_formal_u20_3rank_48cpu.sh` | 6454 | `727a126b0df435a3f02038bf3eebabaa9644221c86288eb9b41a03ab9afab0cd` |
-| `scripts/resume_verified_formal_checkpoint.sh` | 8224 | `eaa7f4604f0d819fc135b7f7590d2272d5d286f8629530eb36d361cd2b51e098` |
+| `scripts/resume_rl.sh` | 176 | `6bb3b7b6f3f15167222d0aff0bb73efeb45e32dcc04ef21631ea549e145067ab` |
+| `scripts/resume_verified_formal_checkpoint.sh` | 8449 | `99dadb67a296e7e33799d238cec1dd8b14745ba4b967797434a012fe16fd61d9` |
 | `scripts/run_exact_ig_fast_path_repair_validation.sh` | 259 | `137cd941e46dd4ab79b5febabc2f96840087d261aa7c12d3f90885f0095e9bb0` |
 | `scripts/run_exact_ig_fp32_fast_profile.sh` | 153 | `95d3ff5023e407c35f51c6a73b9378bfc035ec5515db6926838556d6ae585f8e` |
 | `scripts/run_exact_ig_numerical_parity.sh` | 220 | `ff333941fcbbdc076852ee51e729c1c6d4f0cebcb076f5b8af95a88a9f75930d` |
@@ -141,6 +171,7 @@ Generated UTC: `2026-08-19T05:37:06Z`
 | `scripts/run_exact_ig_ragen_equivalence.sh` | 216 | `b87d5f4f947bf62a62ed0e9d9314286c6e3b432044c39b4fa0052ce96c1a8a87` |
 | `scripts/run_final_pilot_20.sh` | 5879 | `adbe637a2de78dde40578680386627eab7be0e649be3043acbc9b209a30239f0` |
 | `scripts/run_forced_refill_96_test.sh` | 3488 | `51028e279a704bd2ba8d8665e8504276f3ab6251bcf7f3ee982f292a6e3b23fd` |
+| `scripts/run_mica_preformal_gate.sh` | 4169 | `3d1d8a366c804fa285d54067246c84f12c5c8094d1380d4c0a15914d81403407` |
 | `scripts/run_parallel_smoke.sh` | 2803 | `81279be5be018e7c679047c848da15144f47d2b48ab72b0fdca505092092337c` |
 | `scripts/run_pilot_50_updates.sh` | 1215 | `2bf012beaa676ba2289cddae395b7bdfc67b6314ad7ceac0cc55c4d4c5114b11` |
 | `scripts/run_role_localized_gate_calibration.sh` | 1781 | `d2dfea5f2184bcc6237a78f570e70d930e0ccba001fb0e6d4b88e816fbb4b688` |
@@ -159,8 +190,10 @@ Generated UTC: `2026-08-19T05:37:06Z`
 | `scripts/stop_services.sh` | 399 | `62520cfc11a2cd85c42e5f1d1bc97a488d00cf82ad0611f83421914af150467b` |
 | `scripts/tail_formal_logs.sh` | 832 | `a616421a0ca253bdb098c371801baf0014452250f75e5f3f1c80e0d9c5cc6247` |
 | `scripts/tail_formal_training.sh` | 161 | `c6a7587b25b36ab37f047a532d1860cb3453bf0ec60ab31c8a6603181b8d3076` |
+| `scripts/test_code.sh` | 626 | `d29c3c344d51d09b649dc0fcb2321e26f82672478b6c7850bcf2831df2fc4f27` |
 | `scripts/train_formal_from_pilot20_to_500.sh` | 11445 | `3f747b7d99ad81e45eae9d74e27e7957fbc866ebdc14ba1d41e84569b23380b0` |
 | `scripts/train_formal_manual.sh` | 7868 | `6ef132965cefec843b138f42fd012aeefe759676c53cb8491887ebedda31542b` |
+| `scripts/train_rl.sh` | 2206 | `69b94d126110f4c70a53b7726e44cd4ca566737d8d10a09edcf8ace44d1b5fb9` |
 | `scripts/validate_48cpu_resource_profile.py` | 4811 | `d02248f655d0ff0d2745fb21d03e089e177365cfe89d2d3678ce834da8df8823` |
 | `scripts/validate_exact_ig_fast_path_repair.py` | 931 | `1faa78cdbbe1c43a5b654ac2967086db604b4b7e976e626512c7171c3c8a864b` |
 | `scripts/validate_exact_ig_fp32_v4.py` | 51099 | `2ab1936b2007ce8ca865040eb1cf4fdae777f00f75b86836f9c41bbdd571fffb` |
@@ -169,7 +202,7 @@ Generated UTC: `2026-08-19T05:37:06Z`
 | `scripts/validate_exact_ig_official_alignment_v3.py` | 35425 | `68ad98f686663ec2ff22ee3959e487c0d50b3231dc28b309ea9229ac73e62446` |
 | `scripts/validate_resume_3rank.sh` | 1197 | `46765340fe500a36ad995f52b7b25acd00b86750506233adf4a4b0256019b160` |
 | `scripts/validate_resume_3rank_48cpu.sh` | 1209 | `0574dd2ca060a368d49eb0e185fd6eed5a4516d39e1307fa96fa581e0f61e45c` |
-| `scripts/validate_static.sh` | 1200 | `d281193e32055e26576b1d158408a2fb0868fba7c70a29e64de44fdb6b855565` |
+| `scripts/validate_static.sh` | 745 | `cfad6c21c8784ccac8909f295a8908d1099796a6bce87f2e40f4ebbdddedf90a` |
 | `scripts/verify_checkpoint_readonly.py` | 2659 | `c8af6683b6f6e09e96fa91c16cf679706b4673d947e5437428239d542e6ad9d2` |
 
 ### sft_data
@@ -198,7 +231,7 @@ Generated UTC: `2026-08-19T05:37:06Z`
 | `src/agentic_rl/checkpoint/atomic_commit.py` | 8441 | `68e487e5f7a0ec53f74f26a052d3bfc480755ea38872a06d73d9f8cde582f466` |
 | `src/agentic_rl/checkpoint/fsdp2_dcp.py` | 2494 | `48cd9009ab11f3a6a202c3bcd16a9aa128650f577af3a3174cf6a8a0bd4fb5a7` |
 | `src/agentic_rl/checkpoint/state_schema.py` | 2307 | `8d0660762daf08cdb1ea14a7077215d86abb1456f335ac2396bb6ea2b47a2303` |
-| `src/agentic_rl/config.py` | 43999 | `c2ccaa7154e5196278ed72a0856fc8d4798c596b92b8d57cddd26261c490b2ad` |
+| `src/agentic_rl/config.py` | 45441 | `e4e507e64ee3485d826a67fe20380f967ca826c90a1a2c99a7fbd51866253c2c` |
 | `src/agentic_rl/controller/__init__.py` | 360 | `e90831d047994fb4bf3b7231d1451b92576b71da06b0bc82cb534cc3655485d6` |
 | `src/agentic_rl/controller/attempt_state.py` | 2233 | `1da533ef6c2eb4c62a1a40dc971d66060d30db0a7a39ac1f1d0580ee51db6da7` |
 | `src/agentic_rl/controller/dataset_view.py` | 7776 | `cb127681e3f3e53274c10bbfc199cde7818d2568bb15d5f34955b1401e6225d4` |
@@ -242,7 +275,7 @@ Generated UTC: `2026-08-19T05:37:06Z`
 | `src/agentic_rl/rollout/token_provenance.py` | 3381 | `7b253a5881c9a0beb1343598d5e94f4a5bdedf63c2679e3993414f4bddb826b1` |
 | `src/agentic_rl/rollout/trajectory_schema.py` | 25751 | `885677df7d0ac2e7b0341594f23b9baccb55a12204425f6e0ccd745ff61e34c3` |
 | `src/agentic_rl/rollout/vllm_manager.py` | 2624 | `497a365e83eae4ffb48319db313da983ccd7c1e72d918238c6927f001f230ee9` |
-| `src/agentic_rl/runtime/__init__.py` | 395 | `0fdac010f81fb80855bcc47e3b47d8af997a8cee52c34647d82df51b9905049d` |
+| `src/agentic_rl/runtime/__init__.py` | 725 | `831726e72cf248b236926bddd60917d4302927f6bf42a06fe1b1fd3be017d7bf` |
 | `src/agentic_rl/runtime/async_eval_worker.py` | 19079 | `b5ef930bf12d0eedbc4c92111ba3a08eab30a9b634ff512adf5ec04fe09876bb` |
 | `src/agentic_rl/runtime/capped_vllm.py` | 29560 | `29da4d78680a80e75629c549ce1d075c546f84aac74ad4500de020b5a56856ee` |
 | `src/agentic_rl/runtime/entrypoint.py` | 491 | `b89c28df1a5f9ac848cb3b77487efe614d680b1f908a5ffc6d0bc4b0347bb68d` |
@@ -297,6 +330,7 @@ Generated UTC: `2026-08-19T05:37:06Z`
 | `tests/test_paper_ragen2_selection.py` | 8483 | `ba929267ec2545abd659c1798b4ea6cb1c25b03648715e2f4f75f9550e545f1e` |
 | `tests/test_policy_reduction_and_kl.py` | 7385 | `3c4b082bbfa588d6038a6016874d156cd8f8773bc550c141f1b4b643822c00c6` |
 | `tests/test_prompt_sampler.py` | 450 | `06abb7b2a7f0d1d9e0050a319fb4e59f64dff2d6283c1a99f58b8511e53a3341` |
+| `tests/test_public_config.py` | 828 | `69ca8c8dee34a3dbd9e3fa98ed5fb747c6a8f2a7b91ec565af36760b7fa7e381` |
 | `tests/test_resource_guard.py` | 4530 | `271c5a21362296f5985e03ad4e03c5b5a0d37dbdc3d10167c31304129c5a22e1` |
 | `tests/test_role_localized_gate.py` | 32392 | `1be5b1aa5a247bff44348bf7735c2b5bc4646abc4af49291466b81837d106e28` |
 | `tests/test_runtime_adapter_static.py` | 15867 | `380aa4c6fac3843966a1c341f7c12caa91fa4c1a7843442b502742ef1bcb54bf` |

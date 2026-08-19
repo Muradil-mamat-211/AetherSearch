@@ -1,0 +1,41 @@
+# Validated reference topology: one 48 GiB GPU for retrieval/evaluation and
+# three 48 GiB GPUs for colocated vLLM/FSDP2 RL training.
+hardware:
+  total_physical_gpus: 4
+  gpu_memory_gb: 48
+  retriever_physical_gpu: 0
+  rl_physical_gpus: [1, 2, 3]
+  rl_visible_gpus: [0, 1, 2]
+  rl_world_size: 3
+  allow_world_size_change_on_resume: true
+  vllm_data_parallel_size: 3
+  vllm_tensor_parallel_size: 1
+  forbid_retriever_in_rl_process_group: true
+  expected_host_ram_gb: 360
+  expected_cpu_cores: 48
+  cpu_reserved_for_os: 4
+  ray_object_store_gb: 48
+  memory_safety_reserve_gb: 64
+
+ray:
+  address: local
+  retriever_pool_cpus: 8
+  rl_engine_cpus_per_gpu: 3
+  controller_cpu_workers: 5
+  outcome_worker_count: 4
+  exact_ig_task_builder_count: 2
+  agent_loop_worker_count: 12
+  placement_strategy: STRICT_PACK
+  object_spilling_directory: runtime/ray_spill
+
+rollout:
+  data_parallel_size: 3
+  replicas: 3
+  gpu_memory_utilization: 0.48
+  max_num_seqs: 64
+
+learner:
+  world_size: 3
+
+formal_schedule:
+  learner_micro_batch_size: 6

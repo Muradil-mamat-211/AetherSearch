@@ -3,7 +3,6 @@ set -euo pipefail
 
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 source "${PROJECT_ROOT}/scripts/bootstrap_env.sh"
-RL_PYTHON="${RL_ENV}/bin/python"
 # Model/checkpoint validation is intentionally slow. Serialize launcher
 # invocations so two callers cannot create concurrent recovery runs.
 exec 9>"/tmp/igpo_mica_verified_resume_launcher.lock"
@@ -111,7 +110,14 @@ PYTHONPATH="${PROJECT_ROOT}/src" "${RL_PYTHON}" \
   "${PREPARE_EXTRA[@]}" \
   --validate-only
 
-test "$(nvidia-smi -L | wc -l)" -eq 4
+EXPECTED_GPUS="$(PYTHONPATH="${PROJECT_ROOT}/src" "${RL_PYTHON}" - \
+  "${CONFIG}" <<'PY'
+import sys
+from agentic_rl.config import load_config
+print(int(load_config(sys.argv[1])["hardware"]["total_physical_gpus"]))
+PY
+)"
+test "$(nvidia-smi -L | wc -l)" -eq "${EXPECTED_GPUS}"
 if [[ -n "$(nvidia-smi --query-compute-apps=pid --format=csv,noheader | sed '/^[[:space:]]*$/d')" ]]; then
   printf 'GPU compute processes are already present; resume is fail-closed.\n' >&2
   exit 1
@@ -120,7 +126,7 @@ if pgrep -x raylet >/dev/null 2>&1; then
   printf 'A Ray cluster is already running; resume is fail-closed.\n' >&2
   exit 1
 fi
-AVAILABLE_GIB="$(df --output=avail -BG /root/autodl-tmp | tail -1 | tr -dc '0-9')"
+AVAILABLE_GIB="$(df --output=avail -BG "${SOURCE_RUN}" | tail -1 | tr -dc '0-9')"
 # The runtime preflight uses observed checkpoint/model sizes plus a margin.
 # Keep this launcher floor conservative without relying on the stale 100-GiB
 # assumption that blocked the verified U40 recovery on this 360-GiB host.
@@ -146,7 +152,8 @@ print(int(metadata["successful_update_step"]))
 PY
 )"
 RUN_ID="formal_resume_u$(printf '%03d' "${RESUME_STEP}")_to_u500_answer_ragen2_mica_ig_v1_g16_${TIMESTAMP}"
-RUN_DIR="${PROJECT_ROOT}/outputs/formal_training/${RUN_ID}"
+OUTPUT_ROOT="${AETHERSEARCH_RUNTIME_ROOT:-$(dirname "${SOURCE_RUN}")}"
+RUN_DIR="${OUTPUT_ROOT}/${RUN_ID}"
 SESSION="igpo_mica_resume_u$(printf '%03d' "${RESUME_STEP}")_u500_${TIMESTAMP}"
 if [[ -e "${RUN_DIR}" ]] || tmux has-session -t "${SESSION}" 2>/dev/null; then
   printf 'Run directory or tmux session already exists.\n' >&2
@@ -163,7 +170,7 @@ PYTHONPATH="${PROJECT_ROOT}/src" "${RL_PYTHON}" \
   --run-dir "${RUN_DIR}" \
   --session "${SESSION}"
 
-ln -sfn "${RUN_ID}" "${PROJECT_ROOT}/outputs/formal_training/latest"
+ln -sfn "${RUN_ID}" "${OUTPUT_ROOT}/latest"
 RESOLVED_CONFIG="${RUN_DIR}/configs/resolved_config.yaml"
 CONTROLLER_COMMAND="bash '${PROJECT_ROOT}/scripts/_run_runtime_job.sh' FORMAL '${RESOLVED_CONFIG}' '${RUN_DIR}' '${CHECKPOINT}'; rc=\$?; printf '%s\n' \"\${rc}\" >'${RUN_DIR}/artifacts/exit_code'; exit \"\${rc}\""
 tmux new-session -d -s "${SESSION}" -n controller "${CONTROLLER_COMMAND}"

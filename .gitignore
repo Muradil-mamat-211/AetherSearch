@@ -11,19 +11,28 @@ dist/
 *.egg-info/
 
 # Local/runtime state
-runtime/
-outputs/
-checkpoints/
-logs/
-ray_spill/
+/runtime/
+/outputs/
+/checkpoints/
+/logs/
+/ray_spill/
+/reports/
+/eval/
+/eval_results/
+/training_run_snapshots/
+/training_run_snapchat/
 *.log
 
 # Secrets and local env files
 .env
 .env.*
 env.sh
-*token*
-*secret*
+environment/env.local.sh
+configs/local/
+/.token
+/.secret
+*.token
+*.secret
 
 # Model weights and optimizer shards belong on HuggingFace/LFS, not normal Git.
 *.safetensors

@@ -57,27 +57,43 @@ hosted on Hugging Face.
 
 ## Quick Start
 
-Install the observed core environment and the local package:
+Install the local package inside an RL environment that already contains the
+compatible PyTorch, veRL, vLLM, Ray, and FlashAttention stack:
 
 ```bash
-python -m pip install -r environment/requirements-core-observed.txt
 python -m pip install -e .
 ```
 
-Run the static validation checks:
+Create the machine-local environment configuration:
+
+```bash
+cp environment/env.template.sh environment/env.local.sh
+# Edit environment/env.local.sh, then:
+source environment/env.local.sh
+```
+
+Run the lightweight source, shell, and configuration checks:
 
 ```bash
 bash scripts/validate_static.sh
 ```
 
-The production RL entrypoint is:
+Validate the only released hardware recipe without starting services:
 
 ```bash
-bash scripts/_run_runtime_job.sh FORMAL <resolved_config.yaml> <run_dir> [resume_checkpoint]
+bash scripts/train_rl.sh --dry-run
 ```
 
-For the preserved formal configs and launch commands, see
-`configs/formal_resolved/` and `TRAINING_REPRODUCTION.md`.
+Start RL training on the validated four-GPU topology:
+
+```bash
+bash scripts/train_rl.sh
+```
+
+The included recipe assigns physical GPU 0 to retrieval and asynchronous
+training-time evaluation, and physical GPUs 1-3 to the three-rank vLLM/FSDP2
+runtime. See `recipes/rl/README.md` for the configuration boundary. Historical
+formal configs and commands remain documented in `TRAINING_REPRODUCTION.md`.
 
 ## Repository Layout
 
@@ -86,8 +102,11 @@ For the preserved formal configs and launch commands, see
 - `src/agentic_rl/`: RL training, rollout, advantage, policy loss, retriever,
   checkpoint, and runtime adapter code.
 - `scripts/`: launch, preflight, resume, validation, and operational scripts for
-  the RL training stage.
-- `configs/`: base, formal, hardware, retriever, and executed resolved configs.
+  the RL training stage; see `scripts/README.md` for public versus historical
+  entrypoints.
+- `recipes/rl/`: the single validated public RL recipe and its usage boundary.
+- `configs/`: base, formal, hardware, retriever, and executed resolved configs;
+  see `configs/README.md` for their portability boundary.
 - `runtime_assets/`: local runtime assets required by the training launcher.
 - `tests/`: unit and integration checks for the training code.
 - `environment/`: observed package versions and environment template.

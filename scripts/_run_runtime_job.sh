@@ -8,7 +8,8 @@ usage() {
   cat <<'EOF'
 Usage: _run_runtime_job.sh STAGE CONFIG RUN_DIR [RESUME_CHECKPOINT]
 
-Internal process supervisor. Use run_final_pilot_20.sh or the formal scripts.
+Internal process supervisor. Use train_rl.sh or resume_rl.sh for public
+launches.
 EOF
 }
 
@@ -25,12 +26,36 @@ STAGE="${1^^}"
 CONFIG="$(readlink -f "$2")"
 RUN_DIR="$(readlink -m "$3")"
 RESUME_CHECKPOINT="${4:-}"
-RL_PYTHON="${RL_ENV}/bin/python"
+test -f "${CONFIG}"
+
+mapfile -d '' -t RUNTIME_VALUES < <(
+  "${RL_PYTHON}" - "${CONFIG}" <<'PY'
+import sys
+from agentic_rl.config import load_config
+
+config = load_config(sys.argv[1])
+values = (
+    config["paths"]["rl_python"],
+    config["hardware"]["retriever_physical_gpu"],
+    ",".join(str(value) for value in config["hardware"]["rl_physical_gpus"]),
+    config["retriever"]["service_url"],
+)
+for value in values:
+    print(value, end="\0")
+PY
+)
+if [[ "${#RUNTIME_VALUES[@]}" -ne 4 ]]; then
+  printf 'Failed to resolve the runtime configuration.\n' >&2
+  exit 1
+fi
+RL_PYTHON="${RUNTIME_VALUES[0]}"
+RETRIEVER_GPU="${RUNTIME_VALUES[1]}"
+RL_GPUS="${RUNTIME_VALUES[2]}"
+RETRIEVER_URL="${RUNTIME_VALUES[3]}"
 LOG_DIR="${RUN_DIR}/logs"
 PID_DIR="${RUN_DIR}/artifacts/pids"
 
-test -f "${CONFIG}"
-test -d "${RUN_DIR}"
+test -x "${RL_PYTHON}"
 mkdir -p "${LOG_DIR}" "${PID_DIR}"
 touch \
   "${LOG_DIR}/console.log" \
@@ -76,15 +101,16 @@ trap cleanup EXIT INT TERM
 printf 'stage=%s\nconfig=%s\nrun_dir=%s\n' \
   "${STAGE}" "${CONFIG}" "${RUN_DIR}"
 
-CUDA_VISIBLE_DEVICES=0 \
-  "${PROJECT_ROOT}/scripts/launch_retriever_gpu0.sh" \
+CUDA_VISIBLE_DEVICES="${RETRIEVER_GPU}" \
+  "${PROJECT_ROOT}/scripts/launch_retriever.sh" "${CONFIG}" "${RUN_DIR}" \
   >>"${LOG_DIR}/retriever.log" 2>&1 &
 RETRIEVER_PID=$!
 printf '%s\n' "${RETRIEVER_PID}" >"${PID_DIR}/retriever.pid"
 
 for _ in $(seq 1 240); do
   if "${RL_PYTHON}" -c \
-    "from agentic_rl.retriever.health import query_health; query_health('http://127.0.0.1:8000')" \
+    'import sys; from agentic_rl.retriever.health import query_health; query_health(sys.argv[1])' \
+    "${RETRIEVER_URL}" \
     >/dev/null 2>&1; then
     break
   fi
@@ -95,22 +121,22 @@ for _ in $(seq 1 240); do
   sleep 2
 done
 "${RL_PYTHON}" -c \
-  "from agentic_rl.retriever.health import query_health; query_health('http://127.0.0.1:8000')" \
+  'import sys; from agentic_rl.retriever.health import query_health; query_health(sys.argv[1])' \
+  "${RETRIEVER_URL}" \
   >/dev/null
 
 if [[ "${STAGE}" == "PILOT20" || "${STAGE}" == "FORMAL" ]]; then
-  CUDA_VISIBLE_DEVICES=0 \
+  CUDA_VISIBLE_DEVICES="${RETRIEVER_GPU}" \
     "${PROJECT_ROOT}/scripts/async_eval_gpu0_worker.sh" \
     "${CONFIG}" "${RUN_DIR}" &
   EVAL_PID=$!
   printf '%s\n' "${EVAL_PID}" >"${PID_DIR}/eval_worker.pid"
 fi
 
-export CUDA_VISIBLE_DEVICES="${AGENTIC_RL_RL_CUDA_VISIBLE_DEVICES:-1,2,3}"
+export CUDA_VISIBLE_DEVICES="${AGENTIC_RL_RL_CUDA_VISIBLE_DEVICES:-${RL_GPUS}}"
 export AGENTIC_RL_EXPECTED_RL_CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}"
 export VLLM_WORKER_MULTIPROC_METHOD=spawn
-# Never disable Ray's memory monitor in the 360-GiB cgroup.  A disabled
-# monitor turns recoverable pressure into an opaque worker EOF/SIGKILL.
+# Keep Ray's memory monitor active so pressure remains recoverable.
 export RAY_memory_monitor_refresh_ms=1000
 export RAY_memory_usage_threshold=0.80
 export AGENTIC_RL_RUNTIME_STAGE="${STAGE}"

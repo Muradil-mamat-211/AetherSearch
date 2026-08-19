@@ -2,17 +2,26 @@
 set -euo pipefail
 
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-SEARCH_R1_ENV="/root/autodl-tmp/search-r1-workspace/env.sh"
-RL_ENV="/root/autodl-tmp/search-r1-workspace/envs/igpo-ragen2-fsdp2-vllm011"
+export AETHERSEARCH_PROJECT_ROOT="${AETHERSEARCH_PROJECT_ROOT:-${PROJECT_ROOT}}"
 
-test -f "${SEARCH_R1_ENV}"
-test -x "${RL_ENV}/bin/python"
-source "${SEARCH_R1_ENV}"
+ENV_FILE="${AETHERSEARCH_ENV_FILE:-${PROJECT_ROOT}/environment/env.local.sh}"
+if [[ -f "${ENV_FILE}" ]]; then
+  # shellcheck source=/dev/null
+  source "${ENV_FILE}"
+fi
 
-export PATH="${RL_ENV}/bin:${PATH}"
-# RL must import the installed veRL 0.6.1 package. Adding the legacy
-# Search-R1 source tree here shadows it with Search-R1's bundled veRL 0.1.
-export PYTHONPATH="${PROJECT_ROOT}/src"
+RL_PYTHON="${AETHERSEARCH_RL_PYTHON:-$(command -v python)}"
+RETRIEVER_PYTHON="${AETHERSEARCH_RETRIEVER_PYTHON:-${RL_PYTHON}}"
+test -x "${RL_PYTHON}"
+test -x "${RETRIEVER_PYTHON}"
+
+RL_ENV="$(cd "$(dirname "${RL_PYTHON}")/.." && pwd)"
+export PATH="$(dirname "${RL_PYTHON}"):${PATH}"
+# Do not add a legacy Search-R1 source tree here: it can shadow the installed
+# veRL version selected by the user's RL environment.
+export PYTHONPATH="${PROJECT_ROOT}/src${PYTHONPATH:+:${PYTHONPATH}}"
 export TOKENIZERS_PARALLELISM=false
 export PROJECT_ROOT
 export RL_ENV
+export RL_PYTHON
+export RETRIEVER_PYTHON

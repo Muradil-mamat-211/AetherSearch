@@ -3,10 +3,10 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "agentic-rl-igpo-ragen2-a2tgpo"
+name = "aethersearch"
 version = "1.0.0"
-description = "Strict rollout-start on-policy Agentic RL deployment for IGPO, RAGEN-2, and A2TGPO"
-requires-python = ">=3.9"
+description = "Strict rollout-start on-policy search-augmented reinforcement learning"
+requires-python = ">=3.10"
 dependencies = [
   "PyYAML>=6.0",
   "numpy>=1.24",
@@ -16,8 +16,11 @@ dependencies = [
 ]
 
 [project.scripts]
-agentic-rl-config = "agentic_rl.config:main"
-agentic-rl-train = "agentic_rl.controller.update_controller:main"
+aethersearch-config = "agentic_rl.config:main"
+aethersearch-runtime = "agentic_rl.runtime.entrypoint:main"
+
+[project.optional-dependencies]
+test = ["pytest>=8.0"]
 
 [tool.setuptools]
 package-dir = {"" = "src"}

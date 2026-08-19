@@ -6,17 +6,20 @@ The production entrypoint used by the persisted formal runs was:
 bash scripts/_run_runtime_job.sh FORMAL <resolved_config.yaml> <run_dir> [resume_checkpoint]
 ```
 
-`_run_runtime_job.sh` starts the GPU0 retriever, starts the async eval worker, binds RL training to `CUDA_VISIBLE_DEVICES=1,2,3`, then runs:
+`_run_runtime_job.sh` reads the Retriever and RL GPU assignments from the
+resolved config, starts both services, then runs:
 
 ```bash
 python -m agentic_rl.runtime.entrypoint --config <resolved_config.yaml>
 ```
 
-The package entrypoint is also exposed by `pyproject.toml` as `agentic-rl-train = agentic_rl.controller.update_controller:main`, but the actual formal training runs used the runtime adapter path above.
+The package exposes the same runtime adapter as `aethersearch-runtime`, but the
+formal training runs used the shell supervisor above so the Retriever and
+training-time evaluation worker shared its lifecycle.
 
-`scripts/launch_train.sh` is a thin wrapper around
-`scripts/train_formal_manual.sh`. For exact reproduction of a persisted run, use
-`_run_runtime_job.sh` with a resolved config.
+`scripts/launch_train.sh` is a compatibility wrapper around the public
+`scripts/train_rl.sh` entrypoint. For exact reproduction of a persisted run,
+use `_run_runtime_job.sh` with its resolved config.
 
 The actual resolved configs and launch commands preserved for the primary
 formal run chain are under `configs/formal_resolved/<run>/`.

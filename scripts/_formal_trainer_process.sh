@@ -11,9 +11,15 @@ fi
 CONFIG="$(readlink -f "$1")"
 RUN_DIR="$(readlink -f "$2")"
 RESUME_CHECKPOINT="$(readlink -f "$3")"
-RL_PYTHON="${RL_ENV}/bin/python"
+RL_PYTHON="$("${RL_PYTHON}" -m agentic_rl.config --config "${CONFIG}" --get paths.rl_python)"
+RL_GPUS="$("${RL_PYTHON}" - "${CONFIG}" <<'PY'
+import sys
+from agentic_rl.config import load_config
+print(",".join(str(value) for value in load_config(sys.argv[1])["hardware"]["rl_physical_gpus"]))
+PY
+)"
 
-export CUDA_VISIBLE_DEVICES="${AGENTIC_RL_RL_CUDA_VISIBLE_DEVICES:-1,2,3}"
+export CUDA_VISIBLE_DEVICES="${AGENTIC_RL_RL_CUDA_VISIBLE_DEVICES:-${RL_GPUS}}"
 export AGENTIC_RL_EXPECTED_RL_CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}"
 export VLLM_WORKER_MULTIPROC_METHOD=spawn
 # Keep Ray's cgroup-aware memory monitor active with a conservative threshold.
