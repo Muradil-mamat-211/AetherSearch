@@ -3,18 +3,18 @@
 This inventory covers the AetherSearch GitHub repository tree after packaging.
 Model weights, optimizer checkpoints, eval result bundles, report archives, and runtime snapshots are not included.
 
-Generated UTC: `2026-08-18T15:00:44Z`
+Generated UTC: `2026-08-19T05:37:06Z`
 
 ## Summary
 
 - `configs`: `30` files, `162131` bytes
-- `documentation`: `4` files, `8215` bytes
+- `documentation`: `4` files, `10942` bytes
 - `environment`: `5` files, `9748` bytes
 - `references`: `1` files, `51625` bytes
 - `repo_root`: `3` files, `1274` bytes
 - `runtime_assets`: `2` files, `28709` bytes
 - `scripts`: `71` files, `401863` bytes
-- `sft_data`: `7` files, `16791` bytes
+- `sft_data`: `7` files, `17029` bytes
 - `src`: `84` files, `1247130` bytes
 - `tests`: `36` files, `307686` bytes
 - `third_party`: `5` files, `125893` bytes
@@ -61,7 +61,7 @@ Generated UTC: `2026-08-18T15:00:44Z`
 | path | bytes | sha256 |
 |---|---:|---|
 | `EXTERNAL_ASSETS.md` | 1356 | `52c3829f90797ba6b3999c1cdf8f5d907b9a137bc60b8f96c95e6e80fdd0374d` |
-| `README.md` | 1378 | `439a09cc122966cb06bb5d39887aff3742d5155f619062d41269f1b754ca9d09` |
+| `README.md` | 4105 | `ec743d742bd45da2398c9b51de8c2dc44200720ca226c1a1f09ddc72a4d78c8d` |
 | `THIRD_PARTY_NOTICES.md` | 4092 | `09c4e8e0e4c97f56361c9bd97959398b21a9ff27f0497e9ca7a6cf0cefc3d605` |
 | `TRAINING_REPRODUCTION.md` | 1389 | `b0c292aa4b2847ebf018a45ca46d14200978a8f650af5e9b91c4be13ade9dc4c` |
 
@@ -177,7 +177,7 @@ Generated UTC: `2026-08-18T15:00:44Z`
 | path | bytes | sha256 |
 |---|---:|---|
 | `sft_data/ATTRIBUTION.md` | 2776 | `11ca5354884cad2bbc64b224a930d263e741f3d0b9148490152811f9cc24822c` |
-| `sft_data/README.md` | 3671 | `303383a932e643202076f393c659f48ce967474649a6c55ee573369a8c064a45` |
+| `sft_data/README.md` | 3909 | `1a28778875d73880bcc30130c53eb496fd901327ad1712faac0fd1476cccfa4c` |
 | `sft_data/checksums.sha256` | 419 | `e6b1fc982ac115459215e718e031c5b83a66e53bb9c559b7916c7da265b58e11` |
 | `sft_data/dataset_manifest.json` | 1444 | `3b6ca2879d1d680d3226ed96c326e1ee1ff566d4eabe73ed005619096e02de8e` |
 | `sft_data/scripts/build_audited_queryrewrite.sh` | 4353 | `63d66396282c48cf5a1abe71f53b92fbbb0c54f543096b34dfbe77ca8ffde9ee` |
@@ -323,4 +323,3 @@ Generated UTC: `2026-08-18T15:00:44Z`
 | `third_party/igpo_official_64165e2741ed8801f977948c8128080ce87b4101/scrl/llm_agent/generation.py` | 54797 | `7019243992a3b70fe4d74d3fff6808cb3d7e25fa0b9ec461a4effa41681333b0` |
 | `third_party/igpo_official_64165e2741ed8801f977948c8128080ce87b4101/scrl/llm_agent/prealigned_vectorized.py` | 23073 | `636edca70e84408a988bfb2ff6c7ea0747d3f2bdbc5591d0ad34e3813c963cc9` |
 | `third_party/igpo_official_64165e2741ed8801f977948c8128080ce87b4101/scrl/llm_agent/vectorized_gt_logprob.py` | 36023 | `a00da4b594238baa9b2fef911fb5d0a418c5c258d5097559fff3fc6389689f9d` |
-
