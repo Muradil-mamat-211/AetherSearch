@@ -3,6 +3,8 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Mapping
 
+from agentic_rl.topology import TopologyPlan
+
 
 class RuntimeConfigurationError(RuntimeError):
     pass
@@ -60,9 +62,9 @@ def build_verl_config(
 ) -> Any:
     """Map frozen project settings to the installed veRL 0.6.1 schema.
 
-    Aggregate rollout DP is represented by one independent TP=1 replica per
-    learner rank. This remains four replicas for the default run and can be
-    three replicas for an explicitly configured world-size migration.
+    The current adapter represents aggregate rollout DP as one independent
+    TP=1 replica per learner rank. The replica count is derived from the
+    resolved TopologyPlan rather than from a reference-machine world size.
     """
 
     from omegaconf import OmegaConf, open_dict
@@ -73,6 +75,7 @@ def build_verl_config(
     config = OmegaConf.load(path)
     model_path = str(project_config["paths"]["actor_model"])
     reference_path = str(project_config["paths"]["reference_model"])
+    topology = TopologyPlan.from_config(project_config)
     rollout = project_config["rollout"]
     learner = project_config["learner"]
     schedule = project_config["formal_schedule"]
@@ -188,7 +191,7 @@ def build_verl_config(
         actor.grad_clip = float(project_config["policy"]["max_grad_norm"])
         actor.fsdp_config.strategy = "fsdp2"
         actor.fsdp_config.reshard_after_forward = False
-        actor.fsdp_config.fsdp_size = int(learner["world_size"])
+        actor.fsdp_config.fsdp_size = int(topology.learner_world_size)
         actor.fsdp_config.model_dtype = "fp32"
         actor.fsdp_config.dtype = "bfloat16"
         actor.fsdp_config.param_offload = False
@@ -201,7 +204,7 @@ def build_verl_config(
         ref.model = {"path": reference_path}
         ref.fsdp_config.strategy = "fsdp2"
         ref.fsdp_config.reshard_after_forward = False
-        ref.fsdp_config.fsdp_size = int(learner["world_size"])
+        ref.fsdp_config.fsdp_size = int(topology.learner_world_size)
         ref.fsdp_config.model_dtype = "bfloat16"
         ref.fsdp_config.dtype = "bfloat16"
         ref.fsdp_config.use_torch_compile = False
@@ -285,8 +288,8 @@ def build_verl_config(
         config.data.shuffle = False
         config.data.truncation = "error"
 
-        config.trainer.n_gpus_per_node = int(learner["world_size"])
-        config.trainer.nnodes = 1
+        config.trainer.n_gpus_per_node = int(topology.rl_gpus_per_node)
+        config.trainer.nnodes = int(topology.nnodes)
         config.trainer.project_name = str(project_config["project"]["name"])
         config.trainer.experiment_name = "strict_runtime"
         config.trainer.default_local_dir = str(runtime_root / "checkpoints")

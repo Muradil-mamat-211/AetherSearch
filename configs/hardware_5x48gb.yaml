@@ -1,26 +1,51 @@
 hardware:
   total_physical_gpus: 5
   gpu_memory_gb: 48
-  retriever_physical_gpu: 0
-  rl_physical_gpus: [1, 2, 3, 4]
-  rl_visible_gpus: [0, 1, 2, 3]
-  rl_world_size: 4
   allow_world_size_change_on_resume: false
-  vllm_data_parallel_size: 4
-  vllm_tensor_parallel_size: 1
   forbid_retriever_in_rl_process_group: true
   expected_host_ram_gb: 450
   expected_cpu_cores: 125
   cpu_reserved_for_os: 10
   ray_object_store_gb: 96
+  memory_safety_reserve_gb: 64
+
+topology:
+  cluster_mode: local
+  nnodes: 1
+  roles:
+    retriever:
+      physical_gpu: 0
+    eval:
+      colocate_with: retriever
+    rl:
+      physical_gpus_by_node: [[1, 2, 3, 4]]
+  ray:
+    placement_strategy: STRICT_PACK
+    cluster_mode: local
+    address: local
+  rollout:
+    data_parallel_size: 4
+    tensor_parallel_size: 1
 
 ray:
-  address: local
   retriever_pool_cpus: 20
   rl_engine_cpus_per_gpu: 6
   controller_cpu_workers: 71
   outcome_worker_count: 24
   exact_ig_task_builder_count: 20
   agent_loop_worker_count: 32
-  placement_strategy: STRICT_PACK
   object_spilling_directory: runtime/ray_spill
+
+rollout:
+  gpu_memory_utilization: 0.46
+  max_num_seqs: 64
+
+formal_schedule:
+  learner_micro_batch_size: 6
+
+runtime_smoke_schedule:
+  learner_micro_batch_size: 6
+
+evaluation:
+  minimum_free_memory_gib: 10
+  max_memory_fraction: 0.24

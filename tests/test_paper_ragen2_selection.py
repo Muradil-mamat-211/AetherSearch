@@ -1,7 +1,9 @@
 import math
 from pathlib import Path
 
-from agentic_rl.config import load_config
+from agentic_rl.config import _load_config_tree
+
+from config_support import MICA_CONFIG, PAPER_MICA_CONFIG
 from agentic_rl.selection.candidate_pool import (
     ANSWER_OUTCOME_ONLY_RAGEN2_PAPER_VARIANCE_TOP_P_MODE,
     ANSWER_OUTCOME_ONLY_SCALED_TOP_P_MODE,
@@ -60,13 +62,8 @@ def test_paper_sample_variance_is_ddof_one() -> None:
 
 
 def test_paper_formal_config_activates_only_the_new_selector() -> None:
-    old_config = load_config(
-        PROJECT_ROOT / "configs/formal_train_answer_only_ragen2_mica_ig_v1.yaml"
-    )
-    paper_config = load_config(
-        PROJECT_ROOT
-        / "configs/formal_train_answer_only_ragen2_paper_mica_ig_v1.yaml"
-    )
+    old_config = _load_config_tree(MICA_CONFIG)
+    paper_config = _load_config_tree(PAPER_MICA_CONFIG)
     assert paper_config["selection"]["mode"] == (
         ANSWER_OUTCOME_ONLY_RAGEN2_PAPER_VARIANCE_TOP_P_MODE
     )
@@ -84,6 +81,19 @@ def test_paper_formal_config_activates_only_the_new_selector() -> None:
         "evaluation",
     ):
         assert paper_config[section] == old_config[section]
+
+
+def test_public_recipe_uses_paper_ragen2_selection() -> None:
+    config = _load_config_tree(
+        PROJECT_ROOT / "recipes" / "rl" / "train_4x48gb.yaml"
+    )
+    selection = config["selection"]
+    assert selection["mode"] == (
+        ANSWER_OUTCOME_ONLY_RAGEN2_PAPER_VARIANCE_TOP_P_MODE
+    )
+    assert selection["signal"] == ANSWER_OUTCOME_ONLY_SELECTION_SIGNAL
+    assert selection["health_gate_active_for_selection"] is False
+    assert selection["scale_active_for_selection"] is False
 
 
 def test_paper_selector_accumulates_variance_not_standard_deviation() -> None:

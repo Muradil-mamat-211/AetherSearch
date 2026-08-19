@@ -1,0 +1,5 @@
+# Base layer for the generic formal-schedule test composition.
+extends: ../../configs/formal_train.yaml
+
+includes:
+  - ../../configs/hardware_5x48gb.yaml

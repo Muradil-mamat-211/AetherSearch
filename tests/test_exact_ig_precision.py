@@ -2,11 +2,14 @@ from __future__ import annotations
 
 import inspect
 import math
+import os
 from types import SimpleNamespace
 
 import torch
 
-from agentic_rl.config import DEFAULT_CONFIG, load_config
+from agentic_rl.config import load_config
+
+from config_support import TEST_CONFIG
 from agentic_rl.exact_ig.precision_policy import (
     ExactIGPrecisionPolicy,
     exact_ig_precision_context,
@@ -126,9 +129,11 @@ def test_target_schema_is_exactly_locked() -> None:
 def test_real_dpo_tokenizer_uses_official_answer_covering_offsets() -> None:
     from transformers import AutoTokenizer
 
-    model_path = (
-        "/root/autodl-tmp/search-r1-workspace/models/dpo_v2_final_model"
-    )
+    model_path = os.environ.get("AETHERSEARCH_ACTOR_MODEL", "")
+    if not model_path:
+        import pytest
+
+        pytest.skip("AETHERSEARCH_ACTOR_MODEL is required for asset-backed tests")
     tokenizer = AutoTokenizer.from_pretrained(
         model_path,
         trust_remote_code=True,
@@ -165,7 +170,7 @@ def test_fp32_policy_disables_reduced_precision_and_preserves_model_dtype() -> N
 
 
 def test_corrected_exact_ig_config_contract() -> None:
-    config = load_config(DEFAULT_CONFIG)
+    config = load_config(TEST_CONFIG)
     exact = config["exact_ig"]
     assert exact["production_precision_mode"] == "fp32_exact_ig"
     assert exact["exact_ig_version"] == (

@@ -14,6 +14,7 @@ from agentic_rl.workers.ray_actors import (
     PromptSamplerActor,
     ray_remote_class,
 )
+from agentic_rl.topology import TopologyPlan
 
 from .capped_vllm import StrictAgentLoopManager
 from .fsdp_worker import StrictOnPolicyFSDP2Worker
@@ -42,13 +43,23 @@ def _json_safe(value: Any) -> Any:
 class FixedBundleRayResourcePool:
     """veRL-compatible pool with configured CPU capacity and one GPU per rank."""
 
-    def __init__(self, *, world_size: int, cpus_per_rank: int, name: str) -> None:
+    def __init__(
+        self,
+        *,
+        topology: TopologyPlan,
+        cpus_per_rank: int,
+        placement_strategy: str,
+        name: str,
+    ) -> None:
         from verl.single_controller.ray.base import RayResourcePool
+
+        bundles = topology.ray_bundles(cpus_per_rank)
+        strategy = str(placement_strategy).upper()
 
         class _Pool(RayResourcePool):
             def __init__(inner_self) -> None:
                 super().__init__(
-                    process_on_nodes=[int(world_size)],
+                    process_on_nodes=[int(topology.rl_gpus_per_node)] * int(topology.nnodes),
                     use_gpu=True,
                     name_prefix=name,
                     max_colocate_count=1,
@@ -56,7 +67,7 @@ class FixedBundleRayResourcePool:
 
             def get_placement_groups(
                 inner_self,
-                strategy: str = "STRICT_PACK",
+                strategy: str = strategy,
                 name: str | None = None,
                 device_name: str = "cuda",
             ) -> list[Any]:
@@ -66,13 +77,13 @@ class FixedBundleRayResourcePool:
                 from ray.util.placement_group import placement_group
 
                 resource = "GPU" if device_name == "cuda" else device_name.upper()
-                bundles = [
-                    {"CPU": float(cpus_per_rank), resource: 1.0}
-                    for _ in range(int(world_size))
+                placement_bundles = [
+                    {"CPU": bundle["CPU"], resource: bundle["GPU"]}
+                    for bundle in bundles
                 ]
-                pg_name = name or f"{inner_self.name_prefix}strict_rl"
+                pg_name = name or f"{inner_self.name_prefix}rl"
                 pg = placement_group(
-                    bundles=bundles,
+                    bundles=placement_bundles,
                     strategy=strategy,
                     name=pg_name,
                 )
@@ -86,16 +97,21 @@ class FixedBundleRayResourcePool:
 class RuntimeRayTopology:
     def __init__(self, project_config: Mapping[str, Any]) -> None:
         self.project_config = project_config
+        self.topology = TopologyPlan.from_config(project_config)
         self.verl_config: Any | None = None
         self.resource_pool: Any | None = None
         self.worker_group: Any | None = None
         self.agent_loop_manager: StrictAgentLoopManager | None = None
         self.control_actors: dict[str, Any] = {}
 
-    @staticmethod
-    def assert_rl_gpu_isolation() -> None:
+    def assert_rl_gpu_isolation(self) -> None:
         visible = os.environ.get("CUDA_VISIBLE_DEVICES")
-        expected = os.environ.get("AGENTIC_RL_EXPECTED_RL_CUDA_VISIBLE_DEVICES", "1,2,3,4")
+        expected = os.environ.get(
+            "AGENTIC_RL_EXPECTED_RL_CUDA_VISIBLE_DEVICES",
+            self.topology.rl_cuda_visible_devices,
+        )
+        if not expected:
+            raise RuntimeError("TopologyPlan did not provide RL CUDA devices")
         if visible != expected:
             raise RuntimeError(
                 f"RL runtime must be launched with CUDA_VISIBLE_DEVICES={expected}; "
@@ -107,6 +123,21 @@ class RuntimeRayTopology:
         resource_budget = validate_runtime_resource_budget(self.project_config)
         import ray
 
+        ray_config = self.project_config["ray"]
+        os.environ.setdefault(
+            "RAY_memory_monitor_refresh_ms",
+            str(ray_config.get("memory_monitor_refresh_ms", 1000)),
+        )
+        os.environ.setdefault(
+            "RAY_memory_usage_threshold",
+            str(ray_config.get("memory_usage_threshold", 0.80)),
+        )
+
+        if self.topology.cluster_mode == "existing":
+            raise RuntimeError(
+                "ray.cluster_mode=existing is parsed by TopologyPlan but the "
+                "current launcher only supports cluster_mode=local"
+            )
         if not ray.is_initialized():
             runtime_root = Path(
                 str(self.project_config["paths"]["runtime_root"])
@@ -116,12 +147,9 @@ class RuntimeRayTopology:
             object_store_bytes = int(
                 self.project_config["hardware"]["ray_object_store_gb"]
             ) * 1024**3
-            ray.init(
-                num_cpus=int(self.project_config["hardware"]["expected_cpu_cores"]),
-                num_gpus=int(self.project_config["hardware"]["rl_world_size"]),
-                object_store_memory=object_store_bytes,
-                include_dashboard=False,
-                runtime_env={
+            runtime_kwargs: dict[str, Any] = {
+                "include_dashboard": False,
+                "runtime_env": {
                     "env_vars": {
                         "OMP_NUM_THREADS": "1",
                         "MKL_NUM_THREADS": "1",
@@ -131,23 +159,31 @@ class RuntimeRayTopology:
                         "RAYON_NUM_THREADS": "1",
                     }
                 },
-                _system_config={
-                    "object_spilling_config": json.dumps(
-                        {
-                            "type": "filesystem",
-                            "params": {"directory_path": str(spill)},
-                        }
-                    )
-                },
+            }
+            runtime_kwargs.update(
+                {
+                    "num_cpus": int(self.project_config["hardware"]["expected_cpu_cores"]),
+                    "num_gpus": int(self.topology.learner_world_size),
+                    "object_store_memory": object_store_bytes,
+                }
             )
+            runtime_kwargs["_system_config"] = {
+                "object_spilling_config": json.dumps(
+                    {
+                        "type": "filesystem",
+                        "params": {"directory_path": str(spill)},
+                    }
+                )
+            }
+            ray.init(**runtime_kwargs)
         resources = ray.cluster_resources()
-        expected_gpus = int(self.project_config["hardware"]["rl_world_size"])
-        if int(resources.get("GPU", 0)) != expected_gpus:
-            raise RuntimeError(f"Ray must expose exactly {expected_gpus} RL GPUs: {resources}")
+        expected_gpus = int(self.topology.learner_world_size)
+        if int(resources.get("GPU", 0)) < expected_gpus:
+            raise RuntimeError(f"Ray must expose at least {expected_gpus} RL GPUs: {resources}")
         expected_cpus = int(self.project_config["hardware"]["expected_cpu_cores"])
-        if int(resources.get("CPU", 0)) != expected_cpus:
+        if int(resources.get("CPU", 0)) < expected_cpus:
             raise RuntimeError(
-                "Ray CPU resources do not match the cgroup-validated contract: "
+                "Ray CPU resources are below the configured contract: "
                 f"expected={expected_cpus} resources={resources}"
             )
         return {
@@ -274,10 +310,11 @@ class RuntimeRayTopology:
             require_optimizer=require_optimizer,
         )
         pool_wrapper = FixedBundleRayResourcePool(
-            world_size=int(self.project_config["learner"]["world_size"]),
+            topology=self.topology,
             cpus_per_rank=int(
                 self.project_config["ray"]["rl_engine_cpus_per_gpu"]
             ),
+            placement_strategy=self.topology.placement_strategy,
             name="strict_agentic_rl_",
         )
         self.resource_pool = pool_wrapper.pool
@@ -290,7 +327,7 @@ class RuntimeRayTopology:
         self.worker_group = RayWorkerGroup(
             resource_pool=self.resource_pool,
             ray_cls_with_init=worker_init,
-            bin_pack=True,
+            bin_pack=self.topology.placement_strategy in {"PACK", "STRICT_PACK"},
             name_prefix="strict_fsdp2_",
             device_name="cuda",
             worker_env={
@@ -305,7 +342,7 @@ class RuntimeRayTopology:
             },
         )
         identities = self.worker_group.init_model()
-        expected_world_size = int(self.project_config["learner"]["world_size"])
+        expected_world_size = int(self.topology.learner_world_size)
         if len(identities) != expected_world_size:
             raise RuntimeError(
                 f"FSDP2 worker group did not initialize {expected_world_size} ranks"
@@ -316,13 +353,14 @@ class RuntimeRayTopology:
             rm_wg=None,
         )
         topology = effective_rollout_topology(self.verl_config)
-        if topology != {
+        expected_effective = {
             "worker_world_size": expected_world_size,
             "per_replica_world_size": 1,
             "replica_count": expected_world_size,
             "aggregate_data_parallel_size": expected_world_size,
             "tensor_parallel_size": 1,
-        }:
+        }
+        if topology != expected_effective:
             raise RuntimeError(f"Resolved rollout topology is wrong: {topology}")
         return {
             "fsdp_workers": identities,

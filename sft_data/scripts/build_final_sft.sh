@@ -1,7 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-base="${1:-${AETHERSEARCH_SFT_WORKDIR:-/root/CLEAN_SFT_FINAL}}"
+if [[ "$#" -ge 1 ]]; then
+  base="$1"
+elif [[ -n "${AETHERSEARCH_SFT_WORKDIR:-}" ]]; then
+  base="${AETHERSEARCH_SFT_WORKDIR}"
+else
+  printf 'Set AETHERSEARCH_SFT_WORKDIR or pass the SFT work directory as the first argument.\n' >&2
+  exit 2
+fi
 queryrewrite="$base/clean_queryrewrite_audited_keep_dedup.jsonl"
 v31="$base/clean_v31.jsonl"
 out="$base/final_sft.jsonl"

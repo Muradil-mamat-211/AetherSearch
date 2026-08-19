@@ -3,10 +3,10 @@
 This directory contains the public entry configuration for the verified
 AetherSearch RL topology. It does not contain SFT or DPO training recipes.
 
-The current reference profile uses four 48 GiB GPUs: physical GPU 0 hosts the
-hybrid retriever and asynchronous worker, while physical GPUs 1-3 host the
-three-rank vLLM/FSDP2 RL runtime. Other topologies are not yet claimed as
-validated.
+The current reference profile uses four 48 GiB GPUs: one dedicated role hosts
+the hybrid retriever and asynchronous worker, while three RL roles host the
+three-rank vLLM/FSDP2 runtime. The exact physical mapping is expressed in the
+topology block and enforced only by the official qualification profile.
 
 Every evaluation scheduled at a 20-update checkpoint uses all 51,713 rows of
 the configured Search-R1 `test.parquet`, in original parquet row order. The
@@ -69,8 +69,10 @@ runs the formal preflight, then starts the Retriever, asynchronous
 training-time evaluation worker, and three-rank RL runtime from the same
 resolved config.
 
-Only the included 4x48GB profile is asserted as validated by this release.
-Different GPU counts, GPU memory, host RAM, or CPU capacity require coordinated
-changes to the hardware/Ray profile, batch and memory settings, resource
-guards, and currently strict topology validation. Editing a few YAML numbers
-is not claimed to be sufficient.
+`train_4x48gb.yaml` is the only formally qualified training profile and uses
+the paper RAGEN-2 raw terminal-outcome variance selector. A different server
+uses a user-owned hardware/runtime YAML and `qualification.mode: portable`;
+algorithm Python code is unchanged. Generic non-reference layouts are covered
+only by CPU configuration-planning tests. That synthetic coverage does not
+establish GPU-memory fit, runtime compatibility, training stability,
+throughput, or production qualification.

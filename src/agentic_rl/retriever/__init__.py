@@ -1,4 +1,4 @@
-"""Client-side contract for the external GPU0 Hybrid Retriever."""
+"""Client-side contract for the external topology-routed Hybrid Retriever."""
 
 from .client import (
     AsyncHybridRetrieverClient,

@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+from gpu_test_guard import skip_if_no_gpu
+
+skip_if_no_gpu()
+
 from pathlib import Path
 import subprocess
 import sys
@@ -33,8 +37,8 @@ from agentic_rl.selection.candidate_pool import (
 )
 from agentic_rl.selection.channel_scale import ChannelScaleState
 
-CONFIG = "configs/formal_train_answer_only_ragen2_mica_ig_v1.yaml"
 ROOT = Path(__file__).resolve().parents[1]
+CONFIG = "tests/fixtures/formal_train_mica_4x48gb.yaml"
 
 
 def test_verified_resume_recreates_only_missing_cadence_artifacts(
@@ -48,9 +52,7 @@ def test_verified_resume_recreates_only_missing_cadence_artifacts(
         "AGENTIC_RL_RESUME_CHECKPOINT",
         str(resume_checkpoint),
     )
-    config = load_config(
-        ROOT / "configs/formal_train_answer_only_ragen2_mica_ig_v1.yaml"
-    )
+    config = load_config(ROOT / CONFIG)
     config["paths"]["runtime_root"] = str(tmp_path / "run")
     config["checkpoint"][
         "materialize_missing_cadence_artifacts_on_resume"
@@ -302,7 +304,7 @@ def test_candidate_group_can_be_built_before_exact_ig_gpu_scoring() -> None:
 
 
 def test_new_config_locks_answer_only_ragen_and_mica_v1() -> None:
-    config = load_config(CONFIG)
+    config = load_config(ROOT / CONFIG)
     assert config["algorithm_mode"] == (
         ANSWER_ONLY_RAGEN2_MICA_IG_V1_SINGLETON_OUTCOME_MODE
     )
@@ -321,7 +323,7 @@ def test_formal_checkpoint_validation_does_not_reload_live_workers(
     monkeypatch,
     tmp_path: Path,
 ) -> None:
-    config = load_config(CONFIG)
+    config = load_config(ROOT / CONFIG)
     checkpoint = tmp_path / "update_020"
     checkpoint.mkdir()
     metadata = SimpleNamespace(

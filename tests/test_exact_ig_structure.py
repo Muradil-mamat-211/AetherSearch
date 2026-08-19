@@ -434,9 +434,10 @@ def test_log_prob_diff_telescopes_without_probability_transform() -> None:
 
 
 def test_old_exact_ig_checkpoint_schema_is_rejected() -> None:
-    from agentic_rl.config import DEFAULT_CONFIG, load_config
+    from agentic_rl.config import load_config
+    from config_support import TEST_CONFIG
 
-    current = load_config(DEFAULT_CONFIG)
+    current = load_config(TEST_CONFIG)
     old = {"exact_ig": dict(current["exact_ig"])}
     old["exact_ig"]["exact_ig_version"] = "legacy_anchor_multi_alias"
     with pytest.raises(RuntimeError, match="incompatible"):

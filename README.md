@@ -1,8 +1,10 @@
 <div align="center">
 
+<img src="assets/aethersearch-mark.svg" alt="AetherSearch monogram" width="130">
+
 # AetherSearch
 
-**Search-augmented post-training with SFT assets and reinforcement learning.**
+**‚ú® A 3B multi-turn search agent trained with full-trajectory SFT, DPO, and information-gain-guided Agentic RL.**
 
 [![Model](https://img.shields.io/badge/%F0%9F%A4%97%20Model-AetherSearch-yellow)](https://huggingface.co/muradil211/AetherSearch)
 [![SFT Data](https://img.shields.io/badge/%F0%9F%A4%97%20Data-AetherSearch%20SFT-yellow)](https://huggingface.co/datasets/muradil211/aethersearch_sft)
@@ -28,6 +30,8 @@
 
 ## Open Resources
 
+üîó Models, datasets, and reproducibility inputs are linked directly below.
+
 | Resource | Link | Contents |
 |---|---|---|
 | ü§ó Model | [muradil211/AetherSearch](https://huggingface.co/muradil211/AetherSearch) | model weights, tokenizer, config, and model card |
@@ -40,8 +44,10 @@
 
 - [Overview](#overview)
 - [Training Pipeline](#training-pipeline)
+- [Evaluation Results](#evaluation-results)
 - [Agentic RL Method](#agentic-rl-method)
 - [Quick Start](#quick-start)
+- [Configuration Boundary](#configuration-boundary)
 - [Repository Layout](#repository-layout)
 - [Release Boundary](#release-boundary)
 
@@ -55,161 +61,1050 @@ repository. Large data and model artifacts are hosted on Hugging Face.
 
 ## Training Pipeline
 
+üß≠ The complete training lineage is SFT ‚Üí DPO ‚Üí Agentic RL.
+
 | Stage | Purpose | Primary locations |
 |---|---|---|
 | SFT | cold-start full-trajectory supervision | `sft_data/`, `sft_data/scripts/` |
 | DPO warm start | externally produced actor/reference initialization | `AETHERSEARCH_ACTOR_MODEL`, `AETHERSEARCH_REFERENCE_MODEL` |
 | RL | search-augmented rollout and policy optimization | `src/agentic_rl/`, `scripts/`, `recipes/rl/` |
 
+## Evaluation Results
+
+üìä Exact-match results across the released Search-R1 evaluation suites.
+
+| Model | NQ | TriviaQA | PopQA | HotpotQA | 2WikiMultiHopQA | Musique | Bamboogle | Overall / Avg. EM |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| Search-R1 (Qwen2.5-3B Base, PPO) | **0.406** | 0.587 | **0.435** | 0.284 | 0.273 | 0.049 | 0.088 | 0.303 |
+| Search-R1 (Qwen2.5-3B Instruct, PPO) | 0.341 | 0.545 | 0.378 | 0.324 | 0.319 | 0.103 | **0.264** | 0.325 |
+| AetherSearch | 0.3977 | **0.5877** | 0.4229 | **0.3333** | **0.3985** | **0.1200** | 0.2320 | **0.3560** |
+
 ## Agentic RL Method
 
-> **Method status.** This section describes the final Agentic-RL credit-assignment path used by AetherSearch:
-> `answer_only_ragen2_mica_ig_v1_singleton_outcome`.
+> üß† **Method scope.** This section documents the public AetherSearch
+> Agentic-RL recipe and the code path selected by
+> `answer_only_ragen2_mica_ig_v1_singleton_outcome`. The method is
+> **MICA-inspired**, but it is a project-specific adaptation rather than a
+> claim of verbatim reproduction of the original MICA algorithm.
 >
-> The method is **MICA-inspired**, but it is not a verbatim implementation of the original MICA algorithm. It combines:
-> 1. answer-outcome variance filtering inspired by RAGEN-2,
-> 2. exact information-gain rewards derived from answer likelihood,
-> 3. mixed immediate-and-return credit assignment,
-> 4. the existing turn-level clipped policy optimizer and reference-model KL regularization.
-
----
+> AetherSearch uses paper-style RAGEN-2 raw terminal-outcome sample variance
+> followed by cumulative raw-variance-mass Top-p filtering. Exact IG is
+> computed only after prompt selection and is used by MICA-IG for Search-turn
+> credit assignment, not for selecting prompts.
 
 ### 1. Overview
 
-For a prompt $p$, the current policy samples a group of trajectories
-$$
+For a prompt `p`, the rollout policy samples a fixed group of trajectories:
+
+```math
 \{\tau_{p,i}\}_{i=1}^{G}.
-$$
+```
 
-A trajectory may contain multiple search actions:
-$$
-\tau_{p,i}=(s_{p,i,1},o_{p,i,1},\ldots,s_{p,i,T_i},o_{p,i,T_i},a_{p,i}),
-$$
-where $s_{p,i,t}$ is the $t$-th model-generated Search turn,
-$o_{p,i,t}$ is the retrieved observation, and $a_{p,i}$ is the final Answer turn.
+A trajectory may contain several model-generated Search turns followed by a
+terminal Answer turn:
 
-The final pipeline is
-$$
-\boxed{
-\text{Rollout}\rightarrow
-\text{terminal outcome}\rightarrow
-\text{Answer-only RAGEN-2}\rightarrow
-\text{selected-only Exact IG}\rightarrow
-\text{MICA-IG credit}\rightarrow
-\text{policy update}
-}
-$$
-
-Exact-IG scoring is deferred until **after prompt selection**, so non-selected prompt groups do not incur the expensive Exact-IG model forward.
-
----
-
-### 2. Answer-only RAGEN-2 prompt selection
-
-Prompt filtering uses only the dispersion of terminal task outcomes. Exact IG does **not** enter prompt selection.
-
-For prompt $p$, let $O_{p,i}$ be the terminal task outcome of trajectory $i$. With $G$ rollouts,
-$$
-\bar O_p=\frac{1}{G}\sum_{i=1}^{G}O_{p,i},
-$$
-and the prompt score is the sample variance
-$$
-V_p^{O}
+```math
+\tau_{p,i}
 =
-\frac{1}{G-1}
-\sum_{i=1}^{G}
-\left(O_{p,i}-\bar O_p\right)^2.
-$$
+(s_{p,i,1},o_{p,i,1},\ldots,s_{p,i,T_i},o_{p,i,T_i},a_{p,i}),
+```
 
-Prompts are sorted in descending order of $V_p^{O}$. With variance-mass threshold $\rho$, the selected set is the shortest prefix satisfying
-$$
-\sum_{j=1}^{K^\star}V_{\sigma(j)}^{O}
+where `s` is a Search action, `o` is the retrieved environment
+observation, and `a` is the terminal Answer action.
+
+The complete release-recipe path is:
+
+```math
+\boxed{
+\text{On-policy rollout}
+\rightarrow
+\text{terminal outcome scoring}
+\rightarrow
+\text{Answer-only prompt selection}
+\rightarrow
+\text{selected-only Exact IG}
+\rightarrow
+\text{MICA-IG Search credit}
+\rightarrow
+\text{Answer credit}
+\rightarrow
+\text{turn-level policy optimization}
+\rightarrow
+\text{reference KL}
+}
+```
+
+Exact-IG is intentionally **selected-only**. Candidate prompt groups are
+scored for terminal outcome first; non-selected groups do not incur the
+expensive Exact-IG model forward.
+
+### 2. Terminal task outcome
+
+The terminal task outcome and the prompt-selection eligibility mask are
+different concepts. Define the outcome-eligible set:
+
+```math
+\mathcal E_p^O
+=
+\left\{
+i:
+\texttt{terminal\_answer\_valid}_{p,i}
+\land
+\texttt{trajectory\_system\_valid}_{p,i}
+\right\}.
+```
+
+Eligibility is exactly `terminal_answer_valid == true` and
+`trajectory_system_valid == true`; only a trajectory in `\mathcal E_p^O` enters the outcome-reward
+statistics. For an eligible trajectory, the production scorer computes the
+maximum IGPO-compatible token-level F1 over all ground-truth aliases:
+
+```math
+O_{p,i}
+=
+\max_{a^\star\in\mathcal A_p}
+\mathrm{TokenF1}
+\left(
+\hat a_{p,i},a^\star
+\right).
+```
+
+If the terminal answer is not valid or the trajectory system is invalid:
+
+```math
+O_{p,i}=0.
+```
+
+That zero must not be confused with a valid answer whose F1 happens to be
+zero. In particular:
+
+- `raw outcome = 0` is a numeric reward value;
+- `outcome_reward_eligible = false` means the trajectory is excluded
+  from outcome peer normalization and outcome selection statistics.
+
+The production scorer is not an exact-match-only scorer: the ordinary terminal
+task reward is alias-aware token F1. Exact match is used by the separate
+deterministic sufficiency-probe path, which is disabled in this MICA V1
+configuration.
+
+### 3. Answer-only RAGEN-2 prompt filtering
+
+The final recipe uses:
+
+```text
+selection.mode   = answer_outcome_only_ragen2_paper_variance_top_p
+selection.signal = answer_outcome_only
+top_p_mass       = 0.9
+```
+
+For every candidate prompt, AetherSearch samples `G` on-policy trajectories.
+Only outcome-eligible trajectories in `\mathcal E_p^O` enter the score. Let
+`N_p = |\mathcal E_p^O|`:
+
+```math
+\bar O_p
+=
+\frac{1}{N_p}
+\sum_{i\in\mathcal E_p^O}O_{p,i},
+```
+
+```math
+\boxed{
+V_p^O
+=
+\frac{1}{N_p-1}
+\sum_{i\in\mathcal E_p^O}
+\left(O_{p,i}-\bar O_p\right)^2
+}.
+```
+
+This is the within-prompt **sample variance** (`ddof = 1`), not standard
+deviation or population variance. The implementation returns zero when fewer
+than two eligible outcomes are available. High variance identifies prompts on
+which the current policy sometimes succeeds and sometimes fails, providing a
+lightweight group-relative signal-to-noise proxy.
+
+For intuition only:
+
+```text
+Prompt A outcomes: [1, 1, 1, 1]  -> variance = 0
+Prompt B outcomes: [0, 0, 0, 0]  -> variance = 0
+Prompt C outcomes: [1, 0, 1, 0]  -> variance > 0
+```
+
+Prompt C is prioritized because its within-group outcomes are distinguishable.
+The production outcome remains alias-aware token F1 and is not restricted to
+binary values.
+
+Prompts are ranked by descending raw variance:
+
+```math
+V_{\sigma(1)}^O
 \ge
-\rho\sum_p V_p^{O}.
-$$
+V_{\sigma(2)}^O
+\ge
+\cdots
+\ge
+V_{\sigma(P)}^O.
+```
 
-In our training configuration,
-$$
-\boxed{\rho=0.9}.
-$$
+The selector keeps the smallest prefix whose cumulative raw-variance mass
+reaches `\rho` of the total mass:
 
-Filtering is performed at the **prompt-group level**: if a prompt is selected, its rollout group is retained for the subsequent credit-assignment stage.
+```math
+\boxed{
+K^\star
+=
+\min
+\left\{
+K:
+\sum_{j=1}^{K}V_{\sigma(j)}^O
+\ge
+\rho\sum_pV_p^O
+\right\},
+\qquad
+\rho=0.9
+}.
+```
 
----
+```math
+\mathcal P_{\mathrm{selected}}
+=
+\left\{\sigma(1),\ldots,\sigma(K^\star)\right\}.
+```
 
-### 3. Exact information gain
+This means 90% of total **raw variance mass**, not the top 90% of prompts.
+Minimum/maximum prompt counts, refill rounds, and capacity truncation remain
+separate runtime policies.
 
-For each selected trajectory, Exact IG evaluates how much a retrieved observation changes the model's confidence in the canonical answer.
+The final selector uses raw terminal-outcome variance only. It does not use
+Exact IG, MICA credit, standard deviation, noise-floor subtraction,
+channel-scale or median normalization, EMA scaling, health gating, or
+dual-channel weighting. Exact IG is computed only after selection for the
+retained prompt groups.
 
-Let:
-- $h^-_{p,i,t}$: trajectory prefix immediately before the $t$-th retrieved observation;
-- $h^+_{p,i,t}$: trajectory prefix immediately after that observation;
-- $a_p^\star$: the canonical answer.
+### 4. Exact information gain
 
-We construct the fixed target
-$$
-y_p=
-\texttt{<think>The retrieved evidence now supports the answer.</think><answer>}
-+a_p^\star+
-\texttt{</answer>}.
-$$
+Exact IG measures how the retrieved observation changes the rollout-start
+policy's likelihood of a fixed canonical answer. The canonical-answer policy
+is:
 
-The scaffold and answer tags are teacher-forced context, while the score is averaged only over the token positions belonging to the **answer body**.
+```text
+CANONICAL_ALIAS_POLICY = first
+canonical_answer = aliases[0]
+```
 
-For a prefix $h$,
-$$
+It is not alias-max. The fixed teacher-forced target, denoted by `y_p`, is:
+
+```text
+<think>The retrieved evidence now supports the answer.</think><answer>{canonical_answer}</answer>
+```
+
+The target is tokenized once as the complete rendered string with
+`add_special_tokens=False` and `offset_mapping=True`. The
+offset-based answer-covering span is the only scored span:
+
+- scaffold text and `<think>`, `<answer>`,
+  `</answer>` tags provide teacher-forced context;
+- only answer-body tokens belong to `B_p`;
+- one complete-target tokenization is used, rather than tokenizing the
+  scaffold and answer independently;
+- the causal logit for answer token `j` is the preceding position's
+  logit.
+
+For a prefix `h`, the answer-body mean log-probability is:
+
+```math
 \Phi_p(h)
 =
 \frac{1}{|B_p|}
 \sum_{j\in B_p}
-\log\pi_{\theta_{\mathrm{snap}}}
-\left(y_{p,j}\mid h,y_{p,<j}\right),
-$$
-where $B_p$ is the answer-body token span and $\theta_{\mathrm{snap}}$ is the rollout-start policy snapshot.
+\log \pi_{\theta_{\mathrm{snap}}}
+(y_{p,j}\mid h,y_{p,1:j-1}),
+```
 
-The immediate process reward is
-$$
-\boxed{
+where `\theta_{\mathrm{snap}}` is the rollout-start policy snapshot and
+`y_{p,1:j-1}` denotes the preceding target-token context.
+For the pre- and post-observation prefixes:
+
+```math
 r^{IG}_{p,i,t}
 =
 \Phi_p(h^+_{p,i,t})
 -
-\Phi_p(h^-_{p,i,t})
-}.
-$$
+\Phi_p(h^-_{p,i,t}).
+```
 
-There is **no exponentiation**. Exact IG is a detached reward signal; gradients do not flow through this scoring forward. A Search turn without a valid pre/post retrieval state is not Exact-IG eligible.
+This is a log-probability difference:
 
----
+```math
+r^{IG}
+\neq
+\exp\left(\Phi_{\mathrm{post}}\right)
+-
+\exp\left(\Phi_{\mathrm{pre}}\right).
+```
 
-### 4. Raw suffix return
+There is no exponentiation. The Exact-IG forward is detached/no-grad and
+uses the rollout-start reward snapshot. The production path is the
+independent FP32 `fp32_exact_ig` scorer with causal preceding-logit
+alignment. An invalid or missing pre/post observation makes that Search
+Exact-IG-ineligible. MICA V1 has no raw-IG fallback.
 
-For each valid Search position, MICA-IG forms a raw future-return channel. Let
-$$
-\mathcal V_{p,i}=\{t:\text{Search }t\text{ has valid Exact IG}\}.
-$$
+### 5. Raw suffix return
 
-Then
-$$
+Exact IG is accumulated before any peer normalization. For trajectory
+`(p,i)`, define the valid Search positions:
+
+```math
+\mathcal V_{p,i}
+=
+\left\{
+t:
+t\text{ has a valid Exact IG}
+\right\}.
+```
+
+The raw suffix return is:
+
+```math
 G^{IG}_{p,i,t}
 =
 \sum_{\substack{k\ge t\\k\in\mathcal V_{p,i}}}
 \gamma^{k-t}r^{IG}_{p,i,k}.
-$$
+```
 
-The final V1 configuration fixes
-$$
-\boxed{\gamma=1},
-$$
-hence
-$$
+MICA-IG V1 locks:
+
+```math
+\boxed{\gamma=1}.
+```
+
+Therefore:
+
+```math
 \boxed{
 G^{IG}_{p,i,t}
 =
 \sum_{\substack{k\ge t\\k\in\mathcal V_{p,i}}}
 r^{IG}_{p,i,k}.
 }
-$$
+```
 
-This is a **raw suffix sum**. The MICA branch does not apply the older $1/\sqrt n$ future-credit rescaling. Missing/invalid Search positions are omitted from the suffix return rather than ins≤»="24Å’πÖŸÖ•±Öâ±îΩ•πŸÖ±•ëÙ∏)qïπëÌçÖÕïÕÙ)Ù(êê((¥¥¥((åååÄ‡∏ÅπÕ›ï»ÅÖëŸÖπ—Öùî()Q°îÅ5%Åâ…Öπç†Åç°ÖπùïÃÅMïÖ…ç†Åç…ïë•–ÅΩπ±‰∏ÅQ°îÅï·•Õ—•πúÅπÕ›ï»ÅÖëŸÖπ—ÖùîÅ•ÃÅ¡…ïÕï…ŸïêË(êê)qâΩ·ïëÏ)yÌÖπÕ›ï…ı}Ì¿±•Ù(Ù)q±ÖµâëÖ}<Åiy=}Ì¿±•Ù(¨)q±ÖµâëÖ}ÅyÌôΩ…µÖ—ı}Ì¿±•Ù∏)Ù(êê()%∏Å—°îÅÖç—•ŸîÅ¡Ö—†∞Å—°•ÃÅ•ÃÅ—°îÅï·•Õ—•πúÅΩ’—çΩµîµ¡±’ÃµôΩ…µÖ–ÅπÕ›ï»ÅÕ•ùπÖ∞ÏÅ5%ÅëΩïÃÅπΩ–Å…Ω’—îÅMïÖ…ç†µ¡…ΩçïÕÃÅ…ï›Ö…êÅ•π—ºÅ—°îÅô•πÖ∞ÅπÕ›ï»ÅÖëŸÖπ—Öùî∏((¥¥¥((åååÄ‰∏ÅQ’…∏µ—ºµ—Ω≠ï∏Åç…ïë•–ÅÖÕÕ•ùπµïπ–()ÅMïÖ…ç†Å—’…∏Å•ÃÅ—…ïÖ—ïêÅÖÃÅΩπîÅ¡Ω±•ç‰ÅÖç—•Ω∏ÅÖ–Å—°îÅç…ïë•–µÖÕÕ•ùπµïπ–Å±ïŸï∞∏ÅŸï…‰ÅµΩëï∞µùïπï…Ö—ïêÅ—Ω≠ï∏Åâï±Ωπù•πúÅ—ºÅ—°îÅÕÖµîÅMïÖ…ç†Å—’…∏Å…ïçï•ŸïÃÅ—°îÅÕÖµîÅÕçÖ±Ö»(êê)yÌÕïÖ…ç°ı}Ì¿±§±—Ù∏(êê()Q°îÅô•πÖ∞ÅπÕ›ï»Å—’…∏Å…ïçï•ŸïÃ(êê)yÌÖπÕ›ï…ı}Ì¿±•Ù∏(êê()Iï—…•ïŸïêÅïπŸ•…Ωπµïπ–Å—ï·–ÅÕ’ç†ÅÖÃ)ÅÅÅ—ï·–(Ò•πôΩ…µÖ—•Ω∏¯Ä∏∏∏ÄΩ•πôΩ…µÖ—•Ω∏¯)ÅÅÄ)•ÃÅçΩπ—ï·–ÅΩπ±‰Ë(êê)qâΩ·ïëÌq—ï·—ÌïπŸ•…Ωπµïπ–Å—Ω≠ï∏Å¡Ω±•ç‰ÅµÖÕ≠ÙÙ¡Ù∏(êê()A…Ωµ¡–ΩÕÂÕ—ï¥Ω’Õï»Å—Ω≠ïπÃÅÖ…îÅÖ±ÕºÅï·ç±’ëïêÅô…Ω¥ÅÖç—Ω»Åç…ïë•–∏()5%µ%Å•π—…Ωë’çïÃÅπºÅÕï¡Ö…Ö—îÄë}ÌqµÖ—°…µÌëïç•Õ•ΩπıÙê∞Äë}ÌqµÖ—°…µÌ≈’ï…ÂıÙê∞Å…Ω’—ïêÅΩ’—çΩµî∞ÅÕ’ôô•ç•ïπç‰ΩπΩŸï±—‰Å¡ïπÖ±—‰∞ÅπÕ›ï»µ¡…ΩâîÅÖ’·•±•Ö…‰Å±ΩÕÃ∞ÅΩ»Å…Ω±îµ±ΩçÖ∞ÅÖ’·•±•Ö…‰ÅΩâ©ïç—•Ÿî∏((¥¥¥((åååÄƒ¿∏ÅAΩ±•ç‰ÅΩ¡—•µ•ÈÖ—•Ω∏()5%µ%Å•ÃÅÑÄ®©ç…ïë•–µÖÕÕ•ùπµïπ–ÅµΩë’±î®®∞ÅπΩ–ÅÑÅ…ï¡±Öçïµïπ–ÅôΩ»Å—°îÅ¡Ω±•ç‰ÅΩ¡—•µ•Èï»∏()ô—ï»ÅMïÖ…ç†ÅÖπêÅπÕ›ï»ÅÖëŸÖπ—ÖùïÃÅÖ…îÅçΩπÕ—…’ç—ïê∞Å—°îÅ¡…Ω©ïç–Å…ï’ÕïÃÅ—°îÅï·•Õ—•πúÅÕ—…•ç–ÅΩ∏µ¡Ω±•ç‰Å±ïÖ…πï»Ë(ƒ∏Å…Ω±±Ω’–µÕ—Ö…–ÅΩ±êµ¡Ω±•ç‰Å±Ωúµ¡…ΩâÖâ•±•—•ïÃÅÖ…îÅëï—Öç°ïêÏ(»∏ÅµΩëï∞µùïπï…Ö—ïêÅÖç—•Ω∏Å—Ω≠ïπÃÅôΩ…¥Å—’…∏µ±ïŸï∞Å±•≠ï±•°ΩΩêÅ…Ö—•ΩÃÏ(Ã∏Å—°îÅï·•Õ—•πúÅç±•¡¡ïêÅÕ’……ΩùÖ—îÅΩâ©ïç—•ŸîÅ•ÃÅÖ¡¡±•ïêÏ(–∏Å—ÖÕ¨Å…ïë’ç—•Ω∏Å…ïµÖ•πÃÅ¡…Ωµ¡–Ω—…Ö©ïç—Ω…‰ΩÖç—•Ω∏µ—Ω≠ï∏ÅâÖ±ÖπçïêÏ(‘∏ÅÑÅô…ΩÈï∏ÅIïôï…ïπçîÅµΩëï∞Å¡…ΩŸ•ëïÃÅô’±∞µŸΩçÖâ’±Ö…‰Å-0Å…ïù’±Ö…•ÈÖ—•Ω∏∏()Mç°ïµÖ—•çÖ±±‰∞(êê)qµÖ—°çÖ∞Å0(Ù(µqµÖ—°çÖ∞Å)}ÌqµÖ—°…µÌ—ÖÕ≠ıÙ(¨)qâï—Ö}ÌqµÖ—°…µÌ-1ııqµÖ—°çÖ∞Å1}ÌqµÖ—°…µÌ-1ıÙ∏(êê()Q°îÅ5%Åâ…Öπç†ÅÖëëÃÅπºÅ•πëï¡ïπëïπ–ÅÖ’·•±•Ö…‰ÅÖç—Ω»Å±ΩÕÃ∏((¥¥¥((åååÄƒƒ∏ÅΩµ¡Öç–ÅÖ±ùΩ…•—°¥()ÅÅÅ—ï·–)%π¡’–Ë(ÄÄÄÅçÖπë•ëÖ—îÅ¡…Ωµ¡—ÃÅ¿(ÄÄÄÅÅΩ∏µ¡Ω±•ç‰Å…Ω±±Ω’—ÃÅ¡ï»Å¡…Ωµ¡–(ÄÄÄÅ—ï…µ•πÖ∞ÅΩ’—çΩµïÃÅ=m¿±•t((ƒ∏ÅπÕ›ï»µΩπ±‰ÅI8¥»(ÄÄÄÅY}=m¡tÄÙÅÕÖµ¡±ï}ŸÖ…•Öπçï}§°=m¿±•t§(ÄÄÄÅÕï±ïç–Å°•ù†µŸÖ…•ÖπçîÅ¡…Ωµ¡–Åù…Ω’¡ÃÅâ‰Å—Ω¿µ¿ÅŸÖ…•ÖπçîÅµÖÕÃ((»∏ÅMï±ïç—ïêµΩπ±‰Å·Öç–Å%(ÄÄÄÅôΩ»ÅïÖç†ÅÕï±ïç—ïêÅ—…Ö©ïç—Ω…‰Å§ÅÖπêÅŸÖ±•êÅMïÖ…ç†Åëï¡—†Å–Ë(ÄÄÄÄÄÄÄÅA°•}¡…îÄÄÙÅÖπÕ›ï»µâΩë‰ÅµïÖ∏Å±Ωúµ¡…ΩàÅâïôΩ…îÅΩâÕï…ŸÖ—•Ω∏(ÄÄÄÄÄÄÄÅA°•}¡ΩÕ–ÄÙÅÖπÕ›ï»µâΩë‰ÅµïÖ∏Å±Ωúµ¡…ΩàÅÖô—ï»ÅΩâÕï…ŸÖ—•Ω∏(ÄÄÄÄÄÄÄÅ…}%m¿±§±—tÄÙÅA°•}¡ΩÕ–Ä¥ÅA°•}¡…î((Ã∏ÅIÖ‹ÅÕ’ôô•‡Å…ï—’…∏(ÄÄÄÅ}%m¿±§±—tÄÙÅÕ’µ}Ì¨Ä¯ÙÅ–∞ÅŸÖ±•ëÙÅ…}%m¿±§±≠t(ÄÄÄÅùÖµµÑÄÙÄƒ((–∏ÅMÖµîµ¡…Ωµ¡–ΩÕÖµîµëï¡—†Å5%ÅπΩ…µÖ±•ÈÖ—•Ω∏(ÄÄÄÅ¡ïï…ÃÄÙÅ—…Ö©ïç—Ω…•ïÃÅ›•—†ÅŸÖ±•êÅ·Öç–Å%ÅÖ–Ä°¿±–§((ÄÄÄÅ•òÅ±ï∏°¡ïï…Ã§Ä¯ÙÄ»Ë(ÄÄÄÄÄÄÄÅ}±ΩåÄÙÅÈÕçΩ…ï}¡ïï»°…}%§(ÄÄÄÄÄÄÄÅ}…ï–ÄÙÅÈÕçΩ…ï}¡ïï»°}%§(ÄÄÄÄÄÄÄÅ}ÕïÖ…ç†ÄÙÄ¿∏‘Ä®Å}±ΩåÄ¨Ä¿∏‘Ä®Å}…ï–((ÄÄÄÅï±•òÅ±ï∏°¡ïï…Ã§ÄÙÙÄƒË(ÄÄÄÄÄÄÄÅ}ÕïÖ…ç†ÄÙÅπΩ…µÖ±•Èïë}—ï…µ•πÖ±}Ω’—çΩµîÅi}<((ÄÄÄÅï±ÕîÄºÅ·Öç–Å%Å’πÖŸÖ•±Öâ±îË(ÄÄÄÄÄÄÄÅ}ÕïÖ…ç†ÄÙÄ¿((‘∏ÅπÕ›ï»(ÄÄÄÅ}ÖπÕ›ï»ÄÙÅï·•Õ—•πúÅπΩ…µÖ±•ÈïêÅΩ’—çΩµîÄ¨Åï·•Õ—•πúÅôΩ…µÖ–ÅÖëŸÖπ—Öùî((ÿ∏Å…ïë•–(ÄÄÄÅÖÕÕ•ù∏Å}ÕïÖ…ç†Å—ºÅïŸï…‰ÅµΩëï∞Å—Ω≠ï∏Å•∏Å—°Ö–ÅMïÖ…ç†Å—’…∏(ÄÄÄÅÖÕÕ•ù∏Å}ÖπÕ›ï»Å—ºÅïŸï…‰ÅµΩëï∞Å—Ω≠ï∏Å•∏Å—°îÅπÕ›ï»Å—’…∏(ÄÄÄÅµÖÕ¨Å¡…Ωµ¡–ÅÖπêÅ…ï—…•ïŸïêµ•πôΩ…µÖ—•Ω∏Å—Ω≠ïπÃ((‹∏Å=¡—•µ•Èî(ÄÄÄÅ…ï’ÕîÅï·•Õ—•πúÅ—’…∏µ±ïŸï∞Åç±•¡¡ïêÅΩ∏µ¡Ω±•ç‰ÅΩâ©ïç—•Ÿî(ÄÄÄÄ¨Åô…ΩÈï∏µ…ïôï…ïπçîÅô’±∞µŸΩçÖâ’±Ö…‰Å-0)ÅÅÄ((¥¥¥((åååÄƒ»∏Å]°Ö–Å•ÃÅ5%µ±•≠î∞ÅÖπêÅ›°Ö–Å•ÃÅ¡…Ω©ïç–µÕ¡ïç•ô•å¸()Q°îÅëïÕ•ù∏ÅôΩ±±Ω›ÃÅ—°îÅ5%µÕ—Â±îÅ¡…•πç•¡±îÅΩòÅµ•·•πú(êê)qâΩ·ïëÌq—ï·—Ì•µµïë•Ö—îÅ¡…ΩçïÕÃÅç…ïë•—Ù≠q—ï·—Ìëï±ÖÂïêΩ…ï—’…∏Åç…ïë•—ıÙ(êê)Öô—ï»ÅπΩ…µÖ±•ÈÖ—•Ω∏∏()!Ω›ïŸï»∞Ä®©5%µ%Å•ÃÅÑÅ¡…Ω©ïç–ÅÖëÖ¡—Ö—•Ω∏®®Ë(¥Å—°îÅ•µµïë•Ö—îÅ…ï›Ö…êÅ•ÃÅ·Öç–Å•πôΩ…µÖ—•Ω∏ÅùÖ•∏ÅµïÖÕ’…ïêÅô…Ω¥ÅÖπÕ›ï»Å±Ωúµ±•≠ï±•°ΩΩêÏ(¥Å—°îÅëï±ÖÂïêÅç°Öππï∞Å•ÃÅ—°îÅ…Ö‹ÅÕ’ôô•‡ÅÕ’¥ÅΩòÅ·Öç–Å%Ï(¥ÅâΩ—†Åç°Öππï±ÃÅÖ…îÅπΩ…µÖ±•ÈïêÅÖ–Å—°îÅÕÖµîÅ¡…Ωµ¡–ÅÖπêÅMïÖ…ç†Åëï¡—†Ï(¥ÄëqùÖµµÑÙƒêÏ(¥ÄëqÖ±¡°ÑÙ¿∏‘êÏ(¥ÅÕ•πù±ï—Ω∏Åëï¡—°ÃÅôÖ±∞ÅâÖç¨Å—ºÅπΩ…µÖ±•ÈïêÅ—ï…µ•πÖ∞ÅΩ’—çΩµîÏ(¥Å¡…Ωµ¡–ÅÕï±ïç—•Ω∏Å•ÃÅ¡ï…ôΩ…µïêÅÕï¡Ö…Ö—ï±‰Åâ‰ÅÖπÕ›ï»µΩ’—çΩµîÅI8¥»Ï(¥Å·Öç–Å%Å•ÃÅçΩµ¡’—ïêÅΩπ±‰ÅôΩ»ÅÕï±ïç—ïêÅ¡…Ωµ¡–Åù…Ω’¡Ã∏()Q°îÅπÖµîÄ®©5%µ%®®ÅÕ°Ω’±êÅ—°ï…ïôΩ…îÅâîÅ…ïÖêÅÖÃÉäq5%µ•πÕ¡•…ïêÅ•πôΩ…µÖ—•Ω∏µùÖ•∏Åç…ïë•–ÅÖÕÕ•ùπµïπ–≥ätÅπΩ–ÅÖÃÅÑÅç±Ö•¥ÅΩòÅ…ï¡…Ωë’ç•πúÅ—°îÅΩ…•ù•πÖ∞Å5%ÅÖ±ùΩ…•—°¥Åï·Öç—±‰∏((¥¥¥((åååÄƒÃ∏ÅïÕ•ù∏ÅâΩ’πëÖ…‰ÅÖπêÅ≠πΩ›∏Å±•µ•—Ö—•Ω∏()Ω»Äëπ}Ì¿±—ıqùî»ê∞Å5%µ%Å•ÃÅô’πëÖµïπ—Ö±±‰ÅÑÄ®©…ï±Ö—•ŸîÅMïÖ…ç†µŸÃµMïÖ…ç†ÅïÕ—•µÖ—Ω»®®Ë(êê)yÌÕïÖ…ç°ı}Ì¿±§±—Ù)q≈’Öëq—ï·—ÌçΩµ¡Ö…ïÃÅ—…Ö©ïç—Ω…•ïÃÅ—°Ö–ÅÖç—’Ö±±‰ÅÕïÖ…ç°ïêÅÖ–Åëï¡—†Åı–∏(êê()%–ÅëΩïÃÅπΩ–Åë•…ïç—±‰ÅçΩπÕ—…’ç–Å—°îÅÕÖµîµÕ—Ö—îÅçΩ’π—ï…ôÖç—’Ö∞(êê)D°Õ}–±qµÖ—°…µÌMïÖ…ç°Ù§µD°Õ}–±qµÖ—°…µÌπÕ›ï…9Ω›Ù§∏(êê()Q°ï…ïôΩ…îÅÑÅ¡ΩÕ•—•ŸîÅ…ï±Ö—•ŸîÅMïÖ…ç†ÅÖëŸÖπ—ÖùîÅµïÖπÃ((¯Éäq—°•ÃÅMïÖ…ç†Å›ÖÃÅâï——ï»Å—°Ö∏Å¡ïï»ÅMïÖ…ç°ïÃÅÖ–Å—°îÅÕÖµîÅëï¡—†≥ät()πΩ–ÅπïçïÕÕÖ…•±‰((¯ÉäqMïÖ…ç†Å›ÖÃÅâï——ï»Å—°Ö∏ÅÕ—Ω¡¡•πúÅÖπêÅÖπÕ›ï…•πúªät()Q°•ÃÅë•Õ—•πç—•Ω∏ÅµÖ——ï…ÃÅ›°ï∏Å•π—ï…¡…ï—•πúÅMïÖ…ç†µëï¡—†ÅΩ»ÅΩŸï»µÕïÖ…ç†Åâï°ÖŸ•Ω»∏((¥¥¥((åååÄƒ–∏ÅIïôï…ïπçïÃ()Q°îÅ¡…Ω©ïç–Åµï—°ΩêÅ•ÃÅâ’•±–Åô…Ω¥Å•ëïÖÃÅ…ï±Ö—ïêÅ—ºË(¥Ä®©%A<®®ÉäPÅ•πôΩ…µÖ—•Ω∏µùÖ•∏Å¡…ΩçïÕÃÅ…ï›Ö…ëÃÅâÖÕïêÅΩ∏Åç°ÖπùïÃÅ•∏ÅÖπÕ›ï»Å±•≠ï±•°ΩΩê∏(¥Ä®©I8¥»®®ÉäPÅ…ï›Ö…êµŸÖ…•ÖπçîÄºÅM9HµÖ›Ö…îÅ¡…Ωµ¡–Åô•±—ï…•πú∏(¥Ä®©5%®®ÉäPÅµ•·•πúÅ•µµïë•Ö—îÅÖπêÅëï±ÖÂïêÅ¡…ΩçïÕÃÅç…ïë•–∏(¥Ä®©
-…QA<®®ÉäPÅ—’…∏µ•πëï‡µÖ›Ö…îÅπΩ…µÖ±•ÈÖ—•Ω∏ÅÖπêÅ—’…∏µ±ïŸï∞ÅÖùïπ—•åÅ¡Ω±•ç‰µΩ¡—•µ•ÈÖ—•Ω∏ÅçΩπçï¡—Ã∏()Q°îÅï≈’Ö—•ΩπÃÅÖâΩŸîÅëïÕç…•âîÅ—°îÄ®©ï—°ï…MïÖ…ç†Å•µ¡±ïµïπ—Ö—•Ω∏®®∏ÅA…Ω©ïç–µÕ¡ïç•ô•åÅëïŸ•Ö—•ΩπÃÅÕ°Ω’±êÅπΩ–ÅâîÅÖ——…•â’—ïêÅŸï…âÖ—•¥Å—ºÅ—°îÅΩ…•ù•πÖ∞Å¡Ö¡ï…Ã∏((ååÅE’•ç¨ÅM—Ö…–()%πÕ—Ö±∞Å—°îÅ±ΩçÖ∞Å¡Öç≠ÖùîÅ•πÕ•ëîÅÖ∏ÅI0ÅïπŸ•…Ωπµïπ–Å—°Ö–ÅÖ±…ïÖë‰ÅçΩπ—Ö•πÃÅ—°î)çΩµ¡Ö—•â±îÅAÂQΩ…ç†∞ÅŸïI0∞ÅŸ114∞ÅIÖ‰∞ÅÖπêÅ±ÖÕ°——ïπ—•Ω∏ÅÕ—Öç¨Ë()ÅÅÅâÖÕ†)¡Â—°Ω∏Äµ¥Å¡•¿Å•πÕ—Ö±∞ÄµîÄ∏)ÅÅÄ()…ïÖ—îÅ—°îÅµÖç°•πîµ±ΩçÖ∞ÅïπŸ•…Ωπµïπ–ÅçΩπô•ù’…Ö—•Ω∏Ë()ÅÅÅâÖÕ†)ç¿ÅïπŸ•…Ωπµïπ–Ωïπÿπ—ïµ¡±Ö—îπÕ†ÅïπŸ•…Ωπµïπ–Ωïπÿπ±ΩçÖ∞πÕ†(åÅë•–ÅïπŸ•…Ωπµïπ–Ωïπÿπ±ΩçÖ∞πÕ†∞Å—°ï∏Ë)ÕΩ’…çîÅïπŸ•…Ωπµïπ–Ωïπÿπ±ΩçÖ∞πÕ†)ÅÅÄ()I’∏Å—°îÅ±•ù°—›ï•ù°–ÅÕΩ’…çî∞ÅÕ°ï±∞∞ÅÖπêÅçΩπô•ù’…Ö—•Ω∏Åç°ïç≠ÃË()ÅÅÅâÖÕ†)âÖÕ†ÅÕç…•¡—ÃΩŸÖ±•ëÖ—ï}Õ—Ö—•åπÕ†)ÅÅÄ()YÖ±•ëÖ—îÅ—°îÅΩπ±‰Å…ï±ïÖÕïêÅ°Ö…ë›Ö…îÅ…ïç•¡îÅ›•—°Ω’–ÅÕ—Ö…—•πúÅÕï…Ÿ•çïÃË()ÅÅÅâÖÕ†)âÖÕ†ÅÕç…•¡—ÃΩ—…Ö•π}…∞πÕ†Ä¥µë…‰µ…’∏)ÅÅÄ()M—Ö…–ÅI0Å—…Ö•π•πúÅΩ∏Å—°îÅŸÖ±•ëÖ—ïêÅôΩ’»µATÅ—Ω¡Ω±Ωù‰Ë()ÅÅÅâÖÕ†)âÖÕ†ÅÕç…•¡—ÃΩ—…Ö•π}…∞πÕ†)ÅÅÄ()Q°îÅ•πç±’ëïêÅ…ïç•¡îÅÖÕÕ•ùπÃÅ¡°ÂÕ•çÖ∞ÅATÄ¿Å—ºÅ…ï—…•ïŸÖ∞ÅÖπêÅÖÕÂπç°…ΩπΩ’Ã)—…Ö•π•πúµ—•µîÅïŸÖ±’Ö—•Ω∏∞ÅÖπêÅ¡°ÂÕ•çÖ∞ÅAUÃÄƒ¥ÃÅ—ºÅ—°îÅ—°…ïîµ…Öπ¨ÅŸ114ΩM@»)…’π—•µî∏ÅŸï…‰Ä»¿µ’¡ëÖ—îÅïŸÖ±’Ö—•Ω∏Å’ÕïÃÅ—°îÅçΩµ¡±ï—îÄ‘ƒ∞‹ƒÃµ…Ω‹ÅMïÖ…ç†µHƒ)Å—ïÕ–π¡Ö…≈’ï—Ä∏ÅMïîÅÅ…ïç•¡ïÃΩ…∞ΩI5πµëÄÅôΩ»Å—°îÅçΩπô•ù’…Ö—•Ω∏ÅâΩ’πëÖ…‰∏)Q°îÅ…ïÕΩ±ŸïêÅçΩπô•ù’…Ö—•Ω∏Å•ÃÅµÖ—ï…•Ö±•ÈïêÅ•πÕ•ëîÅïÖç†Åπï‹Å…’∏Åë•…ïç—Ω…‰∏((ååÅIï¡ΩÕ•—Ω…‰Å1ÖÂΩ’–((¥ÅÅÕô—}ëÖ—ÑΩÄËÅMPÅëÖ—ÑÅ…ï±ïÖÕîÅµï—ÖëÖ—ÑÅÖπêÅâ’•±êÅÕç…•¡—Ã∏ÅQ°îÅô’±∞ÅMPÅ)M=90(ÄÅ¡ÖÂ±ΩÖêÅ•ÃÅ°ΩÕ—ïêÅΩ∏Åm!’ùù•πúÅÖçîÅÖ—ÖÕï—Õt°°——¡ÃËºΩ°’ùù•πùôÖçîπçºΩëÖ—ÖÕï—ÃΩµ’…Öë•∞»ƒƒΩÖï—°ï…ÕïÖ…ç°}Õô–§∏(¥ÅÅÕ…åΩÖùïπ—•ç}…∞ΩÄËÅI0Å—…Ö•π•πú∞Å…Ω±±Ω’–∞ÅÖëŸÖπ—Öùî∞Å¡Ω±•ç‰Å±ΩÕÃ∞Å…ï—…•ïŸï»∞(ÄÅç°ïç≠¡Ω•π–∞ÅÖπêÅ…’π—•µîÅÖëÖ¡—ï»ÅçΩëî∏(¥ÅÅÕç…•¡—ÃΩÄËÅ±Ö’πç†∞Å¡…ïô±•ù°–∞Å…ïÕ’µî∞ÅŸÖ±•ëÖ—•Ω∏∞ÅÖπêÅΩ¡ï…Ö—•ΩπÖ∞ÅÕç…•¡—ÃÅôΩ»(ÄÅ—°îÅI0Å—…Ö•π•πúÅÕ—ÖùîÏÅÕïîÅÅÕç…•¡—ÃΩI5πµëÄÅôΩ»Å¡’â±•åÅŸï…Õ’ÃÅ°•Õ—Ω…•çÖ∞(ÄÅïπ—…Â¡Ω•π—Ã∏(¥ÅÅ…ïç•¡ïÃΩ…∞ΩÄËÅ—°îÅÕ•πù±îÅŸÖ±•ëÖ—ïêÅ¡’â±•åÅI0Å…ïç•¡îÅÖπêÅ•—ÃÅ’ÕÖùîÅâΩ’πëÖ…‰∏(¥ÅÅçΩπô•ùÃΩÄËÅâÖÕî∞ÅôΩ…µÖ∞∞Å°Ö…ë›Ö…î∞Å…ï—…•ïŸï»∞ÅÕ—ÖùîÅçΩπô•ùÃ∞ÅÖπêÅ—°îÅ·Öç–µ%(ÄÅ…’π—•µîÅùÖ—îÏ(ÄÅÕïîÅÅçΩπô•ùÃΩI5πµëÄÅôΩ»Å—°ï•»Å¡Ω…—Öâ•±•—‰ÅâΩ’πëÖ…‰∏(¥ÅÅ…’π—•µï}ÖÕÕï—ÃΩÄËÅ±ΩçÖ∞Å…’π—•µîÅÖÕÕï—ÃÅ…ï≈’•…ïêÅâ‰Å—°îÅ—…Ö•π•πúÅ±Ö’πç°ï»∏(¥ÅÅ—ïÕ—ÃΩÄËÅ’π•–ÅÖπêÅ•π—ïù…Ö—•Ω∏Åç°ïç≠ÃÅôΩ»Å—°îÅ—…Ö•π•πúÅçΩëî∏(¥ÅÅïπŸ•…Ωπµïπ–ΩÄËÅΩâÕï…ŸïêÅ¡Öç≠ÖùîÅŸï…Õ•ΩπÃÅÖπêÅïπŸ•…Ωπµïπ–Å—ïµ¡±Ö—î∏((ååÅIï±ïÖÕîÅ	Ω’πëÖ…‰()1Ö…ùîÅµΩëï∞Å›ï•ù°—Ã∞ÅΩ¡—•µ•Èï»µÕ—Ö—îÅç°ïç≠¡Ω•π—Ã∞ÅïŸÖ∞Å…ïÕ’±–Åâ’πë±ïÃ∞Å…ï¡Ω…–)Ö…ç°•ŸïÃ∞ÅÖπêÅ…’π—•µîÅÕπÖ¡Õ°Ω—ÃÅÖ…îÅ•π—ïπ—•ΩπÖ±±‰ÅπΩ–ÅçΩµµ•——ïêÅ—ºÅ—°•ÃÅ•—!’à)…ï¡ΩÕ•—Ω…‰∏ÅA’â±•åÅµΩëï∞ÅÖπêÅëÖ—ÑÅÖ…—•ôÖç—ÃÅÖ…îÅ±•π≠ïêÅô…Ω¥Å!’ùù•πúÅÖçîÅÖâΩŸî∏(
+The order is important:
+
+```text
+raw Exact IG
+‚Üí raw suffix return
+‚Üí normalize local and return channels separately
+‚Üí mix the normalized channels
+```
+
+Missing or invalid Search positions are omitted from the valid suffix index
+set; an artificial zero reward is not inserted. This branch also has no
+legacy `1/sqrt(n)` return rescaling.
+
+### 6. Same-prompt, same-depth normalization
+
+MICA compares only peer Searches at the same prompt and the same Search
+depth. For an immediate-IG peer vector, define:
+
+```math
+\mathcal I_{p,t}
+=
+\left\{
+i:
+r^{IG}_{p,i,t}
+\text{ exists and is IG-eligible}
+\right\},
+\qquad
+n_{p,t}=|\mathcal I_{p,t}|.
+```
+
+There is:
+
+```text
+NO cross-prompt normalization
+NO cross-depth normalization
+```
+
+For any peer value vector `x` (immediate IG or raw suffix return), the
+population statistics are:
+
+```math
+\mu_{p,t}(x)
+=
+\frac{1}{n_{p,t}}
+\sum_{i\in\mathcal I_{p,t}}x_i,
+```
+
+```math
+\sigma_{p,t}(x)
+=
+\sqrt{
+\frac{1}{n_{p,t}}
+\sum_{i\in\mathcal I_{p,t}}
+\left(x_i-\mu_{p,t}(x)\right)^2
+}.
+```
+
+The implementation uses population standard deviation, `ddof = 0`,
+not sample standard deviation. With `epsilon = 1e-6`:
+
+```math
+Z_{p,t}(x_i)
+=
+\frac{x_i-\mu_{p,t}(x)}
+{\sigma_{p,t}(x)+\epsilon}.
+```
+
+If `\sigma^2 \le 1e-12`, the corresponding channel advantage is
+exactly zero.
+
+### 7. MICA-IG local and delayed channels
+
+The local channel compares the current immediate information gain with
+same-prompt/same-depth peers:
+
+```math
+\boxed{
+A^{loc}_{p,i,t}
+=
+Z_{p,t}
+\left(
+r^{IG}_{p,i,t}
+\right).
+}
+```
+
+The delayed channel independently compares the raw suffix returns with the
+same peer scope:
+
+```math
+\boxed{
+A^{ret}_{p,i,t}
+=
+Z_{p,t}
+\left(
+G^{IG}_{p,i,t}
+\right).
+}
+```
+
+The local and return channels have independent means and standard deviations:
+
+```text
+Local normalization statistics
+and
+Return normalization statistics
+are independent.
+```
+
+They are mixed only after both channels have been normalized:
+
+```math
+A^{search}_{p,i,t}
+=
+\alpha A^{ret}_{p,i,t}
++
+(1-\alpha)A^{loc}_{p,i,t},
+\qquad
+\boxed{\alpha=0.5}.
+```
+
+If one channel is zero because of zero variance, its fixed weight is still
+zero contribution; the other channel is not reweighted from `0.5` to
+`1.0`.
+
+### 8. Singleton and missing-IG rules
+
+The singleton fallback uses only the normalized terminal outcome. First
+normalize outcomes within the same prompt over eligible trajectories:
+
+```math
+\mu_p^O
+=
+\frac{1}{N_p^O}
+\sum_{i\in\mathcal E_p^O}O_{p,i},
+```
+
+```math
+\sigma_p^O
+=
+\sqrt{
+\frac{1}{N_p^O}
+\sum_{i\in\mathcal E_p^O}
+\left(O_{p,i}-\mu_p^O\right)^2
+},
+```
+
+```math
+Z^O_{p,i}
+=
+\frac{O_{p,i}-\mu_p^O}
+{\sigma_p^O+\epsilon}.
+```
+
+This outcome normalization is also population normalization. If the outcome
+is ineligible, or if `(\sigma_p^O)^2 \le 1e-12`, then
+`Z^O_{p,i}=0`.
+
+The rules are intentionally different:
+
+- an IG-eligible Search with `n_{p,t}=1` cannot define a relative
+  Search-vs-Search z-score, so it receives `Z^O_{p,i}`;
+- a policy-credit-eligible Search with unavailable/invalid Exact IG receives
+  `0`, not the singleton fallback;
+- a policy-credit-ineligible Search is excluded from actor optimization.
+
+The singleton fallback does not add the format advantage.
+
+### 9. Final Search advantage
+
+Putting the cases together, for an action that is eligible for policy credit:
+
+```math
+\boxed{
+A^{search}_{p,i,t}
+=
+\begin{cases}
+\frac12 A^{ret}_{p,i,t}
++
+\frac12 A^{loc}_{p,i,t},
+&
+n_{p,t}\ge2,
+\\[8pt]
+Z^O_{p,i},
+&
+n_{p,t}=1,
+\\[6pt]
+0,
+&
+\text{Exact IG unavailable or invalid}.
+\end{cases}
+}
+```
+
+The third case is not a singleton peer group. It is a fail-closed missing-IG
+case. No advantage is emitted for policy-ineligible actions, so they do not
+enter the actor loss at all.
+
+### 10. Answer advantage
+
+The terminal format indicator is binary:
+
+```math
+F_{p,i}\in\{0,1\}.
+```
+
+Unlike MICA's local and return channels, the format channel is centered but
+not divided by a standard deviation:
+
+```math
+A^{format}_{p,i}
+=
+F_{p,i}
+-
+\frac{1}{G}\sum_{j=1}^{G}F_{p,j}.
+```
+
+The terminal Answer advantage is:
+
+```math
+\boxed{
+A^{answer}_{p,i}
+=
+\lambda_O Z^O_{p,i}
++
+\lambda_F A^{format}_{p,i}.
+}
+```
+
+The frozen configuration is:
+
+```math
+\lambda_O=1,
+\qquad
+\lambda_F=1,
+\qquad
+A^{answer}=Z^O+A^{format}.
+```
+
+MICA-IG changes Search credit only. It does not route `r_IG`,
+`A_loc`, `A_ret`, or `A_search` into the terminal
+Answer advantage.
+
+### 11. Turn-to-token credit assignment
+
+At the credit-assignment layer, a Search turn is one action. Every
+policy-credit-eligible model-generated token in that Search turn receives the
+same `A_search` value. The model-generated terminal Answer turn
+receives the same `A_answer` value:
+
+```math
+\text{Search-turn tokens}
+\mapsto
+A^{search}_{p,i,t},
+\qquad
+\text{terminal Answer tokens}
+\mapsto
+A^{answer}_{p,i}.
+```
+
+The retriever returns an environment observation such as:
+
+```text
+<information> ... </information>
+```
+
+Those environment tokens are context, not actor actions:
+
+```math
+\boxed{
+m^{policy}_{j}=0
+\quad
+\text{for environment-observation tokens}.
+}
+```
+
+System tokens, user/prompt tokens, padding, and non-model fallback/code
+tokens likewise do not receive actor policy credit. Only real
+policy-credit-eligible model spans enter the policy mask.
+
+### 12. Strict on-policy turn ratio
+
+For one eligible turn `t`, let `\mathcal A_t` be its eligible
+model-generated action-token set. The current-policy log-probabilities retain
+gradients; old-policy log-probabilities are detached:
+
+```math
+\Delta_t
+=
+\frac{1}{|\mathcal A_t|}
+\sum_{j\in\mathcal A_t}
+\left[
+\log\pi_\theta(x_j\mid x_{1:j-1})
+-
+\log\pi_{\mathrm{old}}(x_j\mid x_{1:j-1})
+\right].
+```
+
+The turn ratio is:
+
+```math
+\boxed{
+\rho_t=\exp(\Delta_t).
+}
+```
+
+This is the geometric mean of the token likelihood ratios inside the turn.
+It is a turn-level ratio, not an independently clipped PPO ratio for every
+token. The release policy contract is:
+
+```text
+strict_on_policy = true
+ratio_level = turn
+ppo_epochs = 1
+optimizer_mini_steps = 1
+optimizer_steps_per_successful_update = 1
+```
+
+### 13. A¬≤TGPO-style adaptive turn-level clipping
+
+MICA-IG and adaptive clipping have different responsibilities. MICA defines
+the Search credit; the policy layer applies the A¬≤TGPO-style turn-level
+surrogate.
+
+For a Search turn, the clipping scale consumes normalized immediate IG,
+written as `\widehat r^{IG}_t`. In the MICA path this is the supported
+same-prompt/same-depth local normalization (`A_loc`); singleton and
+missing-IG turns use neutral zero for clipping. The scale is:
+
+```math
+c_t
+=
+1+
+\beta_c
+\left(
+2\sigma(\widehat r^{IG}_t)-1
+\right),
+\qquad
+\sigma(x)=\frac{1}{1+e^{-x}}.
+```
+
+The frozen values and bounds are:
+
+```math
+\beta_c=0.3,
+\qquad
+\epsilon_{\mathrm{low}}=0.003,
+\qquad
+\epsilon_{\mathrm{high}}=0.004,
+```
+
+```math
+l_t
+=
+1-c_t\epsilon_{\mathrm{low}},
+\qquad
+u_t
+=
+1+c_t\epsilon_{\mathrm{high}}.
+```
+
+For turn advantage `A_t`, the clipped surrogate is:
+
+```math
+J_t
+=
+\min
+\left[
+\rho_tA_t,
+\mathrm{clip}
+\left(\rho_t,l_t,u_t\right)A_t
+\right].
+```
+
+Answer turns use the neutral scale `c_t=1`. The adaptive clip input is
+normalized immediate IG, not the mixed `A_search`, and adaptive
+clipping is not claimed as a contribution of MICA itself.
+
+### 14. Frozen-reference full-vocabulary KL
+
+The reference model is frozen, in evaluation mode, and has no trainable
+parameters. KL is evaluated at the preceding causal states of eligible
+policy tokens:
+
+```math
+D_{\mathrm{KL}}
+\left(
+\pi_\theta(\cdot\mid s_j)
+\;\middle\|\;
+\pi_{\mathrm{ref}}(\cdot\mid s_j)
+\right)
+=
+\sum_v
+\pi_\theta(v\mid s_j)
+\log
+\frac{\pi_\theta(v\mid s_j)}
+{\pi_{\mathrm{ref}}(v\mid s_j)}.
+```
+
+This is a **full-vocabulary** KL. It is not a sampled-token log-ratio proxy.
+The reference logits are detached and the vocabulary sum is evaluated in
+chunks only to control memory; chunking does not change the mathematical
+sum.
+
+The combined loss is:
+
+```math
+\boxed{
+\mathcal L
+=
+-J_{\mathrm{task}}
++
+\beta_{\mathrm{KL}}\mathcal L_{\mathrm{KL}},
+\qquad
+\beta_{\mathrm{KL}}=0.01.
+}
+```
+
+### 15. Nested reduction
+
+The task reduction is nested rather than a single global mean over all
+action tokens. First average eligible action-token values within each
+trajectory:
+
+```math
+J_{p,i}
+=
+\frac{1}{|\mathcal A_{p,i}|}
+\sum_{j\in\mathcal A_{p,i}}J_{p,i,j}.
+```
+
+Then average trajectories within each prompt:
+
+```math
+J_p
+=
+\frac{1}{G}
+\sum_{i=1}^{G}J_{p,i}.
+```
+
+Finally average prompt means globally:
+
+```math
+J_{\mathrm{task}}
+=
+\frac{1}{|\mathcal P|}
+\sum_{p\in\mathcal P}J_p.
+```
+
+The same `token ‚Üí trajectory ‚Üí prompt` balancing applies to the KL
+reduction. Thus a long trajectory does not automatically receive more weight
+merely because it contains more eligible tokens:
+
+```text
+prompt
+‚Üí trajectory
+‚Üí eligible action-token balanced reduction
+```
+
+### 16. Compact algorithm
+
+```text
+Input:
+    candidate prompts p
+    G on-policy rollouts per prompt
+    terminal outcomes O[p,i]
+
+1. Score terminal outcomes.
+
+2. Paper RAGEN-2 prompt filtering.
+   Compute raw within-prompt terminal-outcome sample variance.
+   Rank prompts by raw variance and retain the shortest prefix
+   carrying at least 90% of total raw variance mass.
+
+3. Selected-only Exact IG.
+   For every selected valid Search:
+       Phi_pre  = answer-body mean log-prob before observation
+       Phi_post = answer-body mean log-prob after observation
+       r_IG = Phi_post - Phi_pre
+
+4. Raw suffix return.
+       G_IG[t] = sum_{k >= t, valid} r_IG[k]
+       gamma = 1
+
+5. Same-prompt / same-depth peers.
+
+   if peer_count >= 2:
+       A_loc = zscore(raw IG)
+       A_ret = zscore(raw suffix return)
+       A_search = 0.5*A_ret + 0.5*A_loc
+
+   elif peer_count == 1:
+       A_search = Z_O
+
+   elif Exact IG unavailable:
+       A_search = 0
+
+6. Answer:
+       A_answer = Z_O + centered_format_advantage
+
+7. Expand turn credit to eligible policy tokens.
+   Environment/prompt tokens remain masked.
+
+8. Compute the geometric-mean turn ratio.
+
+9. Apply adaptive turn-level clipped surrogate.
+
+10. Add frozen-reference full-vocabulary KL.
+
+11. Reduce:
+       action tokens ‚Üí trajectory ‚Üí prompt ‚Üí global mean
+
+12. Perform one strict on-policy optimizer step.
+```
+
+### 17. What MICA-IG changes and does not change
+
+MICA-IG changes, in this project-specific V1 path:
+
+- Search credit assignment;
+- the local immediate-IG channel;
+- the delayed raw-suffix-return channel;
+- same-prompt/same-depth normalization;
+- the singleton normalized-terminal-outcome fallback.
+
+MICA-IG does not change:
+
+- the terminal Answer scorer;
+- the Answer advantage definition;
+- the rollout engine or retriever;
+- the old-policy turn-ratio definition;
+- adaptive turn clipping;
+- frozen-reference KL;
+- nested task reduction;
+- the optimizer;
+- FSDP, vLLM, Ray, and hardware-topology infrastructure.
+
+The current MICA V1 path also does not use `A_decision`,
+`A_query`, routed outcome, sufficiency/novelty actor penalties, an
+Answer-probe auxiliary actor loss, a role-localized gate loss, or raw-IG
+fallback. The repository contains other experimental/qualification modes, but
+those are not part of this release-recipe path.
+
+### 18. Method lineage and project-specific adaptations
+
+The naming boundary is:
+
+```text
+MICA-IG is a project-specific, MICA-inspired
+information-gain credit-assignment method.
+```
+
+The design draws on several directions:
+
+- IGPO: answer-likelihood information gain;
+- RAGEN-2: high-signal prompt selection from reward dispersion;
+- MICA: a mixture of immediate and delayed process credit;
+- A¬≤TGPO: turn-level normalization and adaptive clipped policy-optimization
+  concepts.
+
+The final AetherSearch formulas and boundaries are project-specific. In
+particular, `gamma=1`, `alpha=0.5`, the Exact-IG scaffold,
+selected-only Exact-IG, same-prompt/same-depth peers, and singleton outcome
+fallback should not be presented as verbatim requirements of any one
+original paper.
+
+### 19. Interpretation boundary / known limitation
+
+For `n_{p,t}\ge2`, the MICA peer set contains trajectories that:
+
+- share the same prompt;
+- reach the same Search depth;
+- actually execute the Search;
+- have a valid Exact-IG reward.
+
+Therefore `A_search` primarily answers:
+
+```text
+Was this Search better than peer Searches at the same prompt and depth?
+```
+
+It does not directly estimate the same-state counterfactual:
+
+```math
+Q(s_t,\mathrm{Search})
+-
+Q(s_t,\mathrm{AnswerNow}).
+```
+
+Consequently, a positive `A_search` means that this Search
+outperformed its eligible peer Searches. It does not strictly mean that
+searching was better than stopping immediately. MICA-IG should not be
+described as solving optimal stopping; this is an interpretation boundary,
+not a runtime bug.
+
+### 20. Implementation map
+
+The source-of-truth mapping for the formulas above is:
+
+| Contract | Implementation |
+|---|---|
+| terminal outcome eligibility and scoring | `src/agentic_rl/outcome/workers.py`, `src/agentic_rl/outcome/token_f1.py` |
+| paper RAGEN-2 sample variance and raw-variance-mass Top-p | `src/agentic_rl/selection/paper_ragen2.py`, `src/agentic_rl/selection/candidate_pool.py`, `src/agentic_rl/selection/prompt_variance.py`, `src/agentic_rl/selection/top_p.py` |
+| final release selection mode | `recipes/rl/train_4x48gb.yaml`, `configs/formal_train_answer_only_ragen2_paper_mica_ig_v1.yaml` |
+| Exact-IG target, alias policy, offsets, score span | `src/agentic_rl/exact_ig/target_schema.py` |
+| Exact-IG scorer, causal alignment, detached FP32 forward | `src/agentic_rl/exact_ig/vectorized_scorer.py`, `src/agentic_rl/exact_ig/precision_policy.py`, `src/agentic_rl/runtime/fsdp_worker.py` |
+| raw suffix, local/return normalization, singleton and missing-IG rules | `src/agentic_rl/advantage/mica_ig.py`, `src/agentic_rl/advantage/a2tgpo.py` |
+| format advantage and policy-token provenance | `src/agentic_rl/outcome/format_indicator.py`, `src/agentic_rl/rollout/trajectory_schema.py`, `src/agentic_rl/rollout/token_provenance.py` |
+| turn ratio and adaptive clipping | `src/agentic_rl/policy/turn_ratio.py`, `src/agentic_rl/policy/strict_onpolicy_loss.py` |
+| nested reduction and full-vocabulary reference KL | `src/agentic_rl/policy/reduction.py`, `src/agentic_rl/policy/reference_kl.py` |
+
+The repository retains earlier scaled-selection machinery for historical and
+experimental coverage, but it is not part of the final AetherSearch recipe.
+The public recipe, not this documentation, is the executable selection
+boundary. No GPU runtime test is implied by this README section.
+
+## Quick Start
+
+üöÄ The public entrypoint resolves one algorithm recipe, one asset manifest,
+and one explicit hardware/qualification profile.
+
+Install the local package inside an RL environment that already contains the
+compatible PyTorch, veRL, vLLM, Ray, and FlashAttention stack:
+
+```bash
+python -m pip install -e .
+```
+
+Create the machine-local environment configuration:
+
+```bash
+cp environment/env.template.sh environment/env.local.sh
+# Edit environment/env.local.sh, then:
+source environment/env.local.sh
+```
+
+Run the lightweight source, shell, and configuration checks:
+
+```bash
+bash scripts/validate_static.sh
+```
+
+Validate the only released hardware recipe without starting services:
+
+```bash
+bash scripts/train_rl.sh --dry-run
+```
+
+The default recipe is an **Official Qualified** reproduction. It enables
+`configs/qualification/official_4x48gb_v1.yaml`, which checks the published
+4x48GB/48-CPU/360-GiB host contract and release asset checksums. Portable
+user-defined profiles use resource minimums and generic topology invariants
+instead of claiming official qualification.
+
+Start RL training on the validated four-GPU topology:
+
+```bash
+bash scripts/train_rl.sh
+```
+
+The included recipe assigns physical GPU 0 to retrieval and asynchronous
+training-time evaluation, and physical GPUs 1-3 to the three-rank vLLM/FSDP2
+runtime. Every 20-update evaluation uses the complete 51,713-row Search-R1
+`test.parquet`. See `recipes/rl/README.md` for the configuration boundary.
+The resolved configuration is materialized inside each new run directory.
+
+## Configuration Boundary
+
+‚öôÔ∏è Configuration answers five separate questions:
+
+| Layer | Responsibility |
+|---|---|
+| experiment | what algorithm and schedule to run |
+| assets | which model, data, tokenizer, and retriever artifacts to use |
+| hardware | which physical resources and role placement are available |
+| runtime | how Ray, veRL, FSDP2, and vLLM map onto those resources |
+| qualification | whether the configuration exactly matches the official reference |
+
+`environment/env.local.sh` supplies machine-local paths and Python
+interpreters. Asset checksums live in `configs/assets/`; hardware roles and
+Ray resources live in YAML. `TopologyPlan` is the runtime topology source of
+truth and derives visible CUDA IDs, learner world size, Ray bundles, and
+rollout DP/TP compatibility fields.
+
+For another server, provide a user-owned hardware/runtime YAML, set
+`qualification.mode: portable`, and keep the algorithm configuration
+unchanged. Generic non-reference layouts are covered by CPU-only synthetic
+configuration tests. That coverage does not establish GPU-memory fit, runtime
+compatibility, training stability, throughput, or production qualification.
+
+## Repository Layout
+
+- `sft_data/`: SFT data release metadata and build scripts. The full SFT JSONL
+  payload is hosted on [Hugging Face Datasets](https://huggingface.co/datasets/muradil211/aethersearch_sft).
+- `src/agentic_rl/`: RL training, rollout, advantage, policy loss, retriever,
+  checkpoint, and runtime adapter code.
+- `scripts/`: launch, preflight, resume, validation, and operational scripts for
+  the RL training stage; see `scripts/README.md` for public versus historical
+  entrypoints.
+- `recipes/rl/`: the single validated public RL recipe and its usage boundary.
+- `configs/`: algorithm, hardware/topology, asset-manifest, qualification,
+  retriever, stage configs, and the Exact-IG runtime gate;
+  see `configs/README.md` for their portability boundary.
+- `runtime_assets/`: local runtime assets required by the training launcher.
+- `tests/`: unit and integration checks for the training code.
+- `environment/`: observed package versions and environment template.
+
+## Release Boundary
+
+üì¶ The public repository covers SFT assets and metadata plus the complete
+Agentic-RL training layer. The DPO warm start is an externally supplied model
+checkpoint; the DPO trainer and preference-data generation pipeline are not
+part of this release.
+
+Large model weights, optimizer-state checkpoints, eval result bundles, report
+archives, and runtime snapshots are intentionally not committed to this GitHub
+repository. Public model and data artifacts are linked from Hugging Face above.

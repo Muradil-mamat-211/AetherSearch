@@ -1,0 +1,6 @@
+# Explicit test compose for the MICA formal configuration.
+# Algorithm settings and hardware topology are separate layers.
+extends: ../../configs/formal_train_answer_only_ragen2_mica_ig_v1.yaml
+
+includes:
+  - ../../configs/hardware/4x48gb_3rl.yaml

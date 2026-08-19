@@ -15,8 +15,8 @@ exact_ig:
   numerical_gate_status: PASS
   numerical_gate_reason: structural_and_semantic_audit_pass_numeric_drift_is_telemetry
   structural_audit_status: PASS
-  structural_audit_path: /root/autodl-tmp/search-r1-workspace/projects/igpo_ragen2_a2tgpo_strict_onpolicy_v1/artifacts/exact_ig_fast_path_self_audit_20260730/audit_status.json
-  numerical_gate_path: /root/autodl-tmp/search-r1-workspace/projects/igpo_ragen2_a2tgpo_strict_onpolicy_v1/artifacts/exact_ig_fast_path_self_audit_20260730/audit_status.json
+  structural_audit_path: ${AETHERSEARCH_EXACT_IG_AUDIT_ROOT}/audit_status.json
+  numerical_gate_path: ${AETHERSEARCH_EXACT_IG_AUDIT_ROOT}/audit_status.json
   attention_backend: sdpa_math
   parameter_dtype: float32
   activation_dtype: float32

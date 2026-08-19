@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+from gpu_test_guard import skip_if_no_gpu
+
+skip_if_no_gpu()
+
 import pytest
 
 from vllm.sampling_params import RequestOutputKind

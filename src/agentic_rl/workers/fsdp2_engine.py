@@ -36,16 +36,24 @@ def apply_qwen_fsdp2(
     return model
 
 
-def assert_fsdp2_world(*, world_size: int, expected_world_size: int = 4) -> None:
+def assert_fsdp2_world(
+    *, world_size: int, expected_world_size: int | None = None
+) -> None:
     import torch.distributed as dist
 
     if not dist.is_initialized():
         raise RuntimeError("FSDP2 requires an initialized process group")
-    if int(world_size) != expected_world_size:
+    configured_world_size = int(world_size)
+    expected = (
+        configured_world_size
+        if expected_world_size is None
+        else int(expected_world_size)
+    )
+    if configured_world_size != expected:
         raise RuntimeError(
-            f"Configured world size {world_size} != required {expected_world_size}"
+            f"Configured world size {configured_world_size} != required {expected}"
         )
-    if dist.get_world_size() != expected_world_size:
+    if dist.get_world_size() != expected:
         raise RuntimeError(
-            f"Process-group world size {dist.get_world_size()} != {expected_world_size}"
+            f"Process-group world size {dist.get_world_size()} != {expected}"
         )

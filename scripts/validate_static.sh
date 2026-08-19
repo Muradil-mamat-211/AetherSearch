@@ -9,6 +9,7 @@ source "${PROJECT_ROOT}/scripts/bootstrap_env.sh"
   "${PROJECT_ROOT}/scripts" \
   "${PROJECT_ROOT}/tests"
 "${RL_PYTHON}" -c "import agentic_rl; import agentic_rl.config"
+"${RL_PYTHON}" "${PROJECT_ROOT}/scripts/validate_readme.py"
 
 while IFS= read -r script; do
   bash -n "${script}"

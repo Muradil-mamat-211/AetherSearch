@@ -29,7 +29,9 @@ from agentic_rl.policy.strict_onpolicy_loss import (
     a2tgpo_adaptive_turn_objective,
 )
 from agentic_rl.rollout.trajectory_schema import TurnType
-from agentic_rl.config import DEFAULT_CONFIG, load_config
+from agentic_rl.config import load_config
+
+from config_support import TEST_CONFIG
 from agentic_rl.controller.attempt_state import TrainingState
 from agentic_rl.controller.update_controller import StrictAttemptController
 from agentic_rl.selection.candidate_pool import CandidatePool, PromptGroup
@@ -219,7 +221,7 @@ def test_fixed_tensor_search_formula_uses_point_three_ig_weight() -> None:
 
 
 def test_ragen_selected_set_is_independent_of_search_advantage_lambda() -> None:
-    base = load_config(DEFAULT_CONFIG)
+    base = load_config(TEST_CONFIG)
     old_shadow_config = copy.deepcopy(base)
     old_shadow_config["advantage"]["lambda_ig"] = 1.0
     production_config = copy.deepcopy(base)

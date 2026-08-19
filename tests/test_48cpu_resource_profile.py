@@ -7,10 +7,12 @@ from agentic_rl.config import load_config
 from agentic_rl.runtime.verl_config import build_verl_config, effective_rollout_topology
 from agentic_rl.workers.resource_plan import build_resource_plan
 
+from config_support import THREE_RANK_PARENT_CONFIG
+
 
 ROOT = Path(__file__).resolve().parents[1]
 PROFILE = ROOT / "configs/formal_resume_u20_3rank_48cpu.yaml"
-PARENT = ROOT / "configs/formal_resume_u20_3rank.yaml"
+PARENT = THREE_RANK_PARENT_CONFIG
 
 
 def test_48cpu_profile_resolves_three_rank_topology_without_algorithm_changes() -> None:

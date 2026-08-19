@@ -1,10 +1,20 @@
-extends: ../../configs/formal_train_answer_only_ragen2_mica_ig_v1.yaml
+extends: ../../configs/formal_train_answer_only_ragen2_paper_mica_ig_v1.yaml
 
 includes:
   - ../../configs/hardware/4x48gb_3rl.yaml
 
 project:
   name: AetherSearch
+
+training:
+  total_successful_updates: 500
+
+qualification:
+  mode: ${AETHERSEARCH_QUALIFICATION_MODE}
+  profile: ${AETHERSEARCH_PROJECT_ROOT}/configs/qualification/official_4x48gb_v1.yaml
+
+assets:
+  manifest_path: ${AETHERSEARCH_ASSET_MANIFEST}
 
 paths:
   search_r1_root: ${AETHERSEARCH_SEARCH_R1_ROOT}
@@ -18,8 +28,8 @@ paths:
   runtime_root: ${AETHERSEARCH_RUNTIME_ROOT}
 
 exact_ig:
-  structural_audit_path: ${AETHERSEARCH_PROJECT_ROOT}/configs/exact_ig_fast_path_audit_status.json
-  numerical_gate_path: ${AETHERSEARCH_PROJECT_ROOT}/configs/exact_ig_fast_path_audit_status.json
+  structural_audit_path: ${AETHERSEARCH_EXACT_IG_AUDIT_ROOT}/audit_status.json
+  numerical_gate_path: ${AETHERSEARCH_EXACT_IG_AUDIT_ROOT}/audit_status.json
 
 retriever:
   server_source: ${AETHERSEARCH_PROJECT_ROOT}/runtime_assets/retriever/hybrid_retrieval_server.py

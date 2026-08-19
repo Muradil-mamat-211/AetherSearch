@@ -61,6 +61,10 @@ def main() -> None:
     groups: dict[str, list[tuple[Path, int, str]]] = defaultdict(list)
     for relative in release_files():
         absolute = PROJECT_ROOT / relative
+        if not absolute.is_file():
+            # A deleted tracked file can remain in the index until the change
+            # is staged; do not leave a stale inventory entry during a rename.
+            continue
         groups[category(relative)].append(
             (relative, absolute.stat().st_size, sha256(absolute))
         )

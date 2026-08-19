@@ -1,0 +1,10 @@
+# Explicit test compose for the historical U20 contract.
+extends: ../../configs/pilot_20_final.yaml
+
+includes:
+  - ../../configs/hardware_5x48gb.yaml
+
+rollout:
+  tensor_parallel_size: 1
+  gpu_memory_utilization: 0.46
+  max_num_seqs: 64
