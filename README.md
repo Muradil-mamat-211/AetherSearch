@@ -162,7 +162,7 @@ maximum IGPO-compatible token-level F1 over all ground-truth aliases:
 O_{p,i}
 =
 \max_{a^\star\in\mathcal A_p}
-\operatorname{TokenF1}
+\mathrm{TokenF1}
 \left(
 \hat a_{p,i},a^\star
 \right).
@@ -770,7 +770,7 @@ J_t
 \min
 \left[
 \rho_tA_t,
-\operatorname{clip}
+\mathrm{clip}
 \left(\rho_t,l_t,u_t\right)A_t
 \right].
 ```
