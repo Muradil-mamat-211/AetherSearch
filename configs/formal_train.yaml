@@ -1,7 +1,7 @@
 extends: base.yaml
 
 paths:
-  runtime_root: /root/autodl-tmp/search-r1-workspace/projects/igpo_ragen2_a2tgpo_strict_onpolicy_v1/outputs/formal_training
+  runtime_root: ${AETHERSEARCH_RUNTIME_ROOT}/formal_training
 
 optimizer:
   name: adamw
@@ -57,11 +57,10 @@ selection:
 
 evaluation:
   asynchronous: true
-  physical_gpu: 0
+  role: eval
   batch_size: 1
   retry_seconds: 300
-  minimum_free_memory_gib: 10
-  manifest_path: /root/autodl-tmp/search-r1-workspace/projects/igpo_ragen2_a2tgpo_strict_onpolicy_v1/artifacts/full_search_r1_test_manifest.json
+  manifest_path: ${AETHERSEARCH_RUNTIME_ROOT}/full_search_r1_test_manifest.json
   manifest_mode: full_validation
   expected_validation_sha256: 30aa887b6d47e06e8c0f6f5307c88fe4e13461ac25a20ec0a5433ad7a4fe25dc
   expected_row_count: 51713
@@ -80,7 +79,6 @@ evaluation:
   sampling_top_p: 1.0
   model_dtype: bfloat16
   attention_backend: flash_attention_2
-  max_memory_fraction: 0.24
 
 formal:
   total_successful_updates: null
@@ -90,7 +88,7 @@ formal:
   reference_tree_sha256: a2cf15da06b06eb84a74182853f9c9a697aa0cce047ff34369b5fb737cdbd08f
   tokenizer_sha256: 22a5d06ea8962e1236779430602bd1871519c4bd0debfaaa53827f252fcb9019
   retriever_index_sha256: 69c98463fdb41fc08737d88513c597725f311c44f7ba6dca4b05d8c7c658d166
-  retriever_config_sha256: c778053414b5754ad86dc1ce4e4ad6c96361c3489bd4818a30ab18b8a965c918
+  retriever_config_sha256: 151c3d85d30ca52b68a98b74ae86f5bbf99dc9c16c48e71b7474e40584190c22
 
 formal_schedule:
   optimizer_family: AdamW
@@ -100,7 +98,8 @@ formal_schedule:
   optimizer_epsilon: 1.0e-8
   scheduler: constant
   warmup: 10
-  learner_micro_batch_size: 8
+  # Capacity-dependent; supplied by an explicit hardware/reference profile.
+  learner_micro_batch_size: null
   total_successful_updates: null
   checkpoint_every_successful_updates: 20
   fixed_eval_every_successful_updates: 20

@@ -24,6 +24,8 @@ from agentic_rl.rollout.trajectory_schema import (
 )
 from agentic_rl.runtime.learner_batch import prepare_selected_trajectories
 from agentic_rl.runtime.verl_runtime_adapter import VerlAttemptRuntimeAdapter
+
+from config_support import PILOT_CONFIG
 from agentic_rl.config import load_config
 from pathlib import Path
 
@@ -462,7 +464,7 @@ def test_new_formula_reaches_turn_payload_and_runtime_revalidation() -> None:
             )
         )
     group = SimpleNamespace(trajectories=tuple(records))
-    config = load_config(ROOT / "configs/pilot_20_final.yaml")
+    config = load_config(PILOT_CONFIG)
     prepared = prepare_selected_trajectories(
         [group],
         expected_group_size=2,

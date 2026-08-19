@@ -73,7 +73,6 @@ if [[ -d "${RETRIEVER_ENV}/lib/server" ]]; then
   export LD_LIBRARY_PATH="${JAVA_HOME}/lib/server:${JAVA_HOME}/lib:${LD_LIBRARY_PATH:-}"
 fi
 
-export OPENAI_API_KEY="${OPENAI_API_KEY:-local-pyserini-import-only}"
 export OMP_NUM_THREADS="${AETHERSEARCH_RETRIEVER_OMP_THREADS:-4}"
 export MKL_NUM_THREADS="${AETHERSEARCH_RETRIEVER_MKL_THREADS:-4}"
 export OPENBLAS_NUM_THREADS=1

@@ -32,26 +32,40 @@ mapfile -d '' -t RUNTIME_VALUES < <(
   "${RL_PYTHON}" - "${CONFIG}" <<'PY'
 import sys
 from agentic_rl.config import load_config
+from agentic_rl.topology import TopologyPlan
 
 config = load_config(sys.argv[1])
+plan = TopologyPlan.from_config(config)
 values = (
     config["paths"]["rl_python"],
-    config["hardware"]["retriever_physical_gpu"],
-    ",".join(str(value) for value in config["hardware"]["rl_physical_gpus"]),
+    "" if plan.retriever_physical_gpu is None else plan.retriever_cuda_visible_devices,
+    plan.eval_cuda_visible_devices,
+    plan.rl_cuda_visible_devices,
     config["retriever"]["service_url"],
+    plan.learner_world_size,
+    config["ray"].get("memory_monitor_refresh_ms", 1000),
+    config["ray"].get("memory_usage_threshold", 0.80),
 )
 for value in values:
     print(value, end="\0")
 PY
 )
-if [[ "${#RUNTIME_VALUES[@]}" -ne 4 ]]; then
+if [[ "${#RUNTIME_VALUES[@]}" -ne 8 ]]; then
   printf 'Failed to resolve the runtime configuration.\n' >&2
   exit 1
 fi
 RL_PYTHON="${RUNTIME_VALUES[0]}"
 RETRIEVER_GPU="${RUNTIME_VALUES[1]}"
-RL_GPUS="${RUNTIME_VALUES[2]}"
-RETRIEVER_URL="${RUNTIME_VALUES[3]}"
+EVAL_GPU="${RUNTIME_VALUES[2]}"
+RL_GPUS="${RUNTIME_VALUES[3]}"
+RETRIEVER_URL="${RUNTIME_VALUES[4]}"
+RL_WORLD_SIZE="${RUNTIME_VALUES[5]}"
+RAY_MEMORY_REFRESH_MS="${RUNTIME_VALUES[6]}"
+RAY_MEMORY_THRESHOLD="${RUNTIME_VALUES[7]}"
+if [[ -z "${RETRIEVER_GPU}" || -z "${RL_GPUS}" ]]; then
+  printf 'Resolved topology must assign Retriever and RL GPU roles.\n' >&2
+  exit 1
+fi
 LOG_DIR="${RUN_DIR}/logs"
 PID_DIR="${RUN_DIR}/artifacts/pids"
 
@@ -62,12 +76,11 @@ touch \
   "${LOG_DIR}/train_rank0.log" \
   "${LOG_DIR}/retriever.log" \
   "${LOG_DIR}/ray_driver.log" \
-  "${LOG_DIR}/fsdp_rank0.log" \
-  "${LOG_DIR}/fsdp_rank1.log" \
-  "${LOG_DIR}/fsdp_rank2.log" \
-  "${LOG_DIR}/fsdp_rank3.log" \
   "${LOG_DIR}/eval_worker.log" \
   "${LOG_DIR}/errors.log"
+for rank in $(seq 0 $((RL_WORLD_SIZE - 1))); do
+  touch "${LOG_DIR}/fsdp_rank${rank}.log"
+done
 
 exec > >(tee -a "${LOG_DIR}/console.log") \
      2> >(tee -a "${LOG_DIR}/errors.log" >&2)
@@ -126,19 +139,24 @@ done
   >/dev/null
 
 if [[ "${STAGE}" == "PILOT20" || "${STAGE}" == "FORMAL" ]]; then
-  CUDA_VISIBLE_DEVICES="${RETRIEVER_GPU}" \
-    "${PROJECT_ROOT}/scripts/async_eval_gpu0_worker.sh" \
-    "${CONFIG}" "${RUN_DIR}" &
-  EVAL_PID=$!
-  printf '%s\n' "${EVAL_PID}" >"${PID_DIR}/eval_worker.pid"
+  if [[ -n "${EVAL_GPU}" ]]; then
+    AETHERSEARCH_EVAL_CUDA_VISIBLE_DEVICES="${EVAL_GPU}" \
+      "${PROJECT_ROOT}/scripts/async_eval_worker.sh" \
+      "${CONFIG}" "${RUN_DIR}" &
+    EVAL_PID=$!
+    printf '%s\n' "${EVAL_PID}" >"${PID_DIR}/eval_worker.pid"
+  else
+    printf 'No eval role is configured; continuing without async evaluation.\n'
+    EVAL_PID=""
+  fi
 fi
 
-export CUDA_VISIBLE_DEVICES="${AGENTIC_RL_RL_CUDA_VISIBLE_DEVICES:-${RL_GPUS}}"
+export CUDA_VISIBLE_DEVICES="${RL_GPUS}"
 export AGENTIC_RL_EXPECTED_RL_CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}"
 export VLLM_WORKER_MULTIPROC_METHOD=spawn
-# Keep Ray's memory monitor active so pressure remains recoverable.
-export RAY_memory_monitor_refresh_ms=1000
-export RAY_memory_usage_threshold=0.80
+# Keep Ray's memory monitor active using the resolved runtime profile.
+export RAY_memory_monitor_refresh_ms="${RAY_MEMORY_REFRESH_MS}"
+export RAY_memory_usage_threshold="${RAY_MEMORY_THRESHOLD}"
 export AGENTIC_RL_RUNTIME_STAGE="${STAGE}"
 export AGENTIC_RL_RUN_DIR="${RUN_DIR}"
 if [[ "${STAGE}" == "FORMAL" ]]; then

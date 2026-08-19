@@ -3,22 +3,7 @@ extends: formal_train_role_localized_gate.yaml
 # Distributed-only migration overlay. Algorithm and optimizer settings are
 # inherited unchanged from formal_train_role_localized_gate.yaml.
 paths:
-  runtime_root: /root/autodl-tmp/search-r1-workspace/projects/igpo_ragen2_a2tgpo_strict_onpolicy_v1/outputs/3rank_resume_validation
-
-hardware:
-  allow_world_size_change_on_resume: true
-  total_physical_gpus: 5
-  rl_physical_gpus: [1, 2, 3]
-  rl_visible_gpus: [0, 1, 2]
-  rl_world_size: 3
-  vllm_data_parallel_size: 3
-
-rollout:
-  data_parallel_size: 3
-  replicas: 3
-
-learner:
-  world_size: 3
+  runtime_root: ${AETHERSEARCH_RUNTIME_ROOT}/3rank_resume_validation
 
 formal:
   fresh_start_required: false

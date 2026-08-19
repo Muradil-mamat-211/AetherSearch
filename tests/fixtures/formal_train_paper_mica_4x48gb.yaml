@@ -1,0 +1,5 @@
+# Explicit test compose for the paper RAGEN-2 selector overlay.
+extends: ../../configs/formal_train_answer_only_ragen2_paper_mica_ig_v1.yaml
+
+includes:
+  - ../../configs/hardware/4x48gb_3rl.yaml

@@ -6,6 +6,8 @@ import yaml
 
 from agentic_rl.config import load_config
 
+from config_support import MICA_CONFIG
+
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -13,9 +15,7 @@ ROOT = Path(__file__).resolve().parents[1]
 def test_public_recipe_is_u0_mica_and_full_eval() -> None:
     recipe_path = ROOT / "recipes" / "rl" / "train_4x48gb.yaml"
     recipe = yaml.safe_load(recipe_path.read_text(encoding="utf-8"))
-    config = load_config(
-        ROOT / "configs" / "formal_train_answer_only_ragen2_mica_ig_v1.yaml"
-    )
+    config = load_config(MICA_CONFIG)
     assert recipe["extends"] == (
         "../../configs/formal_train_answer_only_ragen2_mica_ig_v1.yaml"
     )

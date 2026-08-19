@@ -52,7 +52,7 @@ from agentic_rl.selection.top_p import stable_mass_top_p
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_MODEL = Path(
-    "/root/autodl-tmp/search-r1-workspace/models/dpo_v2_final_model"
+    os.environ.get("AETHERSEARCH_ACTOR_MODEL", "")
 )
 DEFAULT_FAILURE = (
     PROJECT_ROOT
@@ -73,7 +73,7 @@ OFFICIAL_ROOT = (
     "igpo_official_64165e2741ed8801f977948c8128080ce87b4101"
 )
 TRAIN_PARQUET = Path(
-    "/root/autodl-tmp/search-r1-workspace/data/nq_hotpotqa_train/train.parquet"
+    os.environ.get("AETHERSEARCH_TRAIN_DATA", "")
 )
 MODEL_MAX_EXTENDED = 16384
 MODEL_MAX_POSITION = 32768

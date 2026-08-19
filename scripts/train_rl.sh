@@ -6,16 +6,15 @@ source "${PROJECT_ROOT}/scripts/bootstrap_env.sh"
 
 CONFIG="${PROJECT_ROOT}/recipes/rl/train_4x48gb.yaml"
 RUN_DIR=""
-TOTAL_UPDATES=500
 DRY_RUN=0
 
 usage() {
   cat <<'EOF'
 Usage: train_rl.sh [--config PATH] [--run-dir PATH] [--dry-run]
 
-Launch the verified AetherSearch RL recipe. Source environment/env.local.sh or
-set AETHERSEARCH_ENV_FILE before running. The released recipe is locked to 500
-successful updates and the validated 4x48GB / 3-rank RL topology.
+Launch the AetherSearch RL recipe. Source environment/env.local.sh or set
+AETHERSEARCH_ENV_FILE before running. Training length and hardware topology
+come from the selected recipe; this launcher contains no experiment constants.
 EOF
 }
 
@@ -52,8 +51,17 @@ RESOLVED_CONFIG="${RUN_DIR}/configs/resolved_config.yaml"
 "${RL_PYTHON}" "${PROJECT_ROOT}/scripts/resolve_mica_formal_config.py" \
   --input "${CONFIG}" \
   --output "${RESOLVED_CONFIG}" \
-  --runtime-root "${RUN_DIR}" \
-  --total-successful-updates "${TOTAL_UPDATES}"
+  --runtime-root "${RUN_DIR}"
+
+"${RL_PYTHON}" - "${RESOLVED_CONFIG}" <<'PY'
+import sys
+from agentic_rl.config import load_config
+from agentic_rl.qualification import qualification_mode, validate_reference_qualification
+
+config = load_config(sys.argv[1])
+if qualification_mode(config) in {"reference", "formal"}:
+    validate_reference_qualification(config)
+PY
 
 if [[ "${DRY_RUN}" -eq 1 ]]; then
   "${RL_PYTHON}" -m agentic_rl.config \

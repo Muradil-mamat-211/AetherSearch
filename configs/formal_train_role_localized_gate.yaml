@@ -23,7 +23,7 @@ advantage:
     enabled: true
     lambda_decision: 0.622636772052666
     lambda_query: 0.8302057700075972
-    calibration_manifest: /root/autodl-tmp/search-r1-workspace/projects/igpo_ragen2_a2tgpo_strict_onpolicy_v1/artifacts/role_localized_gate_calibration_20260804/gate_calibration_manifest.json
+    calibration_manifest: ${AETHERSEARCH_GATE_CALIBRATION_MANIFEST}
     calibration_manifest_sha256: dae054e513a033d4db5a61a131caea1e8477a8e3b52730152166210c26327972
     calibration_pending: false
     branch_priority:

@@ -1,7 +1,7 @@
 extends: formal_train.yaml
 
 paths:
-  runtime_root: /root/autodl-tmp/search-r1-workspace/projects/igpo_ragen2_a2tgpo_strict_onpolicy_v1/artifacts/role_localized_gate_calibration_20260804/runtime
+  runtime_root: ${AETHERSEARCH_RUNTIME_ROOT}/role_localized_gate_calibration/runtime
 
 scheduler:
   total_successful_updates: 500
@@ -30,7 +30,7 @@ advantage:
     enabled: true
     lambda_decision: 0.0
     lambda_query: 0.0
-    calibration_manifest: /root/autodl-tmp/search-r1-workspace/projects/igpo_ragen2_a2tgpo_strict_onpolicy_v1/artifacts/role_localized_gate_calibration_20260804/gate_calibration_manifest.json
+    calibration_manifest: ${AETHERSEARCH_GATE_CALIBRATION_MANIFEST}
     calibration_manifest_sha256: PENDING
     calibration_pending: true
     branch_priority: [n_budget, n_invalid, s_before, n_soft, normal]

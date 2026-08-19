@@ -4,12 +4,12 @@ retriever:
   health_endpoint: /health
   mode: hybrid
   top_k: 3
-  server_source: /root/autodl-tmp/search-r1-workspace/projects/igpo_ragen2_a2tgpo_strict_onpolicy_v1/runtime_assets/retriever/hybrid_retrieval_server.py
-  server_config_source: /root/autodl-tmp/search-r1-workspace/projects/igpo_ragen2_a2tgpo_strict_onpolicy_v1/runtime_assets/retriever/retriever.yaml
-  corpus_path: /root/autodl-tmp/search-r1-workspace/data/wiki18_corpus/wiki-18.jsonl
-  bm25_index_path: /root/autodl-tmp/search-r1-workspace/data/wiki18_bm25/bm25
-  dense_index_path: /root/autodl-tmp/search-r1-workspace/data/nq_search/e5_Flat.index
-  dense_encoder_path: /root/autodl-tmp/search-r1-workspace/models/e5-base-v2
+  server_source: ${AETHERSEARCH_PROJECT_ROOT}/runtime_assets/retriever/hybrid_retrieval_server.py
+  server_config_source: ${AETHERSEARCH_PROJECT_ROOT}/runtime_assets/retriever/retriever.yaml
+  corpus_path: ${AETHERSEARCH_CORPUS_PATH}
+  bm25_index_path: ${AETHERSEARCH_BM25_INDEX_PATH}
+  dense_index_path: ${AETHERSEARCH_DENSE_INDEX_PATH}
+  dense_encoder_path: ${AETHERSEARCH_DENSE_ENCODER_PATH}
   dense_encoder_name: e5
   dense_index_type: GpuIndexFlatIP
   require_faiss_gpu: true

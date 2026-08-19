@@ -10,10 +10,19 @@ from typing import Any
 from agentic_rl.advantage import (
     ANSWER_ONLY_RAGEN2_MICA_IG_V1_SINGLETON_OUTCOME_MODE,
 )
+from agentic_rl.assets import AssetManifestError, validate_asset_manifest
 from agentic_rl.config import load_config
 from agentic_rl.controller.dataset_view import DeterministicNQHotpotLogicalView
+from agentic_rl.qualification import (
+    QualificationError,
+    qualification_mode,
+    validate_reference_qualification,
+)
 from agentic_rl.runtime.fixed_eval import create_or_validate_eval_manifest_from_config
-from agentic_rl.runtime.resource_guard import validate_runtime_resource_budget
+from agentic_rl.runtime.resource_guard import (
+    validate_reference_resource_budget,
+    validate_runtime_resource_budget,
+)
 from agentic_rl.runtime.verl_config import assert_formal_hyperparameters_approved
 from agentic_rl.runtime.verl_runtime_adapter import _sha256_file, _sha256_tree
 from agentic_rl.selection import ANSWER_OUTCOME_ONLY_SELECTION_SIGNAL
@@ -43,7 +52,25 @@ def _tokenizer_hash(model_root: Path) -> str:
 
 def run_preflight(config_path: Path) -> dict[str, Any]:
     config = load_config(config_path)
+    mode_name = qualification_mode(config)
     resource_budget = validate_runtime_resource_budget(config)
+    qualification = {"status": "NOT_REQUESTED", "mode": mode_name}
+    if mode_name in {"reference", "formal"}:
+        try:
+            qualification = validate_reference_qualification(config)
+        except QualificationError as exc:
+            raise RuntimeError(str(exc)) from exc
+        resource_budget = validate_reference_resource_budget(config)
+    manifest_path = config.get("assets", {}).get("manifest_path")
+    if manifest_path:
+        try:
+            asset_manifest = validate_asset_manifest(str(manifest_path))
+        except AssetManifestError as exc:
+            raise RuntimeError(str(exc)) from exc
+    else:
+        if mode_name in {"reference", "formal"}:
+            raise RuntimeError("Reference preflight requires assets.manifest_path")
+        asset_manifest = {"status": "NOT_CONFIGURED"}
     assert_formal_hyperparameters_approved(config)
     mode = str(config["advantage"]["search_task_mode"])
     _require(
@@ -105,13 +132,25 @@ def run_preflight(config_path: Path) -> dict[str, Any]:
     actor_hash = _sha256_tree(actor)
     reference_hash = _sha256_tree(reference)
     tokenizer_hash = _tokenizer_hash(actor)
-    _require(actor_hash == formal["actor_init_tree_sha256"], "Actor hash changed")
-    _require(reference_hash == formal["reference_tree_sha256"], "Reference hash changed")
-    _require(tokenizer_hash == formal["tokenizer_sha256"], "Tokenizer hash changed")
+    expected_actor_hash = asset_manifest.get("assets", {}).get("actor", {}).get(
+        "sha256", formal["actor_init_tree_sha256"]
+    )
+    expected_reference_hash = asset_manifest.get("assets", {}).get("reference", {}).get(
+        "sha256", formal["reference_tree_sha256"]
+    )
+    expected_tokenizer_hash = asset_manifest.get("assets", {}).get("tokenizer", {}).get(
+        "sha256", formal["tokenizer_sha256"]
+    )
+    _require(actor_hash == expected_actor_hash, "Actor hash changed")
+    _require(reference_hash == expected_reference_hash, "Reference hash changed")
+    _require(tokenizer_hash == expected_tokenizer_hash, "Tokenizer hash changed")
 
     train_path = Path(str(paths["train_data"])).resolve()
     train_hash = _sha256_file(train_path)
-    _require(train_hash == config["data"]["source_sha256"], "Training data changed")
+    expected_train_hash = asset_manifest.get("assets", {}).get("train", {}).get(
+        "sha256", config["data"]["source_sha256"]
+    )
+    _require(train_hash == expected_train_hash, "Training data changed")
     logical = DeterministicNQHotpotLogicalView(
         train_path,
         selection_seed=int(config["data"]["selection_seed"]),
@@ -126,12 +165,24 @@ def run_preflight(config_path: Path) -> dict[str, Any]:
         ),
     )
     evaluation = config["evaluation"]
+    validation_asset = asset_manifest.get("assets", {}).get("validation", {})
+    evaluation_for_manifest = dict(evaluation)
+    if validation_asset:
+        evaluation_for_manifest["expected_validation_sha256"] = validation_asset.get(
+            "sha256", evaluation_for_manifest.get("expected_validation_sha256")
+        )
+        for key in ("expected_row_count", "expected_source_counts"):
+            if key in validation_asset:
+                evaluation_for_manifest[key] = validation_asset[key]
     manifest = create_or_validate_eval_manifest_from_config(
         validation_path=paths["validation_data"],
-        evaluation=evaluation,
+        evaluation=evaluation_for_manifest,
+    )
+    expected_manifest_sha256 = validation_asset.get(
+        "manifest_sha256", evaluation["expected_manifest_sha256"]
     )
     _require(
-        manifest["manifest_sha256"] == evaluation["expected_manifest_sha256"],
+        manifest["manifest_sha256"] == expected_manifest_sha256,
         "Fixed-eval manifest changed",
     )
 
@@ -140,8 +191,14 @@ def run_preflight(config_path: Path) -> dict[str, Any]:
     server_config = Path(str(retriever["server_config_source"])).resolve()
     index_hash = _sha256_file(index_path)
     server_hash = _sha256_file(server_config)
-    _require(index_hash == formal["retriever_index_sha256"], "Retriever index changed")
-    _require(server_hash == formal["retriever_config_sha256"], "Retriever config changed")
+    expected_index_hash = asset_manifest.get("assets", {}).get(
+        "retriever_index", {}
+    ).get("sha256", formal["retriever_index_sha256"])
+    expected_server_hash = asset_manifest.get("assets", {}).get(
+        "retriever_config", {}
+    ).get("sha256", formal["retriever_config_sha256"])
+    _require(index_hash == expected_index_hash, "Retriever index changed")
+    _require(server_hash == expected_server_hash, "Retriever config changed")
 
     return {
         "status": "PASS",
@@ -155,6 +212,8 @@ def run_preflight(config_path: Path) -> dict[str, Any]:
             "scheduler_step": 0,
         },
         "runtime_resource_budget": resource_budget,
+        "qualification": qualification,
+        "asset_manifest": asset_manifest,
         "actor_model": str(actor),
         "actor_checksum": actor_hash,
         "reference_model": str(reference),

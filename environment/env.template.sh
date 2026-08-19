@@ -24,6 +24,12 @@ export AETHERSEARCH_TRAIN_DATA=${AETHERSEARCH_TRAIN_DATA:-/path/to/train.parquet
 export AETHERSEARCH_VALIDATION_DATA=${AETHERSEARCH_VALIDATION_DATA:-/path/to/test.parquet}
 export AETHERSEARCH_SEARCH_R1_ROOT=${AETHERSEARCH_SEARCH_R1_ROOT:-/path/to/Search-R1}
 export AETHERSEARCH_RUNTIME_ROOT=${AETHERSEARCH_RUNTIME_ROOT:-${AETHERSEARCH_WORKSPACE}/outputs/rl}
+export AETHERSEARCH_ASSET_MANIFEST=${AETHERSEARCH_ASSET_MANIFEST:-${AETHERSEARCH_PROJECT_ROOT}/configs/assets/aethersearch_release_v1.yaml}
+export AETHERSEARCH_GATE_CALIBRATION_MANIFEST=${AETHERSEARCH_GATE_CALIBRATION_MANIFEST:-${AETHERSEARCH_RUNTIME_ROOT}/role_localized_gate_calibration/gate_calibration_manifest.json}
+export AETHERSEARCH_EXACT_IG_AUDIT_ROOT=${AETHERSEARCH_EXACT_IG_AUDIT_ROOT:-${AETHERSEARCH_PROJECT_ROOT}/configs/exact_ig_audit}
+# Use "reference" for the published 4x48GB qualification; use "portable"
+# with a user-owned hardware/runtime profile.
+export AETHERSEARCH_QUALIFICATION_MODE=${AETHERSEARCH_QUALIFICATION_MODE:-reference}
 
 # Hybrid Wikipedia retriever assets.
 export AETHERSEARCH_CORPUS_PATH=${AETHERSEARCH_CORPUS_PATH:-/path/to/wiki-18.jsonl}
@@ -38,5 +44,5 @@ export HF_XET_HIGH_PERFORMANCE=${HF_XET_HIGH_PERFORMANCE:-1}
 export HF_HUB_ETAG_TIMEOUT=${HF_HUB_ETAG_TIMEOUT:-60}
 export HF_HUB_DOWNLOAD_TIMEOUT=${HF_HUB_DOWNLOAD_TIMEOUT:-600}
 
-# Required only when downloading/uploading private HuggingFace assets.
-# export HF_TOKEN=hf_xxx
+# Set the Hugging Face credential in the local shell only when private assets
+# must be downloaded or uploaded; never commit that credential.

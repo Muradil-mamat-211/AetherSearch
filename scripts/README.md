@@ -13,12 +13,12 @@
   migration profile without starting a training job.
 
 Training-time evaluation is launched automatically by the runtime supervisor
-on physical GPU 0. `async_eval_gpu0_worker.sh` is an internal worker entrypoint;
-this release does not yet expose a separate one-command standalone model-test
-launcher.
+using the configured `eval` role. `async_eval_worker.sh` is an internal worker
+entrypoint; this release does not expose a separate one-command standalone
+model-test launcher.
 
-`launch_retriever.sh`, `_run_runtime_job.sh`, and
-`async_eval_gpu0_worker.sh` are internal components called by the public
+`launch_retriever.sh`, `_run_runtime_job.sh`, and `async_eval_worker.sh` are
+internal components called by the public
 launchers. They read paths and GPU assignments from the resolved configuration.
 
 `runtime_guard.py` is the retained monitor/watchdog process used by verified

@@ -1,0 +1,8 @@
+# Explicit test compose for legacy algorithm/config unit tests.
+# The production base is intentionally abstract; this fixture supplies the
+# old five-GPU test capacity explicitly so tests do not depend on hidden base
+# includes.
+extends: ../../configs/base.yaml
+
+includes:
+  - ../../configs/hardware_5x48gb.yaml

@@ -1,4 +1,4 @@
-"""Runtime resource checks for the 48-core, 360-GiB training container.
+"""Portable runtime resource checks plus explicit reference qualification.
 
 These checks are deliberately independent of algorithm configuration. They
 prevent Ray from being started with a resource contract larger than the
@@ -10,6 +10,7 @@ from __future__ import annotations
 import math
 import os
 import shutil
+import subprocess
 from pathlib import Path
 from typing import Any, Mapping
 
@@ -55,6 +56,40 @@ def _read_cpu_quota(path: Path) -> float | None:
     return quota / period
 
 
+def _read_gpu_inventory() -> dict[str, Any]:
+    """Read physical GPU count and the smallest installed GPU memory size."""
+
+    try:
+        completed = subprocess.run(
+            [
+                "nvidia-smi",
+                "--query-gpu=memory.total",
+                "--format=csv,noheader,nounits",
+            ],
+            check=True,
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+    except (FileNotFoundError, OSError, subprocess.SubprocessError):
+        return {"gpu_count": None, "gpu_memory_gib": None}
+    memories_mib: list[float] = []
+    for line in completed.stdout.splitlines():
+        raw = line.strip()
+        if not raw:
+            continue
+        try:
+            memories_mib.append(float(raw))
+        except ValueError:
+            return {"gpu_count": None, "gpu_memory_gib": None}
+    if not memories_mib:
+        return {"gpu_count": None, "gpu_memory_gib": None}
+    return {
+        "gpu_count": len(memories_mib),
+        "gpu_memory_gib": min(memories_mib) / 1024.0,
+    }
+
+
 def read_runtime_resource_snapshot() -> dict[str, Any]:
     """Read the effective cgroup limits, not the unconstrained host values."""
 
@@ -68,6 +103,7 @@ def read_runtime_resource_snapshot() -> dict[str, Any]:
             key, _, value = line.partition(" ")
             if key and value.isdigit():
                 events[key] = int(value)
+    gpu_inventory = _read_gpu_inventory()
     return {
         "memory_limit_bytes": memory_limit,
         "memory_current_bytes": memory_current,
@@ -79,6 +115,7 @@ def read_runtime_resource_snapshot() -> dict[str, Any]:
         ),
         "cpu_quota_cores": cpu_quota,
         "os_cpu_count": os.cpu_count(),
+        **gpu_inventory,
         "memory_events": events,
     }
 
@@ -94,6 +131,8 @@ def validate_runtime_resource_budget(
     hardware = config["hardware"]
     expected_cpu = int(hardware["expected_cpu_cores"])
     expected_ram_gib = float(hardware["expected_host_ram_gb"])
+    required_gpu_count = int(hardware.get("total_physical_gpus", 0))
+    minimum_gpu_memory_gib = float(hardware.get("gpu_memory_gb", 0))
     object_store_gib = float(hardware["ray_object_store_gb"])
     reserve_gib = float(hardware.get("memory_safety_reserve_gb", 64))
     actual_memory = snapshot.get("memory_limit_bytes")
@@ -102,10 +141,11 @@ def validate_runtime_resource_budget(
     if actual_memory is None:
         raise RuntimeError("Cannot verify the cgroup memory.max resource contract")
     actual_ram_gib = float(actual_memory) / BYTES_PER_GIB
-    if not math.isclose(actual_ram_gib, expected_ram_gib, rel_tol=0.0, abs_tol=1.0):
+    if actual_ram_gib + 1.0e-9 < expected_ram_gib:
         raise RuntimeError(
-            "Configured host RAM does not match the cgroup limit: "
-            f"configured={expected_ram_gib:g} GiB actual={actual_ram_gib:.3f} GiB"
+            "Configured host RAM requirement does not match the cgroup limit "
+            "and exceeds the available resource: "
+            f"required={expected_ram_gib:g} GiB actual={actual_ram_gib:.3f} GiB"
         )
     if actual_cpu is None:
         raise RuntimeError("Cannot verify the cgroup CPU quota contract")
@@ -114,10 +154,31 @@ def validate_runtime_resource_budget(
             "Configured CPU count exceeds the cgroup quota: "
             f"configured={expected_cpu} quota={actual_cpu:.3f}"
         )
-    if expected_cpu != 48:
-        raise RuntimeError(
-            f"This runtime profile is locked to 48 CPU cores, got {expected_cpu}"
-        )
+    if required_gpu_count > 0:
+        actual_gpu_count = snapshot.get("gpu_count")
+        if actual_gpu_count is None:
+            raise RuntimeError(
+                "Cannot verify the physical GPU count for the configured topology"
+            )
+        if int(actual_gpu_count) < required_gpu_count:
+            raise RuntimeError(
+                "Physical GPU count is below the configured topology: "
+                f"required={required_gpu_count} actual={int(actual_gpu_count)}"
+            )
+        actual_gpu_memory_gib = snapshot.get("gpu_memory_gib")
+        if minimum_gpu_memory_gib > 0 and actual_gpu_memory_gib is None:
+            raise RuntimeError(
+                "Cannot verify the minimum GPU memory for the configured topology"
+            )
+        if (
+            minimum_gpu_memory_gib > 0
+            and float(actual_gpu_memory_gib) + 1.0e-9 < minimum_gpu_memory_gib
+        ):
+            raise RuntimeError(
+                "GPU memory is below the configured topology minimum: "
+                f"required={minimum_gpu_memory_gib:g} GiB "
+                f"actual={float(actual_gpu_memory_gib):.3f} GiB"
+            )
     if object_store_gib <= 0 or reserve_gib <= 0:
         raise RuntimeError("Object-store and memory reserve must be positive")
     if object_store_gib + reserve_gib >= actual_ram_gib:
@@ -137,11 +198,64 @@ def validate_runtime_resource_budget(
         "cgroup_memory_limit_gib": actual_ram_gib,
         "cgroup_memory_current_gib": current_gib,
         "cgroup_cpu_quota_cores": float(actual_cpu),
+        "physical_gpu_count": (
+            int(snapshot["gpu_count"])
+            if snapshot.get("gpu_count") is not None
+            else None
+        ),
+        "minimum_gpu_memory_gib": minimum_gpu_memory_gib,
+        "smallest_gpu_memory_gib": (
+            float(snapshot["gpu_memory_gib"])
+            if snapshot.get("gpu_memory_gib") is not None
+            else None
+        ),
         "memory_events": dict(snapshot.get("memory_events", {})),
         "headroom_after_object_store_and_reserve_gib": (
             actual_ram_gib - object_store_gib - reserve_gib
         ),
     }
+
+
+def validate_reference_resource_budget(
+    config: Mapping[str, Any],
+    *,
+    snapshot: Mapping[str, Any] | None = None,
+    ram_tolerance_gib: float = 1.0,
+) -> dict[str, Any]:
+    """Apply the exact official 4x48GB host qualification.
+
+    This check is intentionally opt-in.  Portable runs use
+    :func:`validate_runtime_resource_budget`, which only requires that the
+    machine meet the declared minimum resources.
+    """
+
+    result = validate_runtime_resource_budget(config, snapshot=snapshot)
+    expected_cpu = int(config["hardware"]["expected_cpu_cores"])
+    expected_ram = float(config["hardware"]["expected_host_ram_gb"])
+    actual_cpu = float(result["cgroup_cpu_quota_cores"])
+    actual_ram = float(result["cgroup_memory_limit_gib"])
+    if expected_cpu != 48:
+        raise RuntimeError(
+            "Official reference qualification requires expected_cpu_cores=48, "
+            f"got {expected_cpu}"
+        )
+    if not math.isclose(expected_ram, 360.0, rel_tol=0.0, abs_tol=1.0e-9):
+        raise RuntimeError(
+            "Official reference qualification requires expected_host_ram_gb=360, "
+            f"got {expected_ram:g}"
+        )
+    if not math.isclose(actual_cpu, 48.0, rel_tol=0.0, abs_tol=1.0e-9):
+        raise RuntimeError(
+            "Official reference qualification requires a 48-core cgroup quota, "
+            f"got {actual_cpu:.3f}"
+        )
+    if not math.isclose(actual_ram, 360.0, rel_tol=0.0, abs_tol=ram_tolerance_gib):
+        raise RuntimeError(
+            "Official reference qualification requires a 360 GiB cgroup limit, "
+            f"got {actual_ram:.3f} GiB"
+        )
+    result["reference_qualification"] = "official_4x48gb_v1"
+    return result
 
 
 def _directory_size(path: Path) -> int:
