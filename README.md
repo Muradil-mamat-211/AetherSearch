@@ -43,31 +43,42 @@
 ## Table of Contents
 
 - [Overview](#overview)
-- [Training Pipeline](#training-pipeline)
+- [Highlights](#highlights)
 - [Evaluation Results](#evaluation-results)
+- [Training Pipeline](#training-pipeline)
 - [Agentic RL Method](#agentic-rl-method)
 - [Quick Start](#quick-start)
-- [Configuration Boundary](#configuration-boundary)
+- [Reproducibility & Configuration](#reproducibility-configuration)
 - [Repository Layout](#repository-layout)
-- [Release Boundary](#release-boundary)
+- [Release Scope](#release-scope)
 
 ## Overview
 
-AetherSearch is a search-augmented post-training project whose public code
-currently covers SFT data construction metadata and the downstream RL stage.
-The released RL recipe starts from an externally hosted DPO warm-start model;
-the DPO trainer and DPO data-generation pipeline are not included in this
-repository. Large data and model artifacts are hosted on Hugging Face.
+AetherSearch is a 3B multi-turn search agent that operates against an external
+retrieval environment. Given a question, the policy can issue multiple Search
+actions, consume the returned evidence as environment context, and produce a
+terminal Answer grounded in the accumulated trajectory.
 
-## Training Pipeline
+The complete training lineage is full-trajectory supervised fine-tuning,
+preference optimization, and Agentic RL. During RL, AetherSearch concentrates
+updates on prompts with useful within-group outcome variation, measures how
+retrieved evidence changes canonical-answer likelihood, and assigns both
+immediate and delayed credit to Search actions.
 
-🧭 The complete training lineage is SFT → DPO → Agentic RL.
+The public release provides SFT assets and metadata, the complete RL training
+layer, a qualified reference recipe, and portable topology configuration. The
+preference-optimization warm start is supplied as an external actor/reference
+checkpoint; its trainer and preference-data generation pipeline are outside
+the current release scope.
 
-| Stage | Purpose | Primary locations |
-|---|---|---|
-| SFT | cold-start full-trajectory supervision | `sft_data/`, `sft_data/scripts/` |
-| DPO warm start | externally produced actor/reference initialization | `AETHERSEARCH_ACTOR_MODEL`, `AETHERSEARCH_REFERENCE_MODEL` |
-| RL | search-augmented rollout and policy optimization | `src/agentic_rl/`, `scripts/`, `recipes/rl/` |
+## Highlights
+
+- Multi-turn Search and Answer trajectories grounded in an external retriever.
+- Raw outcome-variance filtering that focuses updates on high-signal prompts.
+- Selected-only retrieval utility scoring to avoid unnecessary model forwards.
+- Immediate and delayed Search credit normalized among comparable peer turns.
+- Strict on-policy turn-level optimization with reference-model regularization.
+- Hardware topology expressed independently from the training algorithm.
 
 ## Evaluation Results
 
@@ -79,69 +90,68 @@ repository. Large data and model artifacts are hosted on Hugging Face.
 | Search-R1 (Qwen2.5-3B Instruct, PPO) | 0.341 | 0.545 | 0.378 | 0.324 | 0.319 | 0.103 | **0.264** | 0.325 |
 | AetherSearch | 0.3977 | **0.5877** | 0.4229 | **0.3333** | **0.3985** | **0.1200** | 0.2320 | **0.3560** |
 
+## Training Pipeline
+
+🧭 The complete training lineage is SFT → DPO → Agentic RL.
+
+| Stage | Purpose | Primary locations |
+|---|---|---|
+| SFT | cold-start full-trajectory supervision | `sft_data/`, `sft_data/scripts/` |
+| DPO warm start | externally produced actor/reference initialization | `AETHERSEARCH_ACTOR_MODEL`, `AETHERSEARCH_REFERENCE_MODEL` |
+| RL | search-augmented rollout and policy optimization | `src/agentic_rl/`, `scripts/`, `recipes/rl/` |
+
+RL starts from the DPO warm-start actor/reference checkpoint; it does not start
+directly from the SFT stage.
+
 ## Agentic RL Method
 
-> 🧠 **Method scope.** This section documents the public AetherSearch
-> Agentic-RL recipe and the code path selected by
-> `answer_only_ragen2_mica_ig_v1_singleton_outcome`. The method is
-> **MICA-inspired**, but it is a project-specific adaptation rather than a
-> claim of verbatim reproduction of the original MICA algorithm.
->
-> AetherSearch uses paper-style RAGEN-2 raw terminal-outcome sample variance
-> followed by cumulative raw-variance-mass Top-p filtering. Exact IG is
-> computed only after prompt selection and is used by MICA-IG for Search-turn
-> credit assignment, not for selecting prompts.
+> 🧠 **Method at a glance.** AetherSearch samples grouped on-policy
+> trajectories, prioritizes prompts by raw terminal-outcome variance, scores
+> the utility of retrieved evidence for selected groups, assigns multi-step
+> Search and terminal Answer credit, and performs one turn-level policy update.
 
-### 1. Overview
+### 1. Rollout and terminal outcome
 
-For a prompt `p`, the rollout policy samples a fixed group of trajectories:
+For each prompt `p`, the rollout policy samples a fixed group of trajectories:
 
 ```math
-\{\tau_{p,i}\}_{i=1}^{G}.
+\left\{\tau_{p,i}\right\}_{i=1}^{G}.
 ```
 
-A trajectory may contain several model-generated Search turns followed by a
-terminal Answer turn:
+A trajectory may contain several model-generated Search actions, their
+retrieved environment observations, and one terminal Answer action:
 
 ```math
 \tau_{p,i}
 =
-(s_{p,i,1},o_{p,i,1},\ldots,s_{p,i,T_i},o_{p,i,T_i},a_{p,i}),
+\left(
+s_{p,i,1},o_{p,i,1},\ldots,
+s_{p,i,T_i},o_{p,i,T_i},a_{p,i}
+\right).
 ```
 
-where `s` is a Search action, `o` is the retrieved environment
-observation, and `a` is the terminal Answer action.
-
-The complete release-recipe path is:
+The public training path is:
 
 ```math
 \boxed{
-\text{On-policy rollout}
+\text{on-policy rollout}
 \rightarrow
 \text{terminal outcome scoring}
 \rightarrow
-\text{Answer-only prompt selection}
+\text{high-signal prompt filtering}
 \rightarrow
-\text{selected-only Exact IG}
+\text{selected-only retrieval scoring}
 \rightarrow
-\text{MICA-IG Search credit}
-\rightarrow
-\text{Answer credit}
+\text{Search and Answer credit}
 \rightarrow
 \text{turn-level policy optimization}
 \rightarrow
-\text{reference KL}
+\text{reference regularization}
 }
 ```
 
-Exact-IG is intentionally **selected-only**. Candidate prompt groups are
-scored for terminal outcome first; non-selected groups do not incur the
-expensive Exact-IG model forward.
-
-### 2. Terminal task outcome
-
-The terminal task outcome and the prompt-selection eligibility mask are
-different concepts. Define the outcome-eligible set:
+Terminal outcome and outcome eligibility are distinct. The eligible trajectory
+set is:
 
 ```math
 \mathcal E_p^O
@@ -154,52 +164,37 @@ i:
 \right\}.
 ```
 
-Eligibility is exactly `terminal_answer_valid == true` and
-`trajectory_system_valid == true`; only a trajectory in `\mathcal E_p^O` enters the outcome-reward
-statistics. For an eligible trajectory, the production scorer computes the
-maximum IGPO-compatible token-level F1 over all ground-truth aliases:
+Only trajectories in `\mathcal E_p^O` enter outcome statistics. For an
+eligible trajectory, the task outcome is the best alias-aware token-level F1:
 
 ```math
+\boxed{
 O_{p,i}
 =
 \max_{a^\star\in\mathcal A_p}
-\mathrm{TokenF1}
+\operatorname{TokenF1}
 \left(
 \hat a_{p,i},a^\star
 \right).
+}
 ```
 
-If the terminal answer is not valid or the trajectory system is invalid:
+If the terminal answer or trajectory system is invalid:
 
 ```math
 O_{p,i}=0.
 ```
 
-That zero must not be confused with a valid answer whose F1 happens to be
-zero. In particular:
+A numeric zero and an ineligible outcome are not equivalent. A valid answer
+can receive F1 equal to zero and remain part of peer statistics, whereas an
+ineligible trajectory is excluded. The production task reward is token F1,
+not exact match.
 
-- `raw outcome = 0` is a numeric reward value;
-- `outcome_reward_eligible = false` means the trajectory is excluded
-  from outcome peer normalization and outcome selection statistics.
+### 2. High-signal prompt filtering
 
-The production scorer is not an exact-match-only scorer: the ordinary terminal
-task reward is alias-aware token F1. Exact match is used by the separate
-deterministic sufficiency-probe path, which is disabled in this MICA V1
-configuration.
-
-### 3. Answer-only RAGEN-2 prompt filtering
-
-The final recipe uses:
-
-```text
-selection.mode   = answer_outcome_only_ragen2_paper_variance_top_p
-selection.signal = answer_outcome_only
-top_p_mass       = 0.9
-```
-
-For every candidate prompt, AetherSearch samples `G` on-policy trajectories.
-Only outcome-eligible trajectories in `\mathcal E_p^O` enter the score. Let
-`N_p = |\mathcal E_p^O|`:
+For each candidate prompt, only outcome-eligible trajectories contribute to
+the score. Let `N_p=|\mathcal E_p^O|`. The within-prompt mean and sample
+variance are:
 
 ```math
 \bar O_p
@@ -214,17 +209,19 @@ V_p^O
 =
 \frac{1}{N_p-1}
 \sum_{i\in\mathcal E_p^O}
-\left(O_{p,i}-\bar O_p\right)^2
-}.
+\left(
+O_{p,i}-\bar O_p
+\right)^2.
+}
 ```
 
-This is the within-prompt **sample variance** (`ddof = 1`), not standard
-deviation or population variance. The implementation returns zero when fewer
-than two eligible outcomes are available. High variance identifies prompts on
-which the current policy sometimes succeeds and sometimes fails, providing a
-lightweight group-relative signal-to-noise proxy.
+This is sample variance with `ddof = 1`, not standard deviation or population
+variance. The score is zero when fewer than two eligible outcomes are
+available. Greater within-group dispersion indicates that the current policy
+sometimes performs better and sometimes worse on the same prompt, providing a
+stronger relative learning signal.
 
-For intuition only:
+For intuition:
 
 ```text
 Prompt A outcomes: [1, 1, 1, 1]  -> variance = 0
@@ -232,11 +229,11 @@ Prompt B outcomes: [0, 0, 0, 0]  -> variance = 0
 Prompt C outcomes: [1, 0, 1, 0]  -> variance > 0
 ```
 
-Prompt C is prioritized because its within-group outcomes are distinguishable.
-The production outcome remains alias-aware token F1 and is not restricted to
-binary values.
+Prompt C is prioritized because its group contains distinguishable outcomes.
+The example is binary only for clarity; the production outcome is
+alias-aware token F1.
 
-Prompts are ranked by descending raw variance:
+Prompts are ordered by descending raw variance:
 
 ```math
 V_{\sigma(1)}^O
@@ -248,8 +245,8 @@ V_{\sigma(2)}^O
 V_{\sigma(P)}^O.
 ```
 
-The selector keeps the smallest prefix whose cumulative raw-variance mass
-reaches `\rho` of the total mass:
+The selector retains the shortest prefix whose cumulative raw-variance mass
+reaches `\rho` of the total:
 
 ```math
 \boxed{
@@ -263,109 +260,108 @@ K:
 \rho\sum_pV_p^O
 \right\},
 \qquad
-\rho=0.9
-}.
+\rho=0.9.
+}
 ```
 
 ```math
 \mathcal P_{\mathrm{selected}}
 =
-\left\{\sigma(1),\ldots,\sigma(K^\star)\right\}.
+\left\{
+\sigma(1),\ldots,\sigma(K^\star)
+\right\}.
 ```
 
-This means 90% of total **raw variance mass**, not the top 90% of prompts.
-Minimum/maximum prompt counts, refill rounds, and capacity truncation remain
-separate runtime policies.
+The threshold covers 90% of total raw variance mass, not 90% of prompts.
+Minimum and maximum prompt counts, refill rounds, and capacity truncation are
+separate runtime policies. This filter uses raw terminal-outcome variance
+only; retrieval scores and downstream credit signals do not enter prompt
+selection. Retrieval utility is computed only for the retained groups.
 
-The final selector uses raw terminal-outcome variance only. It does not use
-Exact IG, MICA credit, standard deviation, noise-floor subtraction,
-channel-scale or median normalization, EMA scaling, health gating, or
-dual-channel weighting. Exact IG is computed only after selection for the
-retained prompt groups.
+### 3. Retrieval information gain
 
-### 4. Exact information gain
-
-Exact IG measures how the retrieved observation changes the rollout-start
-policy's likelihood of a fixed canonical answer. The canonical-answer policy
-is:
+For each selected Search action, AetherSearch measures how the retrieved
+observation changes the rollout-start policy snapshot's likelihood of a fixed
+canonical answer. The canonical answer is the first ground-truth alias:
 
 ```text
-CANONICAL_ALIAS_POLICY = first
 canonical_answer = aliases[0]
 ```
 
-It is not alias-max. The fixed teacher-forced target, denoted by `y_p`, is:
+The fixed teacher-forced target is:
 
 ```text
 <think>The retrieved evidence now supports the answer.</think><answer>{canonical_answer}</answer>
 ```
 
-The target is tokenized once as the complete rendered string with
-`add_special_tokens=False` and `offset_mapping=True`. The
-offset-based answer-covering span is the only scored span:
+The entire rendered target is tokenized once with special-token insertion
+disabled and offset mapping enabled. Character offsets identify the
+answer-covering token span `B_p`:
 
-- scaffold text and `<think>`, `<answer>`,
-  `</answer>` tags provide teacher-forced context;
-- only answer-body tokens belong to `B_p`;
-- one complete-target tokenization is used, rather than tokenizing the
-  scaffold and answer independently;
-- the causal logit for answer token `j` is the preceding position's
-  logit.
+- the scaffold and the `<think>`, `<answer>`, and `</answer>` tags are
+  teacher-forced context;
+- only answer-body tokens contribute to the score;
+- the scaffold and answer are not tokenized independently;
+- answer token `j` is scored from its preceding causal logit.
 
-For a prefix `h`, the answer-body mean log-probability is:
+For a trajectory prefix `h`, define the mean answer-body log-probability:
 
 ```math
 \Phi_p(h)
 =
 \frac{1}{|B_p|}
 \sum_{j\in B_p}
-\log \pi_{\theta_{\mathrm{snap}}}
-(y_{p,j}\mid h,y_{p,1:j-1}),
+\log
+\pi_{\theta_{\mathrm{snap}}}
+\left(
+y_{p,j}\mid h,y_{p,<j}
+\right),
 ```
 
-where `\theta_{\mathrm{snap}}` is the rollout-start policy snapshot and
-`y_{p,1:j-1}` denotes the preceding target-token context.
-For the pre- and post-observation prefixes:
+where `\theta_{\mathrm{snap}}` is the rollout-start policy snapshot. For the
+prefixes immediately before and after a retrieved observation:
 
 ```math
+\boxed{
 r^{IG}_{p,i,t}
 =
-\Phi_p(h^+_{p,i,t})
+\Phi_p\left(h^+_{p,i,t}\right)
 -
-\Phi_p(h^-_{p,i,t}).
+\Phi_p\left(h^-_{p,i,t}\right).
+}
 ```
 
-This is a log-probability difference:
+The score is a difference of mean log-probabilities:
 
 ```math
 r^{IG}
-\neq
+\ne
 \exp\left(\Phi_{\mathrm{post}}\right)
 -
 \exp\left(\Phi_{\mathrm{pre}}\right).
 ```
 
-There is no exponentiation. The Exact-IG forward is detached/no-grad and
-uses the rollout-start reward snapshot. The production path is the
-independent FP32 `fp32_exact_ig` scorer with causal preceding-logit
-alignment. An invalid or missing pre/post observation makes that Search
-Exact-IG-ineligible. MICA V1 has no raw-IG fallback.
+There is no exponentiation. Scoring uses a detached, no-gradient FP32 forward
+from the rollout-start snapshot with causal preceding-logit alignment. A
+missing or invalid pre/post observation makes the Search action
+retrieval-score-ineligible; no raw-score fallback is inserted.
 
-### 5. Raw suffix return
+### 4. Multi-step Search credit assignment
 
-Exact IG is accumulated before any peer normalization. For trajectory
-`(p,i)`, define the valid Search positions:
+**Raw future return.** For trajectory `(p,i)`, let the valid Search positions
+be:
 
 ```math
 \mathcal V_{p,i}
 =
 \left\{
 t:
-t\text{ has a valid Exact IG}
+r^{IG}_{p,i,t}
+\text{ is valid}
 \right\}.
 ```
 
-The raw suffix return is:
+The future retrieval return from Search depth `t` is:
 
 ```math
 G^{IG}_{p,i,t}
@@ -374,13 +370,7 @@ G^{IG}_{p,i,t}
 \gamma^{k-t}r^{IG}_{p,i,k}.
 ```
 
-MICA-IG V1 locks:
-
-```math
-\boxed{\gamma=1}.
-```
-
-Therefore:
+The release configuration fixes `\gamma=1`, giving:
 
 ```math
 \boxed{
@@ -391,23 +381,20 @@ r^{IG}_{p,i,k}.
 }
 ```
 
-The order is important:
+The ordering is part of the method:
 
 ```text
-raw Exact IG
-→ raw suffix return
-→ normalize local and return channels separately
-→ mix the normalized channels
+raw retrieval gain
+-> raw suffix return
+-> independently normalize immediate and return signals
+-> mix the normalized signals
 ```
 
-Missing or invalid Search positions are omitted from the valid suffix index
-set; an artificial zero reward is not inserted. This branch also has no
-legacy `1/sqrt(n)` return rescaling.
+Invalid positions are omitted from the suffix index set rather than replaced
+with artificial zeros.
 
-### 6. Same-prompt, same-depth normalization
-
-MICA compares only peer Searches at the same prompt and the same Search
-depth. For an immediate-IG peer vector, define:
+**Peer normalization.** Search actions are compared only among trajectories
+with the same prompt and Search depth. For a valid immediate-gain peer set:
 
 ```math
 \mathcal I_{p,t}
@@ -415,21 +402,13 @@ depth. For an immediate-IG peer vector, define:
 \left\{
 i:
 r^{IG}_{p,i,t}
-\text{ exists and is IG-eligible}
+\text{ is valid}
 \right\},
 \qquad
 n_{p,t}=|\mathcal I_{p,t}|.
 ```
 
-There is:
-
-```text
-NO cross-prompt normalization
-NO cross-depth normalization
-```
-
-For any peer value vector `x` (immediate IG or raw suffix return), the
-population statistics are:
+For either immediate gain or raw future return, population statistics are:
 
 ```math
 \mu_{p,t}(x)
@@ -444,87 +423,60 @@ population statistics are:
 \sqrt{
 \frac{1}{n_{p,t}}
 \sum_{i\in\mathcal I_{p,t}}
-\left(x_i-\mu_{p,t}(x)\right)^2
+\left(
+x_i-\mu_{p,t}(x)
+\right)^2
 }.
 ```
 
-The implementation uses population standard deviation, `ddof = 0`,
-not sample standard deviation. With `epsilon = 1e-6`:
+Normalization uses population standard deviation (`ddof = 0`):
 
 ```math
 Z_{p,t}(x_i)
 =
 \frac{x_i-\mu_{p,t}(x)}
-{\sigma_{p,t}(x)+\epsilon}.
-```
-
-If `\sigma^2 \le 1e-12`, the corresponding channel advantage is
-exactly zero.
-
-### 7. MICA-IG local and delayed channels
-
-The local channel compares the current immediate information gain with
-same-prompt/same-depth peers:
-
-```math
-\boxed{
-A^{loc}_{p,i,t}
-=
-Z_{p,t}
-\left(
-r^{IG}_{p,i,t}
-\right).
-}
-```
-
-The delayed channel independently compares the raw suffix returns with the
-same peer scope:
-
-```math
-\boxed{
-A^{ret}_{p,i,t}
-=
-Z_{p,t}
-\left(
-G^{IG}_{p,i,t}
-\right).
-}
-```
-
-The local and return channels have independent means and standard deviations:
-
-```text
-Local normalization statistics
-and
-Return normalization statistics
-are independent.
-```
-
-They are mixed only after both channels have been normalized:
-
-```math
-A^{search}_{p,i,t}
-=
-\alpha A^{ret}_{p,i,t}
-+
-(1-\alpha)A^{loc}_{p,i,t},
+{\sigma_{p,t}(x)+\epsilon},
 \qquad
-\boxed{\alpha=0.5}.
+\epsilon=10^{-6}.
 ```
 
-If one channel is zero because of zero variance, its fixed weight is still
-zero contribution; the other channel is not reweighted from `0.5` to
-`1.0`.
+If `\sigma_{p,t}^2\le10^{-12}`, that signal is exactly zero. Immediate and
+future-return statistics are independent:
 
-### 8. Singleton and missing-IG rules
+```math
+A^{\mathrm{local}}_{p,i,t}
+=
+Z_{p,t}\left(r^{IG}_{p,i,t}\right),
+```
 
-The singleton fallback uses only the normalized terminal outcome. First
-normalize outcomes within the same prompt over eligible trajectories:
+```math
+A^{\mathrm{return}}_{p,i,t}
+=
+Z_{p,t}\left(G^{IG}_{p,i,t}\right).
+```
+
+With at least two valid peers, Search credit is:
+
+```math
+\boxed{
+A^{\mathrm{search}}_{p,i,t}
+=
+\frac12A^{\mathrm{return}}_{p,i,t}
++
+\frac12A^{\mathrm{local}}_{p,i,t}.
+}
+```
+
+A zero-variance signal remains a zero contribution; the other half is not
+reweighted.
+
+**Sparse-peer fallback.** Terminal outcomes are population-normalized within
+each prompt:
 
 ```math
 \mu_p^O
 =
-\frac{1}{N_p^O}
+\frac{1}{N_p}
 \sum_{i\in\mathcal E_p^O}O_{p,i},
 ```
 
@@ -532,9 +484,11 @@ normalize outcomes within the same prompt over eligible trajectories:
 \sigma_p^O
 =
 \sqrt{
-\frac{1}{N_p^O}
+\frac{1}{N_p}
 \sum_{i\in\mathcal E_p^O}
-\left(O_{p,i}-\mu_p^O\right)^2
+\left(
+O_{p,i}-\mu_p^O
+\right)^2
 },
 ```
 
@@ -545,32 +499,17 @@ Z^O_{p,i}
 {\sigma_p^O+\epsilon}.
 ```
 
-This outcome normalization is also population normalization. If the outcome
-is ineligible, or if `(\sigma_p^O)^2 \le 1e-12`, then
-`Z^O_{p,i}=0`.
-
-The rules are intentionally different:
-
-- an IG-eligible Search with `n_{p,t}=1` cannot define a relative
-  Search-vs-Search z-score, so it receives `Z^O_{p,i}`;
-- a policy-credit-eligible Search with unavailable/invalid Exact IG receives
-  `0`, not the singleton fallback;
-- a policy-credit-ineligible Search is excluded from actor optimization.
-
-The singleton fallback does not add the format advantage.
-
-### 9. Final Search advantage
-
-Putting the cases together, for an action that is eligible for policy credit:
+If the outcome is ineligible or its variance is at most `10^{-12}`, then
+`Z^O_{p,i}=0`. The complete Search-credit rule for policy-eligible actions is:
 
 ```math
 \boxed{
-A^{search}_{p,i,t}
+A^{\mathrm{search}}_{p,i,t}
 =
 \begin{cases}
-\frac12 A^{ret}_{p,i,t}
+\frac12A^{\mathrm{return}}_{p,i,t}
 +
-\frac12 A^{loc}_{p,i,t},
+\frac12A^{\mathrm{local}}_{p,i,t},
 &
 n_{p,t}\ge2,
 \\[8pt]
@@ -580,102 +519,75 @@ n_{p,t}=1,
 \\[6pt]
 0,
 &
-\text{Exact IG unavailable or invalid}.
+\text{retrieval score unavailable or invalid}.
 \end{cases}
 }
 ```
 
-The third case is not a singleton peer group. It is a fail-closed missing-IG
-case. No advantage is emitted for policy-ineligible actions, so they do not
-enter the actor loss at all.
+The single-peer fallback uses terminal outcome only and does not add format
+credit. An unavailable score is a separate fail-closed case. Search actions
+that are ineligible for policy credit are excluded from actor optimization.
 
-### 10. Answer advantage
+### 5. Answer credit and token masking
 
-The terminal format indicator is binary:
-
-```math
-F_{p,i}\in\{0,1\}.
-```
-
-Unlike MICA's local and return channels, the format channel is centered but
-not divided by a standard deviation:
+Let the terminal format indicator be `F_{p,i}\in\{0,1\}`. Format credit is
+centered within the rollout group but is not divided by a standard deviation:
 
 ```math
-A^{format}_{p,i}
+A^{\mathrm{format}}_{p,i}
 =
 F_{p,i}
 -
-\frac{1}{G}\sum_{j=1}^{G}F_{p,j}.
+\frac1G\sum_{j=1}^{G}F_{p,j}.
 ```
 
-The terminal Answer advantage is:
+Terminal Answer credit is:
 
 ```math
 \boxed{
-A^{answer}_{p,i}
+A^{\mathrm{answer}}_{p,i}
 =
-\lambda_O Z^O_{p,i}
+\lambda_OZ^O_{p,i}
 +
-\lambda_F A^{format}_{p,i}.
+\lambda_FA^{\mathrm{format}}_{p,i},
+\qquad
+\lambda_O=\lambda_F=1.
 }
 ```
 
-The frozen configuration is:
+Retrieval gain is not routed into terminal Answer credit.
+
+Credit is expanded only to real model-generated policy spans:
 
 ```math
-\lambda_O=1,
-\qquad
-\lambda_F=1,
-\qquad
-A^{answer}=Z^O+A^{format}.
-```
-
-MICA-IG changes Search credit only. It does not route `r_IG`,
-`A_loc`, `A_ret`, or `A_search` into the terminal
-Answer advantage.
-
-### 11. Turn-to-token credit assignment
-
-At the credit-assignment layer, a Search turn is one action. Every
-policy-credit-eligible model-generated token in that Search turn receives the
-same `A_search` value. The model-generated terminal Answer turn
-receives the same `A_answer` value:
-
-```math
-\text{Search-turn tokens}
+\text{Search action tokens}
 \mapsto
-A^{search}_{p,i,t},
+A^{\mathrm{search}}_{p,i,t},
 \qquad
 \text{terminal Answer tokens}
 \mapsto
-A^{answer}_{p,i}.
+A^{\mathrm{answer}}_{p,i}.
 ```
 
-The retriever returns an environment observation such as:
-
-```text
-<information> ... </information>
-```
-
-Those environment tokens are context, not actor actions:
+Retrieved observations such as `<information>...</information>` are
+environment context, not actor actions:
 
 ```math
 \boxed{
-m^{policy}_{j}=0
+m^{\mathrm{policy}}_j=0
 \quad
 \text{for environment-observation tokens}.
 }
 ```
 
-System tokens, user/prompt tokens, padding, and non-model fallback/code
-tokens likewise do not receive actor policy credit. Only real
-policy-credit-eligible model spans enter the policy mask.
+System, user, prompt, padding, and non-model fallback tokens are also masked
+out. They provide context to the policy but receive no actor credit.
 
-### 12. Strict on-policy turn ratio
+### 6. Turn-level policy optimization
 
-For one eligible turn `t`, let `\mathcal A_t` be its eligible
-model-generated action-token set. The current-policy log-probabilities retain
-gradients; old-policy log-probabilities are detached:
+**Turn-level ratio.** For an eligible turn `t`, let `\mathcal A_t` be its
+model-generated action-token set. Current-policy log-probabilities retain
+gradients and old-policy log-probabilities are detached:
 
 ```math
 \Delta_t
@@ -689,7 +601,7 @@ gradients; old-policy log-probabilities are detached:
 \right].
 ```
 
-The turn ratio is:
+The importance ratio is:
 
 ```math
 \boxed{
@@ -697,9 +609,9 @@ The turn ratio is:
 }
 ```
 
-This is the geometric mean of the token likelihood ratios inside the turn.
-It is a turn-level ratio, not an independently clipped PPO ratio for every
-token. The release policy contract is:
+This is the geometric mean of token likelihood ratios across the turn, not a
+set of independently clipped token-level ratios. The release contract uses
+one strict on-policy update:
 
 ```text
 strict_on_policy = true
@@ -709,16 +621,8 @@ optimizer_mini_steps = 1
 optimizer_steps_per_successful_update = 1
 ```
 
-### 13. A²TGPO-style adaptive turn-level clipping
-
-MICA-IG and adaptive clipping have different responsibilities. MICA defines
-the Search credit; the policy layer applies the A²TGPO-style turn-level
-surrogate.
-
-For a Search turn, the clipping scale consumes normalized immediate IG,
-written as `\widehat r^{IG}_t`. In the MICA path this is the supported
-same-prompt/same-depth local normalization (`A_loc`); singleton and
-missing-IG turns use neutral zero for clipping. The scale is:
+**Information-aware turn clipping.** Search turns use the normalized
+immediate retrieval gain, `\widehat r_t^{IG}`, to set their clipping scale:
 
 ```math
 c_t
@@ -726,13 +630,13 @@ c_t
 1+
 \beta_c
 \left(
-2\sigma(\widehat r^{IG}_t)-1
+2\sigma\left(\widehat r_t^{IG}\right)-1
 \right),
 \qquad
 \sigma(x)=\frac{1}{1+e^{-x}}.
 ```
 
-The frozen values and bounds are:
+The fixed values and bounds are:
 
 ```math
 \beta_c=0.3,
@@ -760,20 +664,21 @@ J_t
 \min
 \left[
 \rho_tA_t,
-\mathrm{clip}
-\left(\rho_t,l_t,u_t\right)A_t
+\operatorname{clip}
+\left(
+\rho_t,l_t,u_t
+\right)A_t
 \right].
 ```
 
-Answer turns use the neutral scale `c_t=1`. The adaptive clip input is
-normalized immediate IG, not the mixed `A_search`, and adaptive
-clipping is not claimed as a contribution of MICA itself.
+The clipping input is the normalized immediate signal
+`A^{\mathrm{local}}`, not the mixed `A^{\mathrm{search}}`. Single-peer and
+missing-score Search turns use neutral zero as the clipping input. Answer
+turns use the neutral scale `c_t=1`.
 
-### 14. Frozen-reference full-vocabulary KL
-
-The reference model is frozen, in evaluation mode, and has no trainable
-parameters. KL is evaluated at the preceding causal states of eligible
-policy tokens:
+**Reference regularization.** A frozen reference model is kept in evaluation
+mode with no trainable parameters. At each eligible token's preceding causal
+state, AetherSearch computes full-vocabulary forward KL:
 
 ```math
 D_{\mathrm{KL}}
@@ -790,12 +695,9 @@ D_{\mathrm{KL}}
 {\pi_{\mathrm{ref}}(v\mid s_j)}.
 ```
 
-This is a **full-vocabulary** KL. It is not a sampled-token log-ratio proxy.
-The reference logits are detached and the vocabulary sum is evaluated in
-chunks only to control memory; chunking does not change the mathematical
-sum.
-
-The combined loss is:
+This is not a sampled-token log-ratio proxy. Reference logits are detached;
+the vocabulary sum may be chunked for memory without changing the
+mathematical result. The combined loss is:
 
 ```math
 \boxed{
@@ -809,11 +711,8 @@ The combined loss is:
 }
 ```
 
-### 15. Nested reduction
-
-The task reduction is nested rather than a single global mean over all
-action tokens. First average eligible action-token values within each
-trajectory:
+**Balanced reduction.** Eligible action-token values are first averaged
+within each trajectory:
 
 ```math
 J_{p,i}
@@ -822,16 +721,16 @@ J_{p,i}
 \sum_{j\in\mathcal A_{p,i}}J_{p,i,j}.
 ```
 
-Then average trajectories within each prompt:
+Trajectory means are then averaged within each prompt:
 
 ```math
 J_p
 =
-\frac{1}{G}
+\frac1G
 \sum_{i=1}^{G}J_{p,i}.
 ```
 
-Finally average prompt means globally:
+Finally, prompt means are averaged globally:
 
 ```math
 J_{\mathrm{task}}
@@ -840,136 +739,61 @@ J_{\mathrm{task}}
 \sum_{p\in\mathcal P}J_p.
 ```
 
-The same `token → trajectory → prompt` balancing applies to the KL
-reduction. Thus a long trajectory does not automatically receive more weight
-merely because it contains more eligible tokens:
+The same token → trajectory → prompt balancing is applied to KL. This avoids
+giving longer trajectories more weight solely because they contain more
+eligible action tokens.
 
-```text
-prompt
-→ trajectory
-→ eligible action-token balanced reduction
-```
-
-### 16. Compact algorithm
+### 7. Compact algorithm
 
 ```text
 Input:
-    candidate prompts p
-    G on-policy rollouts per prompt
-    terminal outcomes O[p,i]
+    candidate prompts
+    G on-policy trajectories per prompt
 
-1. Score terminal outcomes.
+1. Score terminal answers with alias-aware token F1.
 
-2. Paper RAGEN-2 prompt filtering.
-   Compute raw within-prompt terminal-outcome sample variance.
+2. Compute within-prompt terminal-outcome sample variance.
    Rank prompts by raw variance and retain the shortest prefix
-   carrying at least 90% of total raw variance mass.
+   carrying at least 90% of total variance mass.
 
-3. Selected-only Exact IG.
-   For every selected valid Search:
-       Phi_pre  = answer-body mean log-prob before observation
-       Phi_post = answer-body mean log-prob after observation
-       r_IG = Phi_post - Phi_pre
+3. For selected prompts only, measure how each retrieval
+   changes canonical-answer mean log-likelihood.
 
-4. Raw suffix return.
-       G_IG[t] = sum_{k >= t, valid} r_IG[k]
-       gamma = 1
+4. Sum future raw retrieval gains from every valid Search turn.
 
-5. Same-prompt / same-depth peers.
+5. Normalize immediate and delayed-return signals among
+   trajectories at the same prompt and Search depth.
 
-   if peer_count >= 2:
-       A_loc = zscore(raw IG)
-       A_ret = zscore(raw suffix return)
-       A_search = 0.5*A_ret + 0.5*A_loc
+6. Assign Search credit:
+       >=2 peers: 0.5 * delayed + 0.5 * immediate
+       1 peer: normalized terminal outcome
+       unavailable retrieval score: 0
 
-   elif peer_count == 1:
-       A_search = Z_O
+7. Assign terminal Answer credit from normalized task outcome
+   plus centered format correctness.
 
-   elif Exact IG unavailable:
-       A_search = 0
+8. Expand turn-level credit to policy-generated tokens only.
 
-6. Answer:
-       A_answer = Z_O + centered_format_advantage
+9. Compute the turn-level geometric-mean policy ratio.
 
-7. Expand turn credit to eligible policy tokens.
-   Environment/prompt tokens remain masked.
+10. Apply information-aware asymmetric clipping.
 
-8. Compute the geometric-mean turn ratio.
+11. Add frozen-reference full-vocabulary KL.
 
-9. Apply adaptive turn-level clipped surrogate.
+12. Reduce action tokens -> trajectory -> prompt -> global mean.
 
-10. Add frozen-reference full-vocabulary KL.
-
-11. Reduce:
-       action tokens → trajectory → prompt → global mean
-
-12. Perform one strict on-policy optimizer step.
+13. Perform one strict on-policy optimizer step.
 ```
 
-### 17. What MICA-IG changes and does not change
+### 8. Interpretation boundary
 
-MICA-IG changes, in this project-specific V1 path:
-
-- Search credit assignment;
-- the local immediate-IG channel;
-- the delayed raw-suffix-return channel;
-- same-prompt/same-depth normalization;
-- the singleton normalized-terminal-outcome fallback.
-
-MICA-IG does not change:
-
-- the terminal Answer scorer;
-- the Answer advantage definition;
-- the rollout engine or retriever;
-- the old-policy turn-ratio definition;
-- adaptive turn clipping;
-- frozen-reference KL;
-- nested task reduction;
-- the optimizer;
-- FSDP, vLLM, Ray, and hardware-topology infrastructure.
-
-The current MICA V1 path also does not use `A_decision`,
-`A_query`, routed outcome, sufficiency/novelty actor penalties, an
-Answer-probe auxiliary actor loss, a role-localized gate loss, or raw-IG
-fallback. The repository contains other experimental/qualification modes, but
-those are not part of this release-recipe path.
-
-### 18. Method lineage and project-specific adaptations
-
-The naming boundary is:
+Search credit compares actions that share the same prompt and Search depth,
+were actually executed, and have valid retrieval scores. A positive
+`A^{\mathrm{search}}` therefore means:
 
 ```text
-MICA-IG is a project-specific, MICA-inspired
-information-gain credit-assignment method.
-```
-
-The design draws on several directions:
-
-- IGPO: answer-likelihood information gain;
-- RAGEN-2: high-signal prompt selection from reward dispersion;
-- MICA: a mixture of immediate and delayed process credit;
-- A²TGPO: turn-level normalization and adaptive clipped policy-optimization
-  concepts.
-
-The final AetherSearch formulas and boundaries are project-specific. In
-particular, `gamma=1`, `alpha=0.5`, the Exact-IG scaffold,
-selected-only Exact-IG, same-prompt/same-depth peers, and singleton outcome
-fallback should not be presented as verbatim requirements of any one
-original paper.
-
-### 19. Interpretation boundary / known limitation
-
-For `n_{p,t}\ge2`, the MICA peer set contains trajectories that:
-
-- share the same prompt;
-- reach the same Search depth;
-- actually execute the Search;
-- have a valid Exact-IG reward.
-
-Therefore `A_search` primarily answers:
-
-```text
-Was this Search better than peer Searches at the same prompt and depth?
+This Search performed better than eligible peer Searches
+at the same prompt and depth.
 ```
 
 It does not directly estimate the same-state counterfactual:
@@ -980,32 +804,20 @@ Q(s_t,\mathrm{Search})
 Q(s_t,\mathrm{AnswerNow}).
 ```
 
-Consequently, a positive `A_search` means that this Search
-outperformed its eligible peer Searches. It does not strictly mean that
-searching was better than stopping immediately. MICA-IG should not be
-described as solving optimal stopping; this is an interpretation boundary,
-not a runtime bug.
+The current credit estimator is comparative across realized Search actions;
+it does not establish that searching was better than stopping immediately.
+This is an interpretation boundary of the estimator, not a runtime failure.
 
-### 20. Implementation map
+**Code map**
 
-The source-of-truth mapping for the formulas above is:
-
-| Contract | Implementation |
+| Component | Source |
 |---|---|
-| terminal outcome eligibility and scoring | `src/agentic_rl/outcome/workers.py`, `src/agentic_rl/outcome/token_f1.py` |
-| paper RAGEN-2 sample variance and raw-variance-mass Top-p | `src/agentic_rl/selection/paper_ragen2.py`, `src/agentic_rl/selection/candidate_pool.py`, `src/agentic_rl/selection/prompt_variance.py`, `src/agentic_rl/selection/top_p.py` |
-| final release selection mode | `recipes/rl/train_4x48gb.yaml`, `configs/formal_train_answer_only_ragen2_paper_mica_ig_v1.yaml` |
-| Exact-IG target, alias policy, offsets, score span | `src/agentic_rl/exact_ig/target_schema.py` |
-| Exact-IG scorer, causal alignment, detached FP32 forward | `src/agentic_rl/exact_ig/vectorized_scorer.py`, `src/agentic_rl/exact_ig/precision_policy.py`, `src/agentic_rl/runtime/fsdp_worker.py` |
-| raw suffix, local/return normalization, singleton and missing-IG rules | `src/agentic_rl/advantage/mica_ig.py`, `src/agentic_rl/advantage/a2tgpo.py` |
-| format advantage and policy-token provenance | `src/agentic_rl/outcome/format_indicator.py`, `src/agentic_rl/rollout/trajectory_schema.py`, `src/agentic_rl/rollout/token_provenance.py` |
-| turn ratio and adaptive clipping | `src/agentic_rl/policy/turn_ratio.py`, `src/agentic_rl/policy/strict_onpolicy_loss.py` |
-| nested reduction and full-vocabulary reference KL | `src/agentic_rl/policy/reduction.py`, `src/agentic_rl/policy/reference_kl.py` |
-
-The repository retains earlier scaled-selection machinery for historical and
-experimental coverage, but it is not part of the final AetherSearch recipe.
-The public recipe, not this documentation, is the executable selection
-boundary. No GPU runtime test is implied by this README section.
+| rollout and outcome scoring | `src/agentic_rl/rollout/`, `src/agentic_rl/outcome/` |
+| prompt filtering | `src/agentic_rl/selection/` |
+| retrieval information gain | `src/agentic_rl/exact_ig/` |
+| Search and Answer credit | `src/agentic_rl/advantage/` |
+| policy optimization | `src/agentic_rl/policy/` |
+| runtime integration | `src/agentic_rl/runtime/` |
 
 ## Quick Start
 
@@ -1033,7 +845,7 @@ Run the lightweight source, shell, and configuration checks:
 bash scripts/validate_static.sh
 ```
 
-Validate the only released hardware recipe without starting services:
+Validate the released hardware recipe without starting services:
 
 ```bash
 bash scripts/train_rl.sh --dry-run
@@ -1057,9 +869,9 @@ runtime. Every 20-update evaluation uses the complete 51,713-row Search-R1
 `test.parquet`. See `recipes/rl/README.md` for the configuration boundary.
 The resolved configuration is materialized inside each new run directory.
 
-## Configuration Boundary
+## Reproducibility & Configuration
 
-⚙️ Configuration answers five separate questions:
+⚙️ Reproduction is composed from five independent configuration layers:
 
 | Layer | Responsibility |
 |---|---|
@@ -1078,30 +890,31 @@ rollout DP/TP compatibility fields.
 For another server, provide a user-owned hardware/runtime YAML, set
 `qualification.mode: portable`, and keep the algorithm configuration
 unchanged. Generic non-reference layouts are covered by CPU-only synthetic
-configuration tests. That coverage does not establish GPU-memory fit, runtime
-compatibility, training stability, throughput, or production qualification.
+configuration tests. That coverage demonstrates configuration portability;
+it does not establish GPU-memory fit, runtime compatibility, training
+stability, throughput, or production qualification.
 
 ## Repository Layout
 
 - `sft_data/`: SFT data release metadata and build scripts. The full SFT JSONL
   payload is hosted on [Hugging Face Datasets](https://huggingface.co/datasets/muradil211/aethersearch_sft).
-- `src/agentic_rl/`: RL training, rollout, advantage, policy loss, retriever,
-  checkpoint, and runtime adapter code.
-- `scripts/`: launch, preflight, resume, validation, and operational scripts for
-  the RL training stage; see `scripts/README.md` for public versus historical
-  entrypoints.
+- `src/agentic_rl/`: RL training, rollout, credit assignment, policy loss,
+  retriever, checkpoint, and runtime adapter code.
+- `scripts/`: launch, preflight, resume, validation, and operational scripts
+  for the RL training stage; see `scripts/README.md` for public versus
+  historical entrypoints.
 - `recipes/rl/`: the single validated public RL recipe and its usage boundary.
 - `configs/`: algorithm, hardware/topology, asset-manifest, qualification,
-  retriever, stage configs, and the Exact-IG runtime gate;
-  see `configs/README.md` for their portability boundary.
+  retriever, stage, and retrieval-scoring runtime configuration; see
+  `configs/README.md` for their portability boundary.
 - `runtime_assets/`: local runtime assets required by the training launcher.
 - `tests/`: unit and integration checks for the training code.
 - `environment/`: observed package versions and environment template.
 
-## Release Boundary
+## Release Scope
 
 📦 The public repository covers SFT assets and metadata plus the complete
-Agentic-RL training layer. The DPO warm start is an externally supplied model
+Agentic RL training layer. The DPO warm start is an externally supplied model
 checkpoint; the DPO trainer and preference-data generation pipeline are not
 part of this release.
 
