@@ -87,9 +87,9 @@ the current release scope.
 
 | Stage | Purpose | Primary locations |
 |---|---|---|
-| SFT | cold-start full-trajectory supervision | `sft_data/`, `sft_data/scripts/` |
-| DPO warm start | externally produced actor/reference initialization | `AETHERSEARCH_ACTOR_MODEL`, `AETHERSEARCH_REFERENCE_MODEL` |
-| RL | search-augmented rollout and policy optimization | `src/agentic_rl/`, `scripts/`, `recipes/rl/` |
+| SFT | cold-start full-trajectory supervision | [sft_data/](sft_data/), [sft_data/scripts/](sft_data/scripts/) |
+| DPO warm start | externally produced actor/reference initialization | [AETHERSEARCH_ACTOR_MODEL](environment/env.template.sh), [AETHERSEARCH_REFERENCE_MODEL](environment/env.template.sh) |
+| RL | search-augmented rollout and policy optimization | [src/agentic_rl/](src/agentic_rl/), [scripts/](scripts/), [recipes/rl/](recipes/rl/) |
 
 RL starts from the DPO warm-start actor/reference checkpoint; it does not start
 directly from the SFT stage.
