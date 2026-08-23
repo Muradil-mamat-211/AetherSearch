@@ -103,7 +103,7 @@ directly from the SFT stage.
 
 ### 1. Rollout and terminal outcome
 
-For each prompt `p`, the rollout policy samples a fixed group of trajectories:
+For each prompt $p$, the rollout policy samples a fixed group of trajectories:
 
 ```math
 \left\{\tau_{p,i}\right\}_{i=1}^{G}.
@@ -155,7 +155,7 @@ i:
 \right\}.
 ```
 
-Only trajectories in `\mathcal E_p^O` enter outcome statistics. For an
+Only trajectories in $\mathcal E_p^O$ enter outcome statistics. For an
 eligible trajectory, the task outcome is the best alias-aware token-level F1:
 
 ```math
@@ -184,7 +184,7 @@ not exact match.
 ### 2. High-signal prompt filtering
 
 For each candidate prompt, only outcome-eligible trajectories contribute to
-the score. Let `N_p=|\mathcal E_p^O|`. The within-prompt mean and sample
+the score. Let $N_p=|\mathcal E_p^O|$. The within-prompt mean and sample
 variance are:
 
 ```math
@@ -237,7 +237,7 @@ V_{\sigma(P)}^O.
 ```
 
 The selector retains the shortest prefix whose cumulative raw-variance mass
-reaches `\rho` of the total:
+reaches $\rho$ of the total:
 
 ```math
 \boxed{
@@ -287,15 +287,15 @@ The fixed teacher-forced target is:
 
 The entire rendered target is tokenized once with special-token insertion
 disabled and offset mapping enabled. Character offsets identify the
-answer-covering token span `B_p`:
+answer-covering token span $B_p$:
 
 - the scaffold and the `<think>`, `<answer>`, and `</answer>` tags are
   teacher-forced context;
 - only answer-body tokens contribute to the score;
 - the scaffold and answer are not tokenized independently;
-- answer token `j` is scored from its preceding causal logit.
+- answer token $j$ is scored from its preceding causal logit.
 
-For a trajectory prefix `h`, define the mean answer-body log-probability:
+For a trajectory prefix $h$, define the mean answer-body log-probability:
 
 ```math
 \Phi_p(h)
@@ -309,7 +309,7 @@ y_{p,j}\mid h,y_{p,1:j-1}
 \right),
 ```
 
-where `\theta_{\mathrm{snap}}` is the rollout-start policy snapshot. For the
+where $\theta_{\mathrm{snap}}$ is the rollout-start policy snapshot. For the
 prefixes immediately before and after a retrieved observation:
 
 ```math
@@ -339,7 +339,7 @@ retrieval-score-ineligible; no raw-score fallback is inserted.
 
 ### 4. Multi-step Search credit assignment
 
-**Raw future return.** For trajectory `(p,i)`, let the valid Search positions
+**Raw future return.** For trajectory $(p,i)$, let the valid Search positions
 be:
 
 ```math
@@ -352,7 +352,7 @@ r^{IG}_{p,i,t}
 \right\}.
 ```
 
-The future retrieval return from Search depth `t` is:
+The future retrieval return from Search depth $t$ is:
 
 ```math
 G^{IG}_{p,i,t}
@@ -361,7 +361,7 @@ G^{IG}_{p,i,t}
 \gamma^{k-t}r^{IG}_{p,i,k}.
 ```
 
-The release configuration fixes `\gamma=1`, giving:
+The release configuration fixes $\gamma=1$, giving:
 
 ```math
 \boxed{
@@ -431,7 +431,7 @@ Z_{p,t}(x_i)
 \epsilon=10^{-6}.
 ```
 
-If `\sigma_{p,t}^2\le10^{-12}`, that signal is exactly zero. Immediate and
+If $\sigma_{p,t}^2\le10^{-12}$, that signal is exactly zero. Immediate and
 future-return statistics are independent:
 
 ```math
@@ -490,8 +490,8 @@ Z^O_{p,i}
 {\sigma_p^O+\epsilon}.
 ```
 
-If the outcome is ineligible or its variance is at most `10^{-12}`, then
-`Z^O_{p,i}=0`. The complete Search-credit rule for policy-eligible actions is:
+If the outcome is ineligible or its variance is at most $10^{-12}$, then
+$Z^O_{p,i}=0$. The complete Search-credit rule for policy-eligible actions is:
 
 ```math
 \boxed{
@@ -521,7 +521,7 @@ that are ineligible for policy credit are excluded from actor optimization.
 
 ### 5. Answer credit and token masking
 
-Let the terminal format indicator be `F_{p,i}\in\{0,1\}`. Format credit is
+Let the terminal format indicator be $F_{p,i}\in\{0,1\}$. Format credit is
 centered within the rollout group but is not divided by a standard deviation:
 
 ```math
@@ -576,7 +576,7 @@ out. They provide context to the policy but receive no actor credit.
 
 ### 6. Turn-level policy optimization
 
-**Turn-level ratio.** For an eligible turn `t`, let `\mathcal A_t` be its
+**Turn-level ratio.** For an eligible turn $t$, let $\mathcal A_t$ be its
 model-generated action-token set. Current-policy log-probabilities retain
 gradients and old-policy log-probabilities are detached:
 
@@ -613,7 +613,7 @@ optimizer_steps_per_successful_update = 1
 ```
 
 **Information-aware turn clipping.** Search turns use the normalized
-immediate retrieval gain, `\widehat r_t^{IG}`, to set their clipping scale:
+immediate retrieval gain, $\widehat r_t^{IG}$, to set their clipping scale:
 
 ```math
 c_t
@@ -647,7 +647,7 @@ u_t
 1+c_t\epsilon_{\mathrm{high}}.
 ```
 
-For turn advantage `A_t`, the clipped surrogate is:
+For turn advantage $A_t$, the clipped surrogate is:
 
 ```math
 J_t
@@ -663,9 +663,9 @@ J_t
 ```
 
 The clipping input is the normalized immediate signal
-`A^{\mathrm{local}}`, not the mixed `A^{\mathrm{search}}`. Single-peer and
+$A^{\mathrm{local}}$, not the mixed $A^{\mathrm{search}}$. Single-peer and
 missing-score Search turns use neutral zero as the clipping input. Answer
-turns use the neutral scale `c_t=1`.
+turns use the neutral scale $c_t=1$.
 
 **Reference regularization.** A frozen reference model is kept in evaluation
 mode with no trainable parameters. At each eligible token's preceding causal
@@ -781,7 +781,7 @@ Input:
 
 Search credit compares actions that share the same prompt and Search depth,
 were actually executed, and have valid retrieval scores. A positive
-`A^{\mathrm{search}}` therefore means:
+$A^{\mathrm{search}}$ therefore means:
 
 ```text
 This Search performed better than eligible peer Searches

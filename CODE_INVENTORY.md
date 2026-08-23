@@ -4,7 +4,7 @@ This inventory covers every non-ignored file in the AetherSearch GitHub
 release. Model weights, optimizer checkpoints, eval result bundles, report
 archives, and runtime snapshots are not included.
 
-Generated UTC: `2026-08-23T13:14:26Z`
+Generated UTC: `2026-08-23T13:30:12Z`
 
 ## Summary
 
@@ -63,7 +63,7 @@ Generated UTC: `2026-08-23T13:14:26Z`
 | path | bytes | sha256 |
 |---|---:|---|
 | `EXTERNAL_ASSETS.md` | 1517 | `d9c7c100f8a16071c8774c472337933d41b27a3927e0a0d909061f11aa50e756` |
-| `README.md` | 24445 | `8e143f5915a9afabc40c5a295b7668ab6324c15c96148e9498da50897d47e22f` |
+| `README.md` | 24445 | `70c90509ee93d981e34e7b934af3ea60d81f3b0d0fc198a2125dee83801a57a9` |
 | `THIRD_PARTY_NOTICES.md` | 4092 | `09c4e8e0e4c97f56361c9bd97959398b21a9ff27f0497e9ca7a6cf0cefc3d605` |
 | `TRAINING_REPRODUCTION.md` | 827 | `0f459c3f741801007d21d4d505039486efcfc67fd1affc71cdb179dbc81d06c2` |
 
