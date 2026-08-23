@@ -1,6 +1,17 @@
 # Third-Party Notices
 
-Audit date: 2026-07-25 UTC
+Code-audit date: 2026-07-25 UTC
+Provenance update: 2026-08-24 UTC
+
+This notice distinguishes two evidence levels:
+
+- **Code-audited provenance:** IGPO and A²TGPO, with pinned revisions and
+  reviewed source hashes recorded below.
+- **Paper-level method provenance:** RAGEN-2 and MICA, with verified paper
+  metadata but no claim of source-code parity.
+
+Paper-level entries do not claim a vendored implementation, audited code
+revision, source-hash parity, or upstream license for the referenced method.
 
 ## IGPO
 
@@ -34,8 +45,9 @@ Release note: this upload package includes a minimal IGPO official source
 snapshot under
 `third_party/igpo_official_64165e2741ed8801f977948c8128080ce87b4101/` for audit
 and parity reference. The training runtime does not import that snapshot. The
-project implementation is independent and includes an explicit context-anchor
-segment so the first target token has a valid causal prediction position.
+project implementation is independent; its active scoring path uses the
+documented no-anchor causal alignment rather than importing the vendored
+snapshot at runtime.
 
 The outcome compatibility implementation is mechanically audited against the
 pinned `info_gain.py`: lowercase handling, ASCII punctuation-to-space
@@ -50,7 +62,41 @@ comparison, score error measurement, sign-agreement test, selected-set parity
 test, or throughput benchmark was run. Those remain deployment gates rather
 than claims made by this notice.
 
-## A2TGPO
+## RAGEN-2
+
+- Provenance level: paper-level method provenance
+- Paper: **RAGEN-2: Reasoning Collapse in Agentic RL**
+- arXiv: `2604.06268`
+- URL: https://arxiv.org/abs/2604.06268
+
+This work informed the use of within-prompt terminal-outcome sample variance
+and cumulative raw variance-mass prompt filtering. AetherSearch maintains its
+public implementation independently.
+
+Paper-level provenance only; no RAGEN-2 source-code snapshot is vendored or
+claimed as code-parity evidence by this notice.
+
+## MICA
+
+- Provenance level: paper-level method provenance
+- Paper: **MICA: Multi-granularity Intertemporal Credit Assignment for
+  Long-Horizon Emotional Support Dialogue**
+- arXiv: `2603.06194`
+- URL: https://arxiv.org/abs/2603.06194
+
+This work informed the combination of an immediate retrieval signal and a
+delayed future-return signal after separate peer normalization. AetherSearch
+adapts that general credit-assignment pattern to its own Search credit.
+
+AetherSearch is not a direct reproduction of the paper's emotional-support
+task. The project independently defines its retrieval-information-gain signal,
+same-prompt and same-Search-depth peer groups, outcome fallback, missing-score
+fail-closed rule, terminal Answer credit, and policy objective.
+
+Paper-level provenance only; this notice does not claim an audited official
+code revision, source-hash parity, upstream license, or code equivalence.
+
+## A²TGPO
 
 - Repository: https://github.com/CuSO4-Chen/A-TGPO
 - Pinned commit: `f3121f772b267e6d4980e2455e1956316c0ff997`
@@ -79,12 +125,14 @@ Official code evidence at this commit:
 
 The project independently implements this clipping mechanism in
 `src/agentic_rl/policy/strict_onpolicy_loss.py`. Project-specific advantage,
-selection, reduction, KL, and transaction semantics remain governed by
-`FINAL_ALGORITHM_SPEC_V2_1.md`.
+selection, reduction, KL, and transaction semantics remain project-defined
+and are not claimed as code-equivalent to the audited upstream implementation.
 
 ## Existing Search-R1 and Retriever
 
-The project references the existing Search-R1 source tree and the existing
-Hybrid Retriever server by absolute path. It does not copy or modify either
-codebase. Their exact paths, commits, source hashes, and known pre-existing
-worktree changes are recorded in `DEPLOYMENT_REPORT.md`.
+Search-R1 remains an external source dependency configured through
+`AETHERSEARCH_SEARCH_R1_ROOT`. The Hybrid Retriever server used by the public
+runtime is vendored at
+`runtime_assets/retriever/hybrid_retrieval_server.py`. Public asset and source
+provenance is recorded in `EXTERNAL_ASSETS.md` and the corresponding runtime
+documentation.

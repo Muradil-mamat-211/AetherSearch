@@ -946,20 +946,26 @@ license details are recorded in
 
 ## References
 
-The following verified upstream sources inform the method and implementation.
-Code-provenance details are recorded in
+The following verified upstream works informed the method and implementation.
+Source-code provenance for audited implementations and paper-level provenance
+for literature references are recorded in
 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
-1. **IGPO.** [Official repository](https://github.com/GuoqingWang1/IGPO),
-   pinned at revision `64165e2741ed8801f977948c8128080ce87b4101`.
-2. **A²TGPO.** [Official repository](https://github.com/CuSO4-Chen/A-TGPO) and
-   [arXiv:2605.06200](https://arxiv.org/abs/2605.06200), pinned at revision
-   `f3121f772b267e6d4980e2455e1956316c0ff997`.
-3. Zihan Wang et al. **RAGEN-2: Reasoning Collapse in Agentic RL.**
-   [arXiv:2604.06268](https://arxiv.org/abs/2604.06268).
-4. Naifan Zhang et al. **MICA: Multi-granularity Intertemporal Credit
+1. Guoqing Wang et al. **Information Gain-based Policy Optimization: A Simple
+   and Effective Approach for Multi-Turn Search Agents.**
+   [Paper: arXiv:2510.14967](https://arxiv.org/abs/2510.14967) ·
+   [Code](https://github.com/GuoqingWang1/IGPO). Audited code revision:
+   [`64165e2741ed8801f977948c8128080ce87b4101`](https://github.com/GuoqingWang1/IGPO/commit/64165e2741ed8801f977948c8128080ce87b4101).
+2. Zihan Wang et al. **RAGEN-2: Reasoning Collapse in Agentic RL.**
+   [Paper: arXiv:2604.06268](https://arxiv.org/abs/2604.06268).
+3. Naifan Zhang et al. **MICA: Multi-granularity Intertemporal Credit
    Assignment for Long-Horizon Emotional Support Dialogue.**
-   [arXiv:2603.06194](https://arxiv.org/abs/2603.06194).
+   [Paper: arXiv:2603.06194](https://arxiv.org/abs/2603.06194).
+4. Dingwei Chen et al. **A²TGPO: Agentic Turn-Group Policy Optimization with
+   Adaptive Turn-level Clipping.**
+   [Paper: arXiv:2605.06200](https://arxiv.org/abs/2605.06200) ·
+   [Code](https://github.com/CuSO4-Chen/A-TGPO). Audited code revision:
+   [`f3121f772b267e6d4980e2455e1956316c0ff997`](https://github.com/CuSO4-Chen/A-TGPO/commit/f3121f772b267e6d4980e2455e1956316c0ff997).
 
 ### Citing AetherSearch
 
