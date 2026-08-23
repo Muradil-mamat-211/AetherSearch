@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 420" role="img" aria-labelledby="title desc">
+  <title id="title">AetherSearch Agentic RL training pipeline</title>
+  <desc id="desc">A two-row pipeline from candidate prompts and grouped rollouts through outcome filtering, retrieval information gain, Search and Answer credit, turn-level optimization, and frozen-reference regularization.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#64748B" />
+    </marker>
+  </defs>
+
+  <text x="50" y="31" fill="#475569" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700">PROMPT SELECTION</text>
+  <text x="50" y="231" fill="#475569" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700">CREDIT AND OPTIMIZATION</text>
+
+  <g fill="none" stroke="#64748B" stroke-linecap="round" stroke-width="3" marker-end="url(#arrow)">
+    <path d="M286 108 H314" />
+    <path d="M552 108 H580" />
+    <path d="M818 108 H846" />
+    <path d="M1084 108 H1112" />
+    <path d="M1232 164 V250" />
+    <path d="M1114 308 H1086" />
+    <path d="M848 308 H820" />
+    <path d="M582 308 H554" />
+    <path d="M316 308 H288" />
+  </g>
+  <text x="1248" y="213" fill="#64748B" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700">SELECTED ONLY</text>
+
+  <g font-family="Arial, Helvetica, sans-serif">
+    <g>
+      <rect x="50" y="52" width="236" height="112" rx="8" fill="#F8FAFC" stroke="#0EA5E9" stroke-width="3" />
+      <circle cx="78" cy="80" r="16" fill="#0369A1" />
+      <text x="78" y="86" fill="#FFFFFF" font-size="16" font-weight="700" text-anchor="middle">1</text>
+      <text x="168" y="103" fill="#0F172A" font-size="20" font-weight="700" text-anchor="middle">
+        <tspan x="168" dy="0">Candidate</tspan>
+        <tspan x="168" dy="26">Prompts</tspan>
+      </text>
+    </g>
+
+    <g>
+      <rect x="316" y="52" width="236" height="112" rx="8" fill="#F8FAFC" stroke="#0EA5E9" stroke-width="3" />
+      <circle cx="344" cy="80" r="16" fill="#0369A1" />
+      <text x="344" y="86" fill="#FFFFFF" font-size="16" font-weight="700" text-anchor="middle">2</text>
+      <text x="434" y="103" fill="#0F172A" font-size="19" font-weight="700" text-anchor="middle">
+        <tspan x="434" dy="0">Grouped On-Policy</tspan>
+        <tspan x="434" dy="25">Rollouts</tspan>
+      </text>
+    </g>
+
+    <g>
+      <rect x="582" y="52" width="236" height="112" rx="8" fill="#F8FAFC" stroke="#0EA5E9" stroke-width="3" />
+      <circle cx="610" cy="80" r="16" fill="#0369A1" />
+      <text x="610" y="86" fill="#FFFFFF" font-size="16" font-weight="700" text-anchor="middle">3</text>
+      <text x="700" y="103" fill="#0F172A" font-size="20" font-weight="700" text-anchor="middle">
+        <tspan x="700" dy="0">Terminal Outcome</tspan>
+        <tspan x="700" dy="26">Scoring</tspan>
+      </text>
+    </g>
+
+    <g>
+      <rect x="848" y="52" width="236" height="112" rx="8" fill="#F8FAFC" stroke="#14B8A6" stroke-width="3" />
+      <circle cx="876" cy="80" r="16" fill="#0F766E" />
+      <text x="876" y="86" fill="#FFFFFF" font-size="16" font-weight="700" text-anchor="middle">4</text>
+      <text x="966" y="101" fill="#0F172A" font-size="18" font-weight="700" text-anchor="middle">
+        <tspan x="966" dy="0">Raw Outcome-Variance</tspan>
+        <tspan x="966" dy="25">Filtering</tspan>
+      </text>
+    </g>
+
+    <g>
+      <rect x="1114" y="52" width="236" height="112" rx="8" fill="#F8FAFC" stroke="#14B8A6" stroke-width="3" />
+      <circle cx="1142" cy="80" r="16" fill="#0F766E" />
+      <text x="1142" y="86" fill="#FFFFFF" font-size="16" font-weight="700" text-anchor="middle">5</text>
+      <text x="1232" y="103" fill="#0F172A" font-size="20" font-weight="700" text-anchor="middle">
+        <tspan x="1232" dy="0">Selected Prompt</tspan>
+        <tspan x="1232" dy="26">Groups</tspan>
+      </text>
+    </g>
+
+    <g>
+      <rect x="1114" y="252" width="236" height="112" rx="8" fill="#F8FAFC" stroke="#F59E0B" stroke-width="3" />
+      <circle cx="1142" cy="280" r="16" fill="#B45309" />
+      <text x="1142" y="286" fill="#FFFFFF" font-size="16" font-weight="700" text-anchor="middle">6</text>
+      <text x="1232" y="303" fill="#0F172A" font-size="20" font-weight="700" text-anchor="middle">
+        <tspan x="1232" dy="0">Retrieval</tspan>
+        <tspan x="1232" dy="26">Information Gain</tspan>
+      </text>
+    </g>
+
+    <g>
+      <rect x="848" y="252" width="236" height="112" rx="8" fill="#F8FAFC" stroke="#F97316" stroke-width="3" />
+      <circle cx="876" cy="280" r="16" fill="#C2410C" />
+      <text x="876" y="286" fill="#FFFFFF" font-size="16" font-weight="700" text-anchor="middle">7</text>
+      <text x="966" y="303" fill="#0F172A" font-size="18" font-weight="700" text-anchor="middle">
+        <tspan x="966" dy="0">Immediate + Delayed</tspan>
+        <tspan x="966" dy="25">Search Credit</tspan>
+      </text>
+    </g>
+
+    <g>
+      <rect x="582" y="252" width="236" height="112" rx="8" fill="#F8FAFC" stroke="#F97316" stroke-width="3" />
+      <circle cx="610" cy="280" r="16" fill="#C2410C" />
+      <text x="610" y="286" fill="#FFFFFF" font-size="16" font-weight="700" text-anchor="middle">8</text>
+      <text x="700" y="291" fill="#0F172A" font-size="18" font-weight="700" text-anchor="middle">
+        <tspan x="700" dy="0">Search / Answer</tspan>
+        <tspan x="700" dy="24">Credit</tspan>
+        <tspan x="700" dy="24">Assignment</tspan>
+      </text>
+    </g>
+
+    <g>
+      <rect x="316" y="252" width="236" height="112" rx="8" fill="#F8FAFC" stroke="#8B5CF6" stroke-width="3" />
+      <circle cx="344" cy="280" r="16" fill="#6D28D9" />
+      <text x="344" y="286" fill="#FFFFFF" font-size="16" font-weight="700" text-anchor="middle">9</text>
+      <text x="434" y="303" fill="#0F172A" font-size="19" font-weight="700" text-anchor="middle">
+        <tspan x="434" dy="0">Turn-Level Policy</tspan>
+        <tspan x="434" dy="25">Optimization</tspan>
+      </text>
+    </g>
+
+    <g>
+      <rect x="50" y="252" width="236" height="112" rx="8" fill="#F8FAFC" stroke="#22C55E" stroke-width="3" />
+      <circle cx="78" cy="280" r="16" fill="#15803D" />
+      <text x="78" y="286" fill="#FFFFFF" font-size="16" font-weight="700" text-anchor="middle">10</text>
+      <text x="168" y="303" fill="#0F172A" font-size="19" font-weight="700" text-anchor="middle">
+        <tspan x="168" dy="0">Frozen-Reference</tspan>
+        <tspan x="168" dy="25">Regularization</tspan>
+      </text>
+    </g>
+  </g>
+
+  <text x="700" y="402" fill="#475569" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" text-anchor="middle">PROMPTS → EVIDENCE UTILITY → CREDIT → POLICY UPDATE</text>
+</svg>

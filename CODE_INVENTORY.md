@@ -4,13 +4,13 @@ This inventory covers every non-ignored file in the AetherSearch GitHub
 release. Model weights, optimizer checkpoints, eval result bundles, report
 archives, and runtime snapshots are not included.
 
-Generated UTC: `2026-08-23T13:42:51Z`
+Generated UTC: `2026-08-23T14:10:54Z`
 
 ## Summary
 
-- `assets`: `2` files, `1154` bytes
+- `assets`: `3` files, `8100` bytes
 - `configs`: `23` files, `38388` bytes
-- `documentation`: `4` files, `31023` bytes
+- `documentation`: `4` files, `33128` bytes
 - `environment`: `6` files, `14527` bytes
 - `recipes`: `2` files, `5177` bytes
 - `repo_root`: `3` files, `1441` bytes
@@ -27,8 +27,9 @@ Generated UTC: `2026-08-23T13:42:51Z`
 
 | path | bytes | sha256 |
 |---|---:|---|
-| `assets/README.md` | 330 | `24fb84c91d614252b1bf037dc24e21eec1abd690782fc00c085a8021dfb9a996` |
+| `assets/README.md` | 410 | `537cf33dbfee113373d8e430e29fae2fba12885993a032b7875a8bf0c3d95ca6` |
 | `assets/aethersearch-mark.svg` | 824 | `5e3e0105c3db839d15b775155f8c19e02a5982d9ad01c9c57b0e4a9bfbd0f467` |
+| `assets/aethersearch-method.svg` | 6866 | `75854b76a3ffeed84845025c867d0586c19f664adc9bd9f77baafa35f3aa0f68` |
 
 ### configs
 
@@ -63,7 +64,7 @@ Generated UTC: `2026-08-23T13:42:51Z`
 | path | bytes | sha256 |
 |---|---:|---|
 | `EXTERNAL_ASSETS.md` | 1517 | `d9c7c100f8a16071c8774c472337933d41b27a3927e0a0d909061f11aa50e756` |
-| `README.md` | 24587 | `71e80093840287578d9838aac9ba3b8e81c19c3b25601af996c44041b1ddfd71` |
+| `README.md` | 26692 | `233c9026b2e458d6e835b769c83776a1fc5d7fe8e567bb6860205f8e204e9809` |
 | `THIRD_PARTY_NOTICES.md` | 4092 | `09c4e8e0e4c97f56361c9bd97959398b21a9ff27f0497e9ca7a6cf0cefc3d605` |
 | `TRAINING_REPRODUCTION.md` | 827 | `0f459c3f741801007d21d4d505039486efcfc67fd1affc71cdb179dbc81d06c2` |
 

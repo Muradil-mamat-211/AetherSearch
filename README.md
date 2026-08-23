@@ -35,12 +35,16 @@
 - [Overview](#overview)
 - [Highlights](#highlights)
 - [Evaluation Results](#evaluation-results)
-- [Training Pipeline](#training-pipeline)
-- [Agentic RL Method](#agentic-rl-method)
 - [Quick Start](#quick-start)
+- [Training Pipeline](#training-pipeline)
+- [Method Overview](#method-overview)
+- [Agentic RL Method](#agentic-rl-method)
 - [Reproducibility & Configuration](#reproducibility-configuration)
 - [Repository Layout](#repository-layout)
 - [Release Scope](#release-scope)
+- [Acknowledgements](#acknowledgements)
+- [References](#references)
+- [License](#license)
 
 ## Overview
 
@@ -64,12 +68,12 @@ the current release scope.
 ## Highlights
 
 - Multi-turn retrieval with explicit Search and Answer actions.
-- Raw outcome-variance filtering concentrates updates on high-signal prompts.
+- Raw outcome-variance filtering focuses updates on high-signal prompts.
 - Retrieval utility is evaluated only after prompt filtering.
-- Search actions receive immediate and delayed retrieval-based credit.
+- Search actions receive both immediate and delayed retrieval-based credit.
 - Turn-level on-policy optimization combines adaptive clipping with
   frozen-reference regularization.
-- Hardware topology is separated from algorithm configuration.
+- Algorithm configuration is decoupled from hardware topology.
 
 ## Evaluation Results
 
@@ -80,6 +84,60 @@ the current release scope.
 | Search-R1 (Qwen2.5-3B Base, PPO) | **0.406** | 0.587 | **0.435** | 0.284 | 0.273 | 0.049 | 0.088 | 0.303 |
 | Search-R1 (Qwen2.5-3B Instruct, PPO) | 0.341 | 0.545 | 0.378 | 0.324 | 0.319 | 0.103 | **0.264** | 0.325 |
 | AetherSearch | 0.3977 | **0.5877** | 0.4229 | **0.3333** | **0.3985** | **0.1200** | 0.2320 | **0.3560** |
+
+## Quick Start
+
+🚀 The public entrypoint resolves one algorithm recipe, one asset manifest,
+and one explicit hardware/qualification profile.
+
+### Install
+
+Install the local package inside an RL environment that already contains the
+compatible PyTorch, veRL, vLLM, Ray, and FlashAttention stack:
+
+```bash
+python -m pip install -e .
+```
+
+### Configure local paths
+
+Create the machine-local environment configuration:
+
+```bash
+cp environment/env.template.sh environment/env.local.sh
+# Edit environment/env.local.sh, then:
+source environment/env.local.sh
+```
+
+### Validate
+
+Run the lightweight source, shell, and configuration checks, then resolve the
+released hardware recipe without starting services:
+
+```bash
+bash scripts/validate_static.sh
+bash scripts/train_rl.sh --dry-run
+```
+
+The default recipe is an **Official Qualified** reproduction. It enables
+`configs/qualification/official_4x48gb_v1.yaml`, which checks the published
+4x48GB/48-CPU/360-GiB host contract and public asset checksums. Portable
+user-defined profiles use resource minimums and generic topology invariants
+instead of claiming official qualification.
+
+### Train
+
+Start RL training on the validated four-GPU topology:
+
+```bash
+bash scripts/train_rl.sh
+```
+
+The included recipe assigns physical GPU 0 to retrieval and asynchronous
+training-time evaluation, and physical GPUs 1-3 to the three-rank vLLM/FSDP2
+runtime. Every 20-update evaluation uses the complete 51,713-row Search-R1
+`test.parquet`. See `recipes/rl/README.md` for the configuration boundary.
+The resolved configuration is materialized inside each new run directory.
 
 ## Training Pipeline
 
@@ -93,6 +151,19 @@ the current release scope.
 
 RL starts from the DPO warm-start actor/reference checkpoint; it does not start
 directly from the SFT stage.
+
+## Method Overview
+
+AetherSearch first identifies prompts with informative outcome variation, then
+measures retrieval utility only for selected groups. Search actions receive
+immediate and delayed information-based credit before turn-level optimization
+under a frozen reference.
+
+<div align="center">
+
+<img src="assets/aethersearch-method.svg" alt="AetherSearch Agentic RL training pipeline" width="100%">
+
+</div>
 
 ## Agentic RL Method
 
@@ -813,56 +884,6 @@ estimator, not a runtime failure.
 | policy optimization | `src/agentic_rl/policy/` |
 | runtime integration | `src/agentic_rl/runtime/` |
 
-## Quick Start
-
-🚀 The public entrypoint resolves one algorithm recipe, one asset manifest,
-and one explicit hardware/qualification profile.
-
-Install the local package inside an RL environment that already contains the
-compatible PyTorch, veRL, vLLM, Ray, and FlashAttention stack:
-
-```bash
-python -m pip install -e .
-```
-
-Create the machine-local environment configuration:
-
-```bash
-cp environment/env.template.sh environment/env.local.sh
-# Edit environment/env.local.sh, then:
-source environment/env.local.sh
-```
-
-Run the lightweight source, shell, and configuration checks:
-
-```bash
-bash scripts/validate_static.sh
-```
-
-Validate the released hardware recipe without starting services:
-
-```bash
-bash scripts/train_rl.sh --dry-run
-```
-
-The default recipe is an **Official Qualified** reproduction. It enables
-`configs/qualification/official_4x48gb_v1.yaml`, which checks the published
-4x48GB/48-CPU/360-GiB host contract and release asset checksums. Portable
-user-defined profiles use resource minimums and generic topology invariants
-instead of claiming official qualification.
-
-Start RL training on the validated four-GPU topology:
-
-```bash
-bash scripts/train_rl.sh
-```
-
-The included recipe assigns physical GPU 0 to retrieval and asynchronous
-training-time evaluation, and physical GPUs 1-3 to the three-rank vLLM/FSDP2
-runtime. Every 20-update evaluation uses the complete 51,713-row Search-R1
-`test.parquet`. See `recipes/rl/README.md` for the configuration boundary.
-The resolved configuration is materialized inside each new run directory.
-
 ## Reproducibility & Configuration
 
 ⚙️ Reproduction is composed from five independent configuration layers:
@@ -915,3 +936,39 @@ part of this release.
 Large model weights, optimizer-state checkpoints, eval result bundles, report
 archives, and runtime snapshots are intentionally not committed to this GitHub
 repository. Public model and data artifacts are linked from Hugging Face above.
+
+## Acknowledgements
+
+AetherSearch builds on [Search-R1](https://github.com/PeterGriffinJin/Search-R1)
+and the [Qwen2.5](https://huggingface.co/Qwen/Qwen2.5-3B) model family. Training
+and serving use [PyTorch](https://pytorch.org/),
+[veRL](https://github.com/verl-project/verl),
+[vLLM](https://github.com/vllm-project/vllm), and
+[Ray](https://github.com/ray-project/ray); models and datasets are distributed
+through [Hugging Face](https://huggingface.co/). Third-party provenance and
+license details are recorded in
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+
+## References
+
+The following verified upstream sources are recorded in the repository's
+[third-party provenance](THIRD_PARTY_NOTICES.md):
+
+1. **IGPO.** [Official repository](https://github.com/GuoqingWang1/IGPO),
+   pinned at revision `64165e2741ed8801f977948c8128080ce87b4101`.
+2. **A²TGPO.** [Official repository](https://github.com/CuSO4-Chen/A-TGPO) and
+   [arXiv:2605.06200](https://arxiv.org/abs/2605.06200), pinned at revision
+   `f3121f772b267e6d4980e2455e1956316c0ff997`.
+
+### Citing AetherSearch
+
+A formal project citation will be added with the corresponding technical
+report. Until then, please cite the verified upstream works above when using
+their respective concepts.
+
+## License
+
+A project-level license has not yet been added to this repository. Source
+visibility does not itself grant reuse rights. Third-party components remain
+subject to their respective licenses; see
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
