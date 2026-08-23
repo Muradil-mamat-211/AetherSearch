@@ -432,7 +432,7 @@ G^{IG}_{p,i,t}
 \gamma^{k-t}r^{IG}_{p,i,k}.
 ```
 
-The release configuration fixes $\gamma=1$, giving:
+The training configuration fixes $\gamma=1$, giving:
 
 ```math
 \boxed{
@@ -672,7 +672,7 @@ The importance ratio is:
 ```
 
 This is the geometric mean of token likelihood ratios across the turn, not a
-set of independently clipped token-level ratios. The release contract uses
+set of independently clipped token-level ratios. The training setup uses
 one strict on-policy update:
 
 ```text
@@ -709,13 +709,8 @@ The fixed values and bounds are:
 ```
 
 ```math
-l_t
-=
-1-c_t\epsilon_{\mathrm{low}},
-\qquad
-u_t
-=
-1+c_t\epsilon_{\mathrm{high}}.
+l_t = 1-c_t\epsilon_{\mathrm{low}},
+\qquad u_t = 1+c_t\epsilon_{\mathrm{high}}.
 ```
 
 For turn advantage $A_t$, the clipped surrogate is:
@@ -951,14 +946,20 @@ license details are recorded in
 
 ## References
 
-The following verified upstream sources are recorded in the repository's
-[third-party provenance](THIRD_PARTY_NOTICES.md):
+The following verified upstream sources inform the method and implementation.
+Code-provenance details are recorded in
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
 1. **IGPO.** [Official repository](https://github.com/GuoqingWang1/IGPO),
    pinned at revision `64165e2741ed8801f977948c8128080ce87b4101`.
 2. **A²TGPO.** [Official repository](https://github.com/CuSO4-Chen/A-TGPO) and
    [arXiv:2605.06200](https://arxiv.org/abs/2605.06200), pinned at revision
    `f3121f772b267e6d4980e2455e1956316c0ff997`.
+3. Zihan Wang et al. **RAGEN-2: Reasoning Collapse in Agentic RL.**
+   [arXiv:2604.06268](https://arxiv.org/abs/2604.06268).
+4. Naifan Zhang et al. **MICA: Multi-granularity Intertemporal Credit
+   Assignment for Long-Horizon Emotional Support Dialogue.**
+   [arXiv:2603.06194](https://arxiv.org/abs/2603.06194).
 
 ### Citing AetherSearch
 
