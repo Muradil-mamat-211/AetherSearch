@@ -23,7 +23,7 @@
 
 This release contains 2,000 validated full agent trajectories for Qwen2.5-3B
 Agentic Search format cold start. Every trajectory ends with the Qwen assistant
-termination token <|im_end|>.
+termination token `<|im_end|>`.
 
 ## Composition
 
@@ -46,23 +46,25 @@ Search-depth distribution:
 
 Every public training record contains exactly these five fields, in this order:
 
-1. id
-2. question
-3. trajectory_type
-4. search_count
-5. full_trajectory_text
+1. `id`
+2. `question`
+3. `trajectory_type`
+4. `search_count`
+5. `full_trajectory_text`
 
-The full_trajectory_text field is the only training text. The frozen record
-order has been globally shuffled with a deterministic seed of 42, then IDs were
-assigned in that shuffled order from 000001 through 002000.
+The `full_trajectory_text` field is the only training text. The frozen record
+order has been globally shuffled with a deterministic seed of 42, then IDs
+were assigned in that shuffled order from `000001` through `002000`.
 
 ## Assistant Termination
 
 Each complete Qwen assistant trajectory ends exactly as:
 
+```text
 </answer><|im_end|>
+```
 
-The final <|im_end|> is the assistant EOT/EOS token and is included in the
+The final `<|im_end|>` is the assistant EOT/EOS token and is included in the
 assistant supervision target. It is not duplicated and no endoftext token is
 added.
 
@@ -71,11 +73,11 @@ added.
 The dataset semantic contract is:
 
 - system/user/question text is not supervised;
-- the complete <information>...</information> span is not supervised;
-- assistant <think>...</think> is supervised;
-- assistant <search>...</search> is supervised;
-- assistant <answer>...</answer> is supervised;
-- the final assistant <|im_end|> is supervised as assistant EOT/EOS.
+- the complete `<information>...</information>` span is not supervised;
+- assistant `<think>...</think>` is supervised;
+- assistant `<search>...</search>` is supervised;
+- assistant `<answer>...</answer>` is supervised;
+- the final assistant `<|im_end|>` is supervised as assistant EOT/EOS.
 
 The public JSONL does not contain token-level masks. A downstream trainer must
 construct token-level masking from this contract. No token-level mask is stored
@@ -83,9 +85,7 @@ in this dataset artifact.
 
 ## Full-Trajectory Unit
 
-The training unit is:
-
-training_unit = full_trajectory
+The training unit is `training_unit = full_trajectory`.
 
 Single-search trajectories preserve one search/information turn through the
 final answer. Multi-search trajectories preserve every sequential
@@ -93,7 +93,7 @@ search/information turn through the final answer.
 
 ## Provenance and Audit
 
-provenance_manifest.jsonl is audit-only. Each new public id maps to the
+`provenance_manifest.jsonl` is audit-only. Each new public ID maps to the
 pre-shuffle public id, legacy source identifiers, source hashes, the pre-EOT
 full-trajectory hash, the post-EOT full-trajectory hash, and the deterministic
 shuffle key.
@@ -110,11 +110,13 @@ Download `final_sft_2000.jsonl` and `provenance_manifest.jsonl` from the
 Hugging Face dataset linked above into this directory, then verify the complete
 release with:
 
+```bash
 sha256sum -c checksums.sha256
+```
 
 ## Build scripts
 
-The historical SFT build scripts are preserved under `scripts/`. They accept the
-working directory as the first argument, or read `AETHERSEARCH_SFT_WORKDIR`.
-One of these two inputs is required; no server-local default path is embedded in
-the release.
+The historical SFT build scripts are preserved under `scripts/`. They accept
+the working directory as the first argument, or read
+`AETHERSEARCH_SFT_WORKDIR`. One of these two inputs is required; no
+server-local default path is embedded in the repository.

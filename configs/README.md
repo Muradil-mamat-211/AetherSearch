@@ -1,51 +1,65 @@
-# Configurations
+# Configuration System
 
 The supported public entry configuration is
-`recipes/rl/train_4x48gb.yaml`. It composes the verified algorithm settings in
-this directory with `configs/hardware/4x48gb_3rl.yaml`, while all machine-local
-paths come from `environment/env.local.sh`.
+`recipes/rl/train_4x48gb.yaml`. It composes the training experiment, external
+assets, hardware resources, runtime mapping, and official qualification
+contract. Machine-local paths come from `environment/env.local.sh`.
 
-The public recipe selects
-`answer_outcome_only_ragen2_paper_variance_top_p`: paper-style RAGEN-2 raw
-terminal-outcome sample variance followed by cumulative raw-variance-mass
-Top-p. Earlier scaled-selection machinery remains available for historical
-tests and experiments, but is not part of the final AetherSearch recipe.
+The public prompt filter ranks candidate prompts by raw terminal-outcome sample
+variance and retains the shortest prefix carrying the configured cumulative
+variance mass. Retrieval scoring and Search credit are applied only after that
+filtering step.
 
-`configs/base.yaml` and the inherited algorithm YAMLs are abstract layers; they
-intentionally do not select a GPU count, CUDA mapping, Ray capacity, rollout
-replica layout, GPU memory limit, or learner micro-batch size. Those values are
-provided by an explicit hardware/runtime profile and resolved through
-`TopologyPlan`.
+## Configuration Layers
 
-Configuration responsibilities are intentionally separate:
+| Layer | Responsibility |
+|---|---|
+| experiment | algorithm and training schedule |
+| assets | model, dataset, tokenizer, corpus, and index identities |
+| hardware | physical GPUs, nodes, CPU/RAM, and role placement |
+| runtime | Ray and backend resource mapping |
+| qualification | exact contract for the verified reference run |
 
-- `configs/experiment`-equivalent inherited sections describe the training
-  algorithm and schedule.
-- `configs/assets/` declares external model/data/index paths and SHA-256 values.
-- `configs/hardware/` declares physical GPUs, nodes, CPU/RAM, Ray resource
-  capacity, and backend capacity tuning. Its `topology` block is the single
-  topology input; derived world size, visible CUDA IDs, and DP/TP compatibility
-  fields are materialized by the planner.
-- `configs/qualification/` contains the opt-in exact official reproduction
-  contract.
+`base.yaml` and inherited experiment YAML files are abstract layers. They do
+not select a GPU count, CUDA mapping, Ray capacity, rollout replica layout,
+GPU-memory limit, or learner micro-batch capacity. Those values come from an
+explicit hardware/runtime profile.
 
-The runtime derives visible CUDA IDs, FSDP2 world size, Ray bundles, and veRL
-`nnodes`/`n_gpus_per_node` from `TopologyPlan`. The generic validator does not
-require the official GPU IDs, world size, CPU count, or node count. The current
-veRL/vLLM adapter still reports unsupported TP/DP combinations explicitly;
-that is a backend limitation, not an algorithm invariant.
+## Topology Resolution
 
-The repository has one validated reference topology: the official 4x48GB
-profile. Additional non-reference layouts are covered only by CPU-only
-synthetic configuration tests for role mapping and derived topology fields;
-those tests do not establish GPU-memory fit, runtime compatibility, training
-stability, throughput, or production qualification.
+The hardware profile supplies one topology input. `TopologyPlan` then derives:
 
-The other root YAML files are inherited algorithm, retriever, schedule, gate,
-and historical qualification layers. Public launches should use the recipe,
-not invoke those layers independently.
+- visible CUDA device mappings;
+- learner world size;
+- Ray placement bundles;
+- rollout data/tensor parallel compatibility fields;
+- veRL `nnodes` and `n_gpus_per_node`.
 
-The Exact-IG audit bundle is selected with
-`AETHERSEARCH_EXACT_IG_AUDIT_ROOT`; it is an executable preflight input, not a
-design document. The public recipe does not embed model-dependent audit
-artifacts or server paths.
+Derived compatibility fields are materialized into the resolved configuration;
+they are not independent topology sources. Backend-specific validation reports
+unsupported parallel layouts separately from algorithm validation.
+
+## Qualified and Portable Modes
+
+The repository has one verified reference topology: four 48 GiB GPUs, with one
+GPU assigned to retrieval/asynchronous evaluation and three GPUs assigned to
+the RL runtime. `configs/qualification/` contains the opt-in exact contract for
+that environment.
+
+Portable mode validates generic resource minimums and topology invariants.
+CPU-only synthetic layouts test configuration derivation, not GPU-memory fit,
+runtime stability, throughput, convergence, or production qualification.
+
+## Assets and Audit Inputs
+
+`configs/assets/` records external paths and SHA-256 identities independently
+from the training experiment. Replacing a model or dataset therefore requires
+a new asset manifest rather than a copy of the algorithm configuration.
+
+Retrieval-scoring audit artifacts are selected through
+`AETHERSEARCH_EXACT_IG_AUDIT_ROOT`. They are executable preflight inputs, not
+embedded server paths or design documents.
+
+Other root YAML files preserve inherited experiment, retriever, schedule,
+capacity, and historical compatibility layers. Public launches should resolve
+the recipe rather than invoke those layers directly.

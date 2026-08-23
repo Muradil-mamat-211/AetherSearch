@@ -3,6 +3,15 @@
 This directory contains the public entry configuration for the verified
 AetherSearch RL topology. It does not contain SFT or DPO training recipes.
 
+The entry recipe composes four independent concerns:
+
+| Concern | Source |
+|---|---|
+| experiment and schedule | inherited algorithm configuration |
+| external artifacts | `AETHERSEARCH_ASSET_MANIFEST` and local path variables |
+| hardware/runtime mapping | `configs/hardware/4x48gb_3rl.yaml` |
+| verified-machine contract | `configs/qualification/official_4x48gb_v1.yaml` |
+
 The current reference profile uses four 48 GiB GPUs: one dedicated role hosts
 the hybrid retriever and asynchronous worker, while three RL roles host the
 three-rank vLLM/FSDP2 runtime. The exact physical mapping is expressed in the
@@ -69,10 +78,12 @@ runs the formal preflight, then starts the Retriever, asynchronous
 training-time evaluation worker, and three-rank RL runtime from the same
 resolved config.
 
-`train_4x48gb.yaml` is the only formally qualified training profile and uses
-the paper RAGEN-2 raw terminal-outcome variance selector. A different server
-uses a user-owned hardware/runtime YAML and `qualification.mode: portable`;
-algorithm Python code is unchanged. Generic non-reference layouts are covered
-only by CPU configuration-planning tests. That synthetic coverage does not
-establish GPU-memory fit, runtime compatibility, training stability,
-throughput, or production qualification.
+`train_4x48gb.yaml` is the only formally qualified training profile. Its prompt
+filter ranks groups by raw terminal-outcome sample variance and retains the
+configured cumulative variance mass before retrieval utility is scored.
+
+A different server uses a user-owned hardware/runtime YAML and
+`qualification.mode: portable`; algorithm Python code is unchanged. Generic
+non-reference layouts are covered only by CPU configuration-planning tests.
+That synthetic coverage does not establish GPU-memory fit, runtime
+compatibility, training stability, throughput, or production qualification.

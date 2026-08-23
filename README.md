@@ -73,12 +73,13 @@ the current release scope.
 
 ## Highlights
 
-- Multi-turn Search and Answer trajectories grounded in an external retriever.
-- Raw outcome-variance filtering that focuses updates on high-signal prompts.
-- Selected-only retrieval utility scoring to avoid unnecessary model forwards.
-- Immediate and delayed Search credit normalized among comparable peer turns.
-- Strict on-policy turn-level optimization with reference-model regularization.
-- Hardware topology expressed independently from the training algorithm.
+- Multi-turn retrieval with explicit Search and Answer actions.
+- Raw outcome-variance filtering concentrates updates on high-signal prompts.
+- Retrieval utility is evaluated only after prompt filtering.
+- Search actions receive immediate and delayed retrieval-based credit.
+- Turn-level on-policy optimization combines adaptive clipping with
+  frozen-reference regularization.
+- Hardware topology is separated from algorithm configuration.
 
 ## Evaluation Results
 
@@ -230,7 +231,7 @@ Prompt C outcomes: [1, 0, 1, 0]  -> variance > 0
 ```
 
 Prompt C is prioritized because its group contains distinguishable outcomes.
-The example is binary only for clarity; the production outcome is
+The example is binary only for clarity; the production outcome is continuous,
 alias-aware token F1.
 
 Prompts are ordered by descending raw variance:
@@ -752,37 +753,38 @@ Input:
 
 1. Score terminal answers with alias-aware token F1.
 
-2. Compute within-prompt terminal-outcome sample variance.
+2. Compute within-prompt outcome sample variance.
    Rank prompts by raw variance and retain the shortest prefix
-   carrying at least 90% of total variance mass.
+   carrying at least 90% of total raw variance mass.
 
-3. For selected prompts only, measure how each retrieval
-   changes canonical-answer mean log-likelihood.
+3. For retained prompts only, measure the canonical-answer
+   log-likelihood change produced by each retrieval.
 
 4. Sum future raw retrieval gains from every valid Search turn.
 
 5. Normalize immediate and delayed-return signals among
-   trajectories at the same prompt and Search depth.
+   trajectories sharing the same prompt and Search depth.
 
 6. Assign Search credit:
-       >=2 peers: 0.5 * delayed + 0.5 * immediate
+       >= 2 peers: 0.5 * delayed + 0.5 * immediate
        1 peer: normalized terminal outcome
        unavailable retrieval score: 0
 
 7. Assign terminal Answer credit from normalized task outcome
    plus centered format correctness.
 
-8. Expand turn-level credit to policy-generated tokens only.
+8. Expand turn credit to policy-generated tokens only.
 
-9. Compute the turn-level geometric-mean policy ratio.
+9. Compute the turn-level geometric-mean likelihood ratio.
 
-10. Apply information-aware asymmetric clipping.
+10. Apply information-aware adaptive clipping.
 
 11. Add frozen-reference full-vocabulary KL.
 
-12. Reduce action tokens -> trajectory -> prompt -> global mean.
+12. Reduce:
+       action tokens -> trajectory -> prompt -> global mean.
 
-13. Perform one strict on-policy optimizer step.
+13. Perform one strict on-policy optimizer update.
 ```
 
 ### 8. Interpretation boundary
@@ -804,18 +806,20 @@ Q(s_t,\mathrm{Search})
 Q(s_t,\mathrm{AnswerNow}).
 ```
 
-The current credit estimator is comparative across realized Search actions;
-it does not establish that searching was better than stopping immediately.
-This is an interpretation boundary of the estimator, not a runtime failure.
+The current estimator is therefore not a direct Search-versus-stop
+counterfactual estimator. It does not establish that searching was better
+than stopping immediately. This is an interpretation boundary of the
+estimator, not a runtime failure.
 
 **Code map**
 
 | Component | Source |
 |---|---|
-| rollout and outcome scoring | `src/agentic_rl/rollout/`, `src/agentic_rl/outcome/` |
+| rollout | `src/agentic_rl/rollout/` |
+| terminal scoring | `src/agentic_rl/outcome/` |
 | prompt filtering | `src/agentic_rl/selection/` |
-| retrieval information gain | `src/agentic_rl/exact_ig/` |
-| Search and Answer credit | `src/agentic_rl/advantage/` |
+| retrieval scoring | `src/agentic_rl/exact_ig/` |
+| credit assignment | `src/agentic_rl/advantage/` |
 | policy optimization | `src/agentic_rl/policy/` |
 | runtime integration | `src/agentic_rl/runtime/` |
 

@@ -1,8 +1,8 @@
-# Scripts
+# Operational Scripts
 
 ## Public Entrypoints
 
-- `train_rl.sh`: resolve and launch the single supported RL recipe.
+- `train_rl.sh`: resolve, preflight, and launch the supported RL recipe.
 - `resume_rl.sh`: resume a checkpoint only after distributed restore
   validation.
 - `validate_static.sh`: lightweight source, shell, and configuration checks.
@@ -10,9 +10,13 @@
   repository-owned SVG checks for the root README.
 - `test_code.sh`: run selected tests, or all test modules in isolated
   processes when no paths are supplied.
-- `preflight_mica_formal.py`: validate the resolved RL contract before launch.
 - `validate_48cpu_resource_profile.py`: check the supported three-rank
   migration profile without starting a training job.
+
+The training launcher owns configuration resolution and formal preflight. Users
+do not need to invoke its Python helpers directly.
+
+## Runtime Components
 
 Training-time evaluation is launched automatically by the runtime supervisor
 using the configured `eval` role. `async_eval_worker.sh` is an internal worker
@@ -26,6 +30,8 @@ launchers. They read paths and GPU assignments from the resolved configuration.
 `runtime_guard.py` is the retained monitor/watchdog process used by verified
 resume runs. The older standalone monitor/watchdog modules are not part of the
 public runtime path.
+
+## Historical Utilities
 
 One-off audit, historical-server, pilot, and smoke-stage scripts are not part
 of the public release surface. Their behavior is covered by the source tests
