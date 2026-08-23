@@ -173,7 +173,7 @@ eligible trajectory, the task outcome is the best alias-aware token-level F1:
 O_{p,i}
 =
 \max_{a^\star\in\mathcal A_p}
-\operatorname{TokenF1}
+\mathrm{TokenF1}
 \left(
 \hat a_{p,i},a^\star
 \right).
@@ -315,7 +315,7 @@ For a trajectory prefix `h`, define the mean answer-body log-probability:
 \log
 \pi_{\theta_{\mathrm{snap}}}
 \left(
-y_{p,j}\mid h,y_{p,<j}
+y_{p,j}\mid h,y_{p,1:j-1}
 \right),
 ```
 
@@ -665,7 +665,7 @@ J_t
 \min
 \left[
 \rho_tA_t,
-\operatorname{clip}
+\mathrm{clip}
 \left(
 \rho_t,l_t,u_t
 \right)A_t
