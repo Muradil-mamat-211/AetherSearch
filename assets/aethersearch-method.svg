@@ -27,8 +27,8 @@
   <g font-family="Arial, Helvetica, sans-serif">
     <g>
       <rect x="50" y="52" width="236" height="112" rx="8" fill="#F8FAFC" stroke="#0EA5E9" stroke-width="3" />
-      <circle cx="78" cy="80" r="16" fill="#0369A1" />
-      <text x="78" y="86" fill="#FFFFFF" font-size="16" font-weight="700" text-anchor="middle">1</text>
+      <circle cx="72" cy="72" r="14" fill="#0369A1" />
+      <text x="72" y="77" fill="#FFFFFF" font-size="14" font-weight="700" text-anchor="middle">1</text>
       <text x="168" y="103" fill="#0F172A" font-size="20" font-weight="700" text-anchor="middle">
         <tspan x="168" dy="0">Candidate</tspan>
         <tspan x="168" dy="26">Prompts</tspan>
@@ -37,8 +37,8 @@
 
     <g>
       <rect x="316" y="52" width="236" height="112" rx="8" fill="#F8FAFC" stroke="#0EA5E9" stroke-width="3" />
-      <circle cx="344" cy="80" r="16" fill="#0369A1" />
-      <text x="344" y="86" fill="#FFFFFF" font-size="16" font-weight="700" text-anchor="middle">2</text>
+      <circle cx="338" cy="72" r="14" fill="#0369A1" />
+      <text x="338" y="77" fill="#FFFFFF" font-size="14" font-weight="700" text-anchor="middle">2</text>
       <text x="434" y="103" fill="#0F172A" font-size="19" font-weight="700" text-anchor="middle">
         <tspan x="434" dy="0">Grouped On-Policy</tspan>
         <tspan x="434" dy="25">Rollouts</tspan>
@@ -47,8 +47,8 @@
 
     <g>
       <rect x="582" y="52" width="236" height="112" rx="8" fill="#F8FAFC" stroke="#0EA5E9" stroke-width="3" />
-      <circle cx="610" cy="80" r="16" fill="#0369A1" />
-      <text x="610" y="86" fill="#FFFFFF" font-size="16" font-weight="700" text-anchor="middle">3</text>
+      <circle cx="604" cy="72" r="14" fill="#0369A1" />
+      <text x="604" y="77" fill="#FFFFFF" font-size="14" font-weight="700" text-anchor="middle">3</text>
       <text x="700" y="103" fill="#0F172A" font-size="20" font-weight="700" text-anchor="middle">
         <tspan x="700" dy="0">Terminal Outcome</tspan>
         <tspan x="700" dy="26">Scoring</tspan>
@@ -57,8 +57,8 @@
 
     <g>
       <rect x="848" y="52" width="236" height="112" rx="8" fill="#F8FAFC" stroke="#14B8A6" stroke-width="3" />
-      <circle cx="876" cy="80" r="16" fill="#0F766E" />
-      <text x="876" y="86" fill="#FFFFFF" font-size="16" font-weight="700" text-anchor="middle">4</text>
+      <circle cx="870" cy="72" r="14" fill="#0F766E" />
+      <text x="870" y="77" fill="#FFFFFF" font-size="14" font-weight="700" text-anchor="middle">4</text>
       <text x="966" y="101" fill="#0F172A" font-size="18" font-weight="700" text-anchor="middle">
         <tspan x="966" dy="0">Raw Outcome-Variance</tspan>
         <tspan x="966" dy="25">Filtering</tspan>
@@ -67,8 +67,8 @@
 
     <g>
       <rect x="1114" y="52" width="236" height="112" rx="8" fill="#F8FAFC" stroke="#14B8A6" stroke-width="3" />
-      <circle cx="1142" cy="80" r="16" fill="#0F766E" />
-      <text x="1142" y="86" fill="#FFFFFF" font-size="16" font-weight="700" text-anchor="middle">5</text>
+      <circle cx="1136" cy="72" r="14" fill="#0F766E" />
+      <text x="1136" y="77" fill="#FFFFFF" font-size="14" font-weight="700" text-anchor="middle">5</text>
       <text x="1232" y="103" fill="#0F172A" font-size="20" font-weight="700" text-anchor="middle">
         <tspan x="1232" dy="0">Selected Prompt</tspan>
         <tspan x="1232" dy="26">Groups</tspan>
@@ -77,8 +77,8 @@
 
     <g>
       <rect x="1114" y="252" width="236" height="112" rx="8" fill="#F8FAFC" stroke="#F59E0B" stroke-width="3" />
-      <circle cx="1142" cy="280" r="16" fill="#B45309" />
-      <text x="1142" y="286" fill="#FFFFFF" font-size="16" font-weight="700" text-anchor="middle">6</text>
+      <circle cx="1136" cy="272" r="14" fill="#B45309" />
+      <text x="1136" y="277" fill="#FFFFFF" font-size="14" font-weight="700" text-anchor="middle">6</text>
       <text x="1232" y="303" fill="#0F172A" font-size="20" font-weight="700" text-anchor="middle">
         <tspan x="1232" dy="0">Retrieval</tspan>
         <tspan x="1232" dy="26">Information Gain</tspan>
@@ -87,8 +87,8 @@
 
     <g>
       <rect x="848" y="252" width="236" height="112" rx="8" fill="#F8FAFC" stroke="#F97316" stroke-width="3" />
-      <circle cx="876" cy="280" r="16" fill="#C2410C" />
-      <text x="876" y="286" fill="#FFFFFF" font-size="16" font-weight="700" text-anchor="middle">7</text>
+      <circle cx="870" cy="272" r="14" fill="#C2410C" />
+      <text x="870" y="277" fill="#FFFFFF" font-size="14" font-weight="700" text-anchor="middle">7</text>
       <text x="966" y="303" fill="#0F172A" font-size="18" font-weight="700" text-anchor="middle">
         <tspan x="966" dy="0">Immediate + Delayed</tspan>
         <tspan x="966" dy="25">Search Credit</tspan>
@@ -97,8 +97,8 @@
 
     <g>
       <rect x="582" y="252" width="236" height="112" rx="8" fill="#F8FAFC" stroke="#F97316" stroke-width="3" />
-      <circle cx="610" cy="280" r="16" fill="#C2410C" />
-      <text x="610" y="286" fill="#FFFFFF" font-size="16" font-weight="700" text-anchor="middle">8</text>
+      <circle cx="604" cy="272" r="14" fill="#C2410C" />
+      <text x="604" y="277" fill="#FFFFFF" font-size="14" font-weight="700" text-anchor="middle">8</text>
       <text x="700" y="291" fill="#0F172A" font-size="18" font-weight="700" text-anchor="middle">
         <tspan x="700" dy="0">Search / Answer</tspan>
         <tspan x="700" dy="24">Credit</tspan>
@@ -108,8 +108,8 @@
 
     <g>
       <rect x="316" y="252" width="236" height="112" rx="8" fill="#F8FAFC" stroke="#8B5CF6" stroke-width="3" />
-      <circle cx="344" cy="280" r="16" fill="#6D28D9" />
-      <text x="344" y="286" fill="#FFFFFF" font-size="16" font-weight="700" text-anchor="middle">9</text>
+      <circle cx="338" cy="272" r="14" fill="#6D28D9" />
+      <text x="338" y="277" fill="#FFFFFF" font-size="14" font-weight="700" text-anchor="middle">9</text>
       <text x="434" y="303" fill="#0F172A" font-size="19" font-weight="700" text-anchor="middle">
         <tspan x="434" dy="0">Turn-Level Policy</tspan>
         <tspan x="434" dy="25">Optimization</tspan>
@@ -118,8 +118,8 @@
 
     <g>
       <rect x="50" y="252" width="236" height="112" rx="8" fill="#F8FAFC" stroke="#22C55E" stroke-width="3" />
-      <circle cx="78" cy="280" r="16" fill="#15803D" />
-      <text x="78" y="286" fill="#FFFFFF" font-size="16" font-weight="700" text-anchor="middle">10</text>
+      <circle cx="72" cy="272" r="14" fill="#15803D" />
+      <text x="72" y="277" fill="#FFFFFF" font-size="14" font-weight="700" text-anchor="middle">10</text>
       <text x="168" y="303" fill="#0F172A" font-size="19" font-weight="700" text-anchor="middle">
         <tspan x="168" dy="0">Frozen-Reference</tspan>
         <tspan x="168" dy="25">Regularization</tspan>
