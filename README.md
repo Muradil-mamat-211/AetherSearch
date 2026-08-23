@@ -206,7 +206,7 @@ O_{p,i}-\bar O_p
 }
 ```
 
-This is sample variance with `ddof = 1`, not standard deviation or population
+This is sample variance with $\mathrm{ddof}=1$, not standard deviation or population
 variance. The score is zero when fewer than two eligible outcomes are
 available. Greater within-group dispersion indicates that the current policy
 sometimes performs better and sometimes worse on the same prompt, providing a
@@ -420,7 +420,7 @@ x_i-\mu_{p,t}(x)
 }.
 ```
 
-Normalization uses population standard deviation (`ddof = 0`):
+Normalization uses population standard deviation ($\mathrm{ddof}=0$):
 
 ```math
 Z_{p,t}(x_i)
