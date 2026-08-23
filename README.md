@@ -18,16 +18,6 @@
 
 </div>
 
-## Latest News
-
-- **2026-08:** SFT release metadata and the full AetherSearch RL training code
-  were released. The RL recipe consumes an externally hosted DPO warm-start
-  model.
-- **2026-08:** AetherSearch model weights are available on
-  [Hugging Face](https://huggingface.co/muradil211/AetherSearch).
-- **2026-08:** The public SFT data release is hosted directly on
-  [Hugging Face Datasets](https://huggingface.co/datasets/muradil211/aethersearch_sft).
-
 ## Open Resources
 
 🔗 Models, datasets, and reproducibility inputs are linked directly below.
