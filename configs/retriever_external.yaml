@@ -11,11 +11,6 @@ retriever:
   dense_index_path: ${AETHERSEARCH_DENSE_INDEX_PATH}
   dense_encoder_path: ${AETHERSEARCH_DENSE_ENCODER_PATH}
   dense_encoder_name: e5
-  dense_query_batch_size: 64
-  bm25_workers: 16
-  request_batch_wait_ms: 5.0
-  request_batch_max_queries: 256
-  timeout_seconds: 180.0
   fusion_alpha: 0.5
   bm25_top_n: 20
   dense_top_n: 20

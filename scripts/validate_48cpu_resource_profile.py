@@ -6,7 +6,13 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from agentic_rl.config import load_config, runtime_section
+from agentic_rl.config import (
+    _load_config_tree,
+    load_config,
+    runtime_owned_section,
+    runtime_section,
+)
+from agentic_rl.runtime.resource_plan import build_runtime_cpu_resource_plan
 from agentic_rl.runtime.verl_config import build_verl_config, effective_rollout_topology
 from agentic_rl.workers.resource_plan import build_resource_plan
 
@@ -61,37 +67,31 @@ def _algorithm_snapshot(config: dict) -> dict:
 
 
 def validate() -> dict:
-    parent = load_config(PARENT)
+    # PARENT is intentionally an abstract experiment layer after hardware and
+    # runtime ownership were split.  Compare its unmaterialized composition to
+    # the profile source, then run the executable profile through load_config.
+    parent = _load_config_tree(PARENT)
+    profile_source = _load_config_tree(PROFILE)
     config = load_config(PROFILE)
-    if _algorithm_snapshot(parent) != _algorithm_snapshot(config):
+    if _algorithm_snapshot(parent) != _algorithm_snapshot(profile_source):
         raise AssertionError("Algorithm or immutable data fields changed")
 
     plan = build_resource_plan(config)
     resolved = build_verl_config(config, require_optimizer=True)
     topology = effective_rollout_topology(resolved)
 
-    ray = runtime_section(config, "ray")
+    ray = runtime_owned_section(config, "ray")
     runtime_rollout = runtime_section(config, "rollout")
     hardware = config["hardware"]
-    static_control_cpu = (
-        2  # PromptSamplerActor
-        + 2  # CandidatePoolActor
-        + 1  # MetricsActor
-        + 1  # CheckpointCommitActor
-        + int(ray["outcome_worker_count"])
-        + 2 * int(ray["exact_ig_task_builder_count"])
+    cpu_plan = build_runtime_cpu_resource_plan(
+        hardware,
+        ray,
+        learner_world_size=int(hardware["rl_world_size"]),
+        formal_schedule=config["formal_schedule"],
     )
-    owned_runtime_cpu_estimate = (
-        int(hardware["cpu_reserved_for_os"])
-        + int(ray["retriever_pool_cpus"])
-        + int(hardware["rl_world_size"])
-        * int(ray["rl_engine_cpus_per_gpu"])
-        + static_control_cpu
-        + int(ray["agent_loop_worker_count"])
-    )
-    if owned_runtime_cpu_estimate > int(hardware["expected_cpu_cores"]):
+    if cpu_plan.total_cpus > int(hardware["expected_cpu_cores"]):
         raise AssertionError(
-            "Conservative runtime CPU estimate exceeds expected CPU cores"
+            "Runtime CPU resource plan exceeds expected CPU cores"
         )
 
     result = {
@@ -102,16 +102,10 @@ def validate() -> dict:
         "resource_plan": plan.as_dict(),
         "cpu": {
             "expected_cpu_cores": int(hardware["expected_cpu_cores"]),
-            "declared_budget": (
-                int(hardware["cpu_reserved_for_os"])
-                + int(ray["retriever_pool_cpus"])
-                + int(hardware["rl_world_size"])
-                * int(ray["rl_engine_cpus_per_gpu"])
-                + int(ray["controller_cpu_workers"])
-            ),
-            "static_control_cpu": static_control_cpu,
+            "declared_budget": cpu_plan.total_cpus,
+            "control_actor_plan": cpu_plan.control_actors.as_dict(),
             "agent_loop_worker_count": int(ray["agent_loop_worker_count"]),
-            "conservative_owned_runtime_estimate": owned_runtime_cpu_estimate,
+            "runtime_required_cpus": cpu_plan.total_cpus,
         },
         "gpu": {
             "world_size": int(hardware["rl_world_size"]),

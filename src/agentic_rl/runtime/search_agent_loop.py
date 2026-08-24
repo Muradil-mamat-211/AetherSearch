@@ -142,11 +142,25 @@ class SearchExactIGAgentLoop(AgentLoopBase):
         cls.role_localized_gate_enabled = bool(
             kwargs.get("role_localized_gate_enabled", False)
         )
+        rollout = config.actor_rollout_ref.rollout
         cls.retriever = AsyncHybridRetrieverClient(
-            str(kwargs["retriever_url"]),
-            timeout_seconds=float(kwargs["retriever_request_timeout_seconds"]),
-            maximum_concurrency=int(kwargs["retriever_max_concurrency"]),
-            batch_wait_ms=float(kwargs["retriever_batch_window_ms"]),
+            str(rollout.project_retriever_service_url),
+            timeout_seconds=float(
+                rollout.project_retriever_client_request_timeout_seconds
+            ),
+            default_top_k=int(rollout.project_retriever_top_k),
+            maximum_concurrency=int(
+                rollout.project_retriever_client_max_concurrency
+            ),
+            maximum_batch_queries=int(
+                rollout.project_retriever_client_max_batch_queries
+            ),
+            batch_wait_ms=float(
+                rollout.project_retriever_client_batch_wait_ms
+            ),
+            network_retries=int(
+                rollout.project_retriever_client_network_retries
+            ),
         )
 
     async def _initial_prompt_ids(self, messages: Sequence[dict[str, str]]) -> list[int]:

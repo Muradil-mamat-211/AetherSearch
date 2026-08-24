@@ -31,12 +31,14 @@ test -f "${CONFIG}"
 mapfile -d '' -t RUNTIME_VALUES < <(
   "${RL_PYTHON}" - "${CONFIG}" <<'PY'
 import sys
-from agentic_rl.config import load_config, runtime_section
+from agentic_rl.config import load_config, runtime_owned_section
+from agentic_rl.runtime.environment import retriever_runtime_options
 from agentic_rl.topology import TopologyPlan
 
 config = load_config(sys.argv[1])
 plan = TopologyPlan.from_config(config)
-ray = runtime_section(config, "ray")
+ray = runtime_owned_section(config, "ray")
+retriever_runtime = retriever_runtime_options(config)
 values = (
     config["paths"]["rl_python"],
     "" if plan.retriever_physical_gpu is None else plan.retriever_cuda_visible_devices,
@@ -46,12 +48,13 @@ values = (
     plan.learner_world_size,
     ray["memory_monitor_refresh_ms"],
     ray["memory_usage_threshold"],
+    retriever_runtime["health_timeout_seconds"],
 )
 for value in values:
     print(value, end="\0")
 PY
 )
-if [[ "${#RUNTIME_VALUES[@]}" -ne 8 ]]; then
+if [[ "${#RUNTIME_VALUES[@]}" -ne 9 ]]; then
   printf 'Failed to resolve the runtime configuration.\n' >&2
   exit 1
 fi
@@ -63,6 +66,7 @@ RETRIEVER_URL="${RUNTIME_VALUES[4]}"
 RL_WORLD_SIZE="${RUNTIME_VALUES[5]}"
 RAY_MEMORY_REFRESH_MS="${RUNTIME_VALUES[6]}"
 RAY_MEMORY_THRESHOLD="${RUNTIME_VALUES[7]}"
+RETRIEVER_HEALTH_TIMEOUT_SECONDS="${RUNTIME_VALUES[8]}"
 
 mapfile -d '' -t RUNTIME_ENV_ASSIGNMENTS < <(
   "${RL_PYTHON}" - "${CONFIG}" <<'PY'
@@ -141,8 +145,8 @@ printf '%s\n' "${RETRIEVER_PID}" >"${PID_DIR}/retriever.pid"
 
 for _ in $(seq 1 240); do
   if "${RL_PYTHON}" -c \
-    'import sys; from agentic_rl.retriever.health import query_health; query_health(sys.argv[1])' \
-    "${RETRIEVER_URL}" \
+    'import sys; from agentic_rl.retriever.health import query_health; query_health(sys.argv[1], timeout_seconds=float(sys.argv[2]))' \
+    "${RETRIEVER_URL}" "${RETRIEVER_HEALTH_TIMEOUT_SECONDS}" \
     >/dev/null 2>&1; then
     break
   fi
@@ -153,8 +157,8 @@ for _ in $(seq 1 240); do
   sleep 2
 done
 "${RL_PYTHON}" -c \
-  'import sys; from agentic_rl.retriever.health import query_health; query_health(sys.argv[1])' \
-  "${RETRIEVER_URL}" \
+  'import sys; from agentic_rl.retriever.health import query_health; query_health(sys.argv[1], timeout_seconds=float(sys.argv[2]))' \
+  "${RETRIEVER_URL}" "${RETRIEVER_HEALTH_TIMEOUT_SECONDS}" \
   >/dev/null
 
 if [[ "${STAGE}" == "PILOT20" || "${STAGE}" == "FORMAL" ]]; then

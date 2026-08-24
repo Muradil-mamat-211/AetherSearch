@@ -29,7 +29,7 @@ class RetrieverHealth:
             raise RuntimeError("Retriever corpus and dense index row counts differ")
 
 
-def query_health(service_url: str, timeout_seconds: float = 30.0) -> RetrieverHealth:
+def query_health(service_url: str, *, timeout_seconds: float) -> RetrieverHealth:
     with urllib.request.urlopen(
         service_url.rstrip("/") + "/health",
         timeout=timeout_seconds,

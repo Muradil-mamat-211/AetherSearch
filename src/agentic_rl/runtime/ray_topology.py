@@ -14,10 +14,11 @@ from agentic_rl.workers.ray_actors import (
     PromptSamplerActor,
     ray_remote_class,
 )
-from agentic_rl.config import runtime_section
+from agentic_rl.config import runtime_owned_section
 from agentic_rl.topology import TopologyPlan
 
 from .environment import runtime_environment
+from .resource_plan import build_control_actor_resource_plan
 from .resource_guard import validate_runtime_resource_budget
 from .verl_config import build_verl_config, effective_rollout_topology
 
@@ -98,6 +99,11 @@ class RuntimeRayTopology:
     def __init__(self, project_config: Mapping[str, Any]) -> None:
         self.project_config = project_config
         self.topology = TopologyPlan.from_config(project_config)
+        self.ray_config = runtime_owned_section(project_config, "ray")
+        self.control_actor_resource_plan = build_control_actor_resource_plan(
+            self.ray_config,
+            project_config.get("formal_schedule", {}),
+        )
         self.verl_config: Any | None = None
         self.resource_pool: Any | None = None
         self.worker_group: Any | None = None
@@ -123,7 +129,7 @@ class RuntimeRayTopology:
         resource_budget = validate_runtime_resource_budget(self.project_config)
         import ray
 
-        ray_config = runtime_section(self.project_config, "ray")
+        ray_config = self.ray_config
         os.environ.setdefault(
             "RAY_memory_monitor_refresh_ms",
             str(ray_config["memory_monitor_refresh_ms"]),
@@ -192,6 +198,9 @@ class RuntimeRayTopology:
             "cluster_resources": dict(resources),
             "available_resources": dict(ray.available_resources()),
             "runtime_resource_budget": resource_budget,
+            "control_actor_resource_plan": (
+                self.control_actor_resource_plan.as_dict()
+            ),
         }
 
     def instantiate_control_actors(self) -> dict[str, Any]:
@@ -203,29 +212,30 @@ class RuntimeRayTopology:
         runtime_root = Path(str(paths["runtime_root"])).resolve()
         metric_root = runtime_root / "metrics"
         metric_root.mkdir(parents=True, exist_ok=True)
+        resources = self.control_actor_resource_plan
         sampler_class = ray_remote_class(
             PromptSamplerActor,
-            num_cpus=2,
+            num_cpus=resources.prompt_sampler_cpus,
             num_gpus=0,
         )
         candidate_class = ray_remote_class(
             CandidatePoolActor,
-            num_cpus=2,
+            num_cpus=resources.candidate_pool_cpus,
             num_gpus=0,
         )
         metrics_class = ray_remote_class(
             MetricsActor,
-            num_cpus=1,
+            num_cpus=resources.metrics_cpus,
             num_gpus=0,
         )
         outcome_class = ray_remote_class(
             OutcomeWorkerActor,
-            num_cpus=1,
+            num_cpus=resources.outcome_worker_cpus,
             num_gpus=0,
         )
         checkpoint_class = ray_remote_class(
             CheckpointCommitActor,
-            num_cpus=1,
+            num_cpus=resources.checkpoint_commit_cpus,
             num_gpus=0,
         )
         self.control_actors = {
@@ -268,10 +278,9 @@ class RuntimeRayTopology:
                 str(runtime_root / "checkpoint_events.jsonl")
             ),
         }
-        ray_config = runtime_section(self.project_config, "ray")
         self.control_actors["outcome_workers"] = [
             outcome_class.remote()
-            for _ in range(int(ray_config["outcome_worker_count"]))
+            for _ in range(resources.outcome_worker_count)
         ]
         maximum_extended = self.project_config["formal_schedule"].get(
             "maximum_extended_sequence_length"
@@ -282,7 +291,7 @@ class RuntimeRayTopology:
         if maximum_extended is not None and maximum_position is not None:
             task_builder_class = ray_remote_class(
                 ExactIGTaskBuilderActor,
-                num_cpus=2,
+                num_cpus=resources.exact_ig_task_builder_cpus,
                 num_gpus=0,
             )
             self.control_actors["exact_ig_task_builders"] = [
@@ -291,11 +300,7 @@ class RuntimeRayTopology:
                     maximum_extended_sequence_length=int(maximum_extended),
                     maximum_position_id_exclusive=int(maximum_position),
                 )
-                for _ in range(
-                    int(
-                        ray_config["exact_ig_task_builder_count"]
-                    )
-                )
+                for _ in range(resources.exact_ig_task_builder_count)
             ]
         return self.control_actors
 
@@ -315,9 +320,7 @@ class RuntimeRayTopology:
         pool_wrapper = FixedBundleRayResourcePool(
             topology=self.topology,
             cpus_per_rank=int(
-                runtime_section(self.project_config, "ray")[
-                    "rl_engine_cpus_per_gpu"
-                ]
+                self.ray_config["rl_engine_cpus_per_gpu"]
             ),
             placement_strategy=self.topology.placement_strategy,
             name="strict_agentic_rl_",

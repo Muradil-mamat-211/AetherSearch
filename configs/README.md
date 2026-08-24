@@ -28,6 +28,14 @@ explicit hardware/runtime profile. The formally qualified pair is
 `configs/runtime/verl_fsdp2_vllm_4x48_reference.yaml`; the former contains no
 Ray/vLLM/retriever tuning policy.
 
+The active runtime profile also owns every project-created Ray actor CPU
+reservation. `ControlActorResourcePlan` is the shared interpretation used by
+configuration validation and actor construction; the old
+`controller_cpu_workers` value is only a derived resolved-config compatibility
+field. Retriever batching, request waiting, FAISS options, and thread policy
+likewise come from `runtime.retriever` / `runtime.environment`, not the
+behavioral retriever layer or shell launchers.
+
 ## Topology Resolution
 
 The hardware profile supplies one topology input. `TopologyPlan` then derives:
@@ -69,6 +77,11 @@ the recipe rather than invoke those layers directly. Runtime values are nested
 under `runtime.*` in the runtime profile and are projected into legacy
 top-level fields only for compatibility with existing adapters and snapshots;
 new runtime code reads the nested owner.
+The legacy fallback is disabled unless a historical composition explicitly
+sets `compatibility.allow_legacy_runtime_fields: true`; active profiles fail
+closed when an operational runtime field is absent. Historical compatibility
+files may therefore retain combined hardware/runtime values without becoming
+portable entrypoints.
 
 ## Repository classification
 

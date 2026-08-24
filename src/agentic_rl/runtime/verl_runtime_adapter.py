@@ -57,6 +57,7 @@ from agentic_rl.advantage.mica_ig import (
     ANSWER_ONLY_RAGEN2_MICA_IG_V1_SINGLETON_OUTCOME_MODE,
 )
 from agentic_rl.retriever.client import AsyncHybridRetrieverClient
+from agentic_rl.runtime.environment import retriever_runtime_options
 from agentic_rl.rollout.search_role_provenance import (
     ROLE_LOCALIZED_BRANCH_N_BUDGET,
     ROLE_LOCALIZED_BRANCH_N_INVALID,
@@ -930,13 +931,16 @@ class VerlAttemptRuntimeAdapter:
 
     async def _retriever_health_async(self) -> dict[str, Any]:
         retriever = self.config["retriever"]
+        retriever_runtime = retriever_runtime_options(self.config)
         async with AsyncHybridRetrieverClient(
             str(retriever["service_url"]),
-            timeout_seconds=float(retriever["timeout_seconds"]),
+            timeout_seconds=float(
+                retriever_runtime["request_wait_timeout_seconds"]
+            ),
             default_top_k=int(retriever["top_k"]),
             maximum_concurrency=1,
             maximum_batch_queries=1,
-            batch_wait_ms=float(retriever["request_batch_wait_ms"]),
+            batch_wait_ms=float(retriever_runtime["request_batch_wait_ms"]),
             network_retries=0,
         ) as client:
             return await client.health()
@@ -946,17 +950,20 @@ class VerlAttemptRuntimeAdapter:
 
     async def _retriever_stage_a_canary_async(self) -> dict[str, Any]:
         retriever = self.config["retriever"]
+        retriever_runtime = retriever_runtime_options(self.config)
         queries = (
             "Who wrote Pride and Prejudice?",
             "What is the capital of France?",
         )
         async with AsyncHybridRetrieverClient(
             str(retriever["service_url"]),
-            timeout_seconds=float(retriever["timeout_seconds"]),
+            timeout_seconds=float(
+                retriever_runtime["request_wait_timeout_seconds"]
+            ),
             default_top_k=int(retriever["top_k"]),
             maximum_concurrency=len(queries),
             maximum_batch_queries=len(queries),
-            batch_wait_ms=float(retriever["request_batch_wait_ms"]),
+            batch_wait_ms=float(retriever_runtime["request_batch_wait_ms"]),
             network_retries=0,
         ) as client:
             before = await client.health()

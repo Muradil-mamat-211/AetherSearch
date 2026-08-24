@@ -31,6 +31,11 @@ from agentic_rl.exact_ig.target_schema import (
     TARGET_TOKENIZATION_POLICY,
 )
 from agentic_rl.topology import TopologyError, TopologyPlan, materialize_topology
+from agentic_rl.runtime.resource_plan import (
+    RuntimeResourcePlanError,
+    build_control_actor_resource_plan,
+    build_runtime_cpu_resource_plan,
+)
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -40,6 +45,22 @@ _ENV_REFERENCE = re.compile(r"\$\{([A-Za-z_][A-Za-z0-9_]*)\}")
 
 class ConfigError(ValueError):
     pass
+
+
+RAY_RUNTIME_OWNED_KEYS = (
+    "retriever_pool_cpus",
+    "rl_engine_cpus_per_gpu",
+    "vllm_http_server_cpus",
+    "control_actor_cpus",
+    "outcome_worker_count",
+    "exact_ig_task_builder_count",
+    "agent_loop_worker_count",
+    "memory_monitor_refresh_ms",
+    "memory_usage_threshold",
+    "object_store_gb",
+    "memory_safety_reserve_gb",
+    "object_spilling_directory",
+)
 
 
 def _merge(base: dict[str, Any], overlay: Mapping[str, Any]) -> dict[str, Any]:
@@ -103,6 +124,61 @@ def runtime_section(config: Mapping[str, Any], name: str) -> dict[str, Any]:
     return result
 
 
+def allow_legacy_runtime_fields(config: Mapping[str, Any]) -> bool:
+    """Return whether this composition explicitly opts into the old layout."""
+
+    compatibility = config.get("compatibility", {})
+    return bool(
+        isinstance(compatibility, Mapping)
+        and compatibility.get("allow_legacy_runtime_fields") is True
+    )
+
+
+def runtime_owned_section(config: Mapping[str, Any], name: str) -> dict[str, Any]:
+    """Resolve an operational runtime section, failing closed for new profiles.
+
+    Active/public compositions must declare runtime policy below ``runtime``.
+    The historical aggregate layout remains readable only when the config
+    explicitly opts into compatibility mode.
+    """
+
+    runtime = config.get("runtime", {})
+    owned = runtime.get(name) if isinstance(runtime, Mapping) else None
+    if isinstance(owned, Mapping) and owned:
+        if name == "ray":
+            missing = [key for key in RAY_RUNTIME_OWNED_KEYS if key not in owned]
+            if missing:
+                raise ConfigError(
+                    "runtime.ray is missing runtime-owned fields: "
+                    + ", ".join(missing)
+                )
+        return runtime_section(config, name)
+    if not allow_legacy_runtime_fields(config):
+        raise ConfigError(
+            f"runtime.{name} must be configured; legacy runtime fallback is "
+            "disabled for this profile"
+        )
+
+    legacy = config.get(name, {})
+    result = copy.deepcopy(dict(legacy)) if isinstance(legacy, Mapping) else {}
+    if name == "ray":
+        hardware = config.get("hardware", {})
+        if isinstance(hardware, Mapping):
+            aliases = {
+                "object_store_gb": "ray_object_store_gb",
+                "memory_safety_reserve_gb": "memory_safety_reserve_gb",
+            }
+            for runtime_key, hardware_key in aliases.items():
+                if runtime_key not in result and hardware_key in hardware:
+                    result[runtime_key] = copy.deepcopy(hardware[hardware_key])
+    if not result:
+        raise ConfigError(
+            f"Legacy compatibility was enabled, but no {name!r} runtime "
+            "section was provided"
+        )
+    return result
+
+
 def _materialize_runtime_compatibility(config: dict[str, Any]) -> None:
     """Project runtime-profile values into legacy adapter fields.
 
@@ -126,6 +202,24 @@ def _materialize_runtime_compatibility(config: dict[str, Any]) -> None:
                 config[section] = legacy
             legacy.update(copy.deepcopy(dict(owned)))
 
+    ray_runtime = runtime.get("ray", {})
+    if isinstance(ray_runtime, Mapping) and ray_runtime:
+        try:
+            control_plan = build_control_actor_resource_plan(
+                ray_runtime,
+                config.get("formal_schedule", {}),
+            )
+        except RuntimeResourcePlanError as exc:
+            raise ConfigError(str(exc)) from exc
+        derived_controller_cpus = (
+            control_plan.controller_cpu_workers_compatibility
+        )
+        config.setdefault("ray", {})["controller_cpu_workers"] = (
+            int(derived_controller_cpus)
+            if float(derived_controller_cpus).is_integer()
+            else float(derived_controller_cpus)
+        )
+
     learner = runtime.get("learner", {})
     if isinstance(learner, Mapping) and learner.get("micro_batch_size") is not None:
         micro_batch = copy.deepcopy(learner["micro_batch_size"])
@@ -144,10 +238,16 @@ def _materialize_runtime_compatibility(config: dict[str, Any]) -> None:
                 "dense_index_type": "dense_index_type",
                 "require_faiss_gpu": "require_faiss_gpu",
                 "faiss_device_inside_retriever_namespace": "faiss_gpu_device",
+                "dense_query_batch_size": "dense_query_batch_size",
+                "bm25_workers": "bm25_workers",
+                "request_batch_wait_ms": "request_batch_wait_ms",
+                "request_batch_max_queries": "request_batch_max_queries",
+                "timeout_seconds": "request_wait_timeout_seconds",
             }
             for legacy_key, runtime_key in aliases.items():
                 if runtime_key in retriever_runtime:
                     retriever[legacy_key] = copy.deepcopy(retriever_runtime[runtime_key])
+
 
 def _load_config_tree(config_path: Path, stack: tuple[Path, ...] = ()) -> dict[str, Any]:
     config_path = config_path.resolve()
@@ -274,7 +374,7 @@ def validate_resources(config: Mapping[str, Any], plan: TopologyPlan) -> None:
     """Validate resource arithmetic without reference-machine assumptions."""
 
     hardware = config["hardware"]
-    ray_config = runtime_section(config, "ray")
+    ray_config = runtime_owned_section(config, "ray")
     expected_cpu = int(hardware["expected_cpu_cores"])
     if expected_cpu < 1:
         raise ConfigError("hardware.expected_cpu_cores must be positive")
@@ -286,14 +386,10 @@ def validate_resources(config: Mapping[str, Any], plan: TopologyPlan) -> None:
         raise ConfigError("hardware.gpu_memory_gb must be positive")
     if float(hardware["cpu_reserved_for_os"]) <= 0:
         raise ConfigError("hardware.cpu_reserved_for_os must be positive")
-    object_store_gb = ray_config.get(
-        "object_store_gb", hardware.get("ray_object_store_gb")
-    )
+    object_store_gb = ray_config.get("object_store_gb")
     if object_store_gb is None:
         raise ConfigError("runtime.ray.object_store_gb must be configured")
-    reserve_gb = ray_config.get(
-        "memory_safety_reserve_gb", hardware.get("memory_safety_reserve_gb")
-    )
+    reserve_gb = ray_config.get("memory_safety_reserve_gb")
     if reserve_gb is None:
         raise ConfigError("runtime.ray.memory_safety_reserve_gb must be configured")
     for key, value in (
@@ -310,32 +406,33 @@ def validate_resources(config: Mapping[str, Any], plan: TopologyPlan) -> None:
         raise ConfigError(
             "hardware Ray object store plus memory reserve must fit in host RAM"
         )
-    for key in (
-        "retriever_pool_cpus",
-        "rl_engine_cpus_per_gpu",
-        "controller_cpu_workers",
-        "outcome_worker_count",
-        "exact_ig_task_builder_count",
-    ):
-        if int(ray_config.get(key, 0)) < 1:
-            raise ConfigError(f"ray.{key} must be positive")
-    agent_loop_worker_count = ray_config.get("agent_loop_worker_count")
-    if agent_loop_worker_count is None:
-        raise ConfigError("runtime.ray.agent_loop_worker_count must be configured")
-    if int(agent_loop_worker_count) < 1:
-        raise ConfigError("runtime.ray.agent_loop_worker_count must be positive")
-    cpu_budget = (
-        int(hardware["cpu_reserved_for_os"])
-        + int(ray_config["retriever_pool_cpus"])
-        + plan.learner_world_size * int(ray_config["rl_engine_cpus_per_gpu"])
-        + int(ray_config["controller_cpu_workers"])
-    )
+    try:
+        cpu_plan = build_runtime_cpu_resource_plan(
+            hardware,
+            ray_config,
+            learner_world_size=plan.learner_world_size,
+            formal_schedule=config.get("formal_schedule", {}),
+        )
+    except RuntimeResourcePlanError as exc:
+        raise ConfigError(str(exc)) from exc
+
+    if allow_legacy_runtime_fields(config) and "controller_cpu_workers" in ray_config:
+        # Historical snapshots retain their original aggregate budget.  New
+        # profiles never use this branch; their exact actor plan is canonical.
+        cpu_budget = (
+            float(hardware["cpu_reserved_for_os"])
+            + float(ray_config["retriever_pool_cpus"])
+            + plan.learner_world_size * float(ray_config["rl_engine_cpus_per_gpu"])
+            + float(ray_config["controller_cpu_workers"])
+        )
+    else:
+        cpu_budget = cpu_plan.total_cpus
     if cpu_budget > expected_cpu:
         raise ConfigError(
             "hardware/ray CPU budget exceeds expected CPU cores: "
             f"required={cpu_budget} available={expected_cpu}"
         )
-    bundle_cpu = plan.learner_world_size * int(ray_config["rl_engine_cpus_per_gpu"])
+    bundle_cpu = cpu_plan.learner_engine_cpus
     if bundle_cpu > expected_cpu:
         raise ConfigError(
             "Ray FSDP bundles exceed configured CPU resources: "
@@ -352,6 +449,11 @@ def validate_backend_compatibility(
         raise ConfigError(
             "parsed topology capability exists, but current AetherSearch "
             "veRL runtime supports local Ray only"
+        )
+    if plan.nnodes != 1:
+        raise ConfigError(
+            "The current AetherSearch veRL runtime supports nnodes=1 only; "
+            "multi-node remains unsupported by design"
         )
     learner = config["learner"]
     if str(learner.get("strategy")) != "fsdp2":

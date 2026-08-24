@@ -419,13 +419,12 @@ class CappedVLLMHttpServerBase(vLLMHttpServerBase):
         }
 
 
-CappedVLLMHttpServer = ray.remote(num_cpus=1)(CappedVLLMHttpServerBase)
-
-
 class CappedVLLMReplica(vLLMReplica):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
-        self.server_class = CappedVLLMHttpServer
+        self.server_class = ray.remote(
+            num_cpus=float(self.config.project_http_server_num_cpus)
+        )(CappedVLLMHttpServerBase)
 
 
 class StrictAgentLoopManager(AgentLoopManager):

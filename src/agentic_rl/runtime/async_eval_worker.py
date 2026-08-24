@@ -22,6 +22,7 @@ from agentic_rl.retriever.client import HybridRetrieverClient
 from agentic_rl.retriever.health import query_health
 from agentic_rl.topology import TopologyPlan
 
+from .environment import retriever_runtime_options
 from .fixed_eval import create_or_validate_eval_manifest_from_config, load_eval_rows
 from .formal_state import (
     append_jsonl,
@@ -300,6 +301,7 @@ def _run_task(
     if metadata["actor_checksum"] != str(task["actor_checksum"]):
         raise RuntimeError("Eval queue/model Actor checksums differ")
     evaluation = runtime_section(config, "evaluation")
+    retriever_runtime = retriever_runtime_options(config)
     torch.cuda.set_per_process_memory_fraction(
         float(evaluation["max_memory_fraction"]),
         device=0,
@@ -322,10 +324,13 @@ def _run_task(
     if manifest["manifest_sha256"] != str(evaluation["expected_manifest_sha256"]):
         raise RuntimeError("Fixed Eval manifest SHA-256 differs from Pilot")
     rows = load_eval_rows(manifest=manifest)
+    retriever_runtime = retriever_runtime_options(config)
     retriever = HybridRetrieverClient(
         str(config["retriever"]["service_url"]),
-        timeout_seconds=float(config["retriever"]["timeout_seconds"]),
-        default_top_k=int(config["retriever"].get("top_k", 3)),
+        timeout_seconds=float(
+            retriever_runtime["request_wait_timeout_seconds"]
+        ),
+        default_top_k=int(config["retriever"]["top_k"]),
     )
 
     update = int(task["update"])
@@ -460,7 +465,10 @@ def run_worker(config_path: Path, run_dir: Path) -> int:
 
         update = int(task["update"])
         try:
-            query_health(str(config["retriever"]["service_url"]))
+            query_health(
+                str(config["retriever"]["service_url"]),
+                timeout_seconds=float(retriever_runtime["health_timeout_seconds"]),
+            )
             gpu = _gpu_snapshot(int(config["_eval_physical_gpu"]))
             if int(gpu["memory_free_mib"]) < minimum_free_mib:
                 reason = (

@@ -1,3 +1,8 @@
+compatibility:
+  # Historical combined hardware/runtime snapshot. Public recipes must not
+  # enable this fallback; they compose configs/hardware + configs/runtime.
+  allow_legacy_runtime_fields: true
+
 hardware:
   total_physical_gpus: 5
   gpu_memory_gb: 48
@@ -31,6 +36,14 @@ ray:
   retriever_pool_cpus: 20
   rl_engine_cpus_per_gpu: 6
   controller_cpu_workers: 71
+  vllm_http_server_cpus: 1
+  control_actor_cpus:
+    prompt_sampler: 2
+    candidate_pool: 2
+    metrics: 1
+    outcome_worker: 1
+    checkpoint_commit: 1
+    exact_ig_task_builder: 2
   outcome_worker_count: 24
   exact_ig_task_builder_count: 20
   agent_loop_worker_count: 32
@@ -49,3 +62,30 @@ runtime_smoke_schedule:
 evaluation:
   minimum_free_memory_gib: 10
   max_memory_fraction: 0.24
+
+# Runtime compatibility values preserve the operational defaults that were
+# historically supplied by the launcher. This file is not a public profile.
+runtime:
+  retriever:
+    query_max_length: 256
+    dense_query_batch_size: 64
+    bm25_workers: 16
+    request_batch_wait_ms: 5.0
+    request_batch_max_queries: 256
+    request_wait_timeout_seconds: 180.0
+    client_batch_wait_ms: 5.0
+    client_max_concurrency: 128
+    client_max_batch_queries: 256
+    client_request_timeout_seconds: 30.0
+    client_network_retries: 2
+    health_timeout_seconds: 30.0
+    retrieval_use_fp16: true
+    faiss_gpu: true
+    require_faiss_gpu: true
+    faiss_gpu_stream_flat: true
+    faiss_gpu_device: 0
+    faiss_gpu_use_fp16: true
+    faiss_temp_memory_mb: 256
+    faiss_add_batch_size: 0
+    dense_device: cuda
+    dense_index_type: GpuIndexFlatIP

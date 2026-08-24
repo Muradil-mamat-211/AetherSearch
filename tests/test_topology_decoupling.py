@@ -197,22 +197,54 @@ def _non_reference_multi_gpu_config() -> dict:
             "total_physical_gpus": 8,
             "expected_cpu_cores": 96,
             "expected_host_ram_gb": 700,
-            "ray_object_store_gb": 96,
-            "memory_safety_reserve_gb": 64,
         }
     )
-    config["ray"].update(
-        {
-            "retriever_pool_cpus": 8,
-            "rl_engine_cpus_per_gpu": 4,
-            "controller_cpu_workers": 8,
-            "outcome_worker_count": 4,
-            "exact_ig_task_builder_count": 2,
-            "agent_loop_worker_count": 16,
-            "placement_strategy": "SPREAD",
-            "cluster_mode": "local",
-        }
-    )
+    config["runtime"]["ray"] = {
+        "object_store_gb": 96,
+        "memory_safety_reserve_gb": 64,
+        "retriever_pool_cpus": 8,
+        "rl_engine_cpus_per_gpu": 4,
+        "vllm_http_server_cpus": 1,
+        "control_actor_cpus": {
+            "prompt_sampler": 2,
+            "candidate_pool": 2,
+            "metrics": 1,
+            "outcome_worker": 1,
+            "checkpoint_commit": 1,
+            "exact_ig_task_builder": 2,
+        },
+        "outcome_worker_count": 4,
+        "exact_ig_task_builder_count": 2,
+        "agent_loop_worker_count": 16,
+        "memory_monitor_refresh_ms": 1000,
+        "memory_usage_threshold": 0.8,
+        "object_spilling_directory": "runtime/ray_spill",
+        "placement_strategy": "SPREAD",
+        "cluster_mode": "local",
+    }
+    config["runtime"]["retriever"] = {
+        "query_max_length": 256,
+        "dense_query_batch_size": 64,
+        "bm25_workers": 16,
+        "request_batch_wait_ms": 5.0,
+        "request_batch_max_queries": 256,
+        "request_wait_timeout_seconds": 180.0,
+        "client_batch_wait_ms": 5.0,
+        "client_max_concurrency": 128,
+        "client_max_batch_queries": 256,
+        "client_request_timeout_seconds": 30.0,
+        "client_network_retries": 2,
+        "health_timeout_seconds": 30.0,
+        "retrieval_use_fp16": True,
+        "faiss_gpu": True,
+        "require_faiss_gpu": True,
+        "faiss_gpu_stream_flat": True,
+        "faiss_gpu_device": 0,
+        "faiss_gpu_use_fp16": True,
+        "faiss_temp_memory_mb": 256,
+        "faiss_add_batch_size": 0,
+        "dense_device": "cuda",
+    }
     config["topology"] = {
         "cluster_mode": "local",
         "nnodes": 1,
@@ -408,7 +440,7 @@ def test_backend_and_resource_negative_paths_are_explicit() -> None:
 
     bad_bundles = _non_reference_multi_gpu_config()
     bad_bundles["hardware"]["gpu_memory_gb"] = 1
-    bad_bundles["ray"]["rl_engine_cpus_per_gpu"] = 100
+    bad_bundles["runtime"]["ray"]["rl_engine_cpus_per_gpu"] = 100
     bad_bundle_plan = TopologyPlan.from_config(bad_bundles)
     with pytest.raises(ConfigError, match="CPU budget"):
         validate_resources(bad_bundles, bad_bundle_plan)

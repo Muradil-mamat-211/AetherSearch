@@ -57,6 +57,17 @@ def runtime_retriever_environment(config: Mapping[str, Any]) -> dict[str, str]:
 
 RETRIEVER_RUNTIME_OPTION_KEYS = (
     "query_max_length",
+    "dense_query_batch_size",
+    "bm25_workers",
+    "request_batch_wait_ms",
+    "request_batch_max_queries",
+    "request_wait_timeout_seconds",
+    "client_batch_wait_ms",
+    "client_max_concurrency",
+    "client_max_batch_queries",
+    "client_request_timeout_seconds",
+    "client_network_retries",
+    "health_timeout_seconds",
     "retrieval_use_fp16",
     "faiss_gpu",
     "require_faiss_gpu",

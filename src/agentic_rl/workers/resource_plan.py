@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass
 from typing import Any, Mapping
 
-from agentic_rl.config import runtime_section
+from agentic_rl.config import runtime_owned_section
 from agentic_rl.topology import TopologyPlan
 
 
@@ -28,8 +28,7 @@ class ResourcePlan:
 
 def build_resource_plan(config: Mapping[str, Any]) -> ResourcePlan:
     topology = TopologyPlan.from_config(config)
-    hardware = config["hardware"]
-    ray = runtime_section(config, "ray")
+    ray = runtime_owned_section(config, "ray")
     plan = ResourcePlan(
         retriever_physical_gpu=int(topology.retriever_physical_gpu)
         if topology.retriever_physical_gpu is not None
@@ -41,8 +40,6 @@ def build_resource_plan(config: Mapping[str, Any]) -> ResourcePlan:
         vllm_tensor_parallel_size=topology.rollout_tensor_parallel_size,
         retriever_cuda_visible_devices=topology.retriever_cuda_visible_devices,
         rl_cuda_visible_devices=topology.rl_cuda_visible_devices,
-        ray_object_store_gb=int(ray["object_store_gb"])
-        if "object_store_gb" in ray
-        else int(hardware.get("ray_object_store_gb", 0)),
+        ray_object_store_gb=int(ray["object_store_gb"]),
     )
     return plan

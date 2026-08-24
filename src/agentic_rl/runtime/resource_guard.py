@@ -14,7 +14,13 @@ import subprocess
 from pathlib import Path
 from typing import Any, Mapping
 
-from agentic_rl.config import runtime_section
+from agentic_rl.config import ConfigError, runtime_owned_section
+from agentic_rl.topology import TopologyPlan
+
+from .resource_plan import (
+    RuntimeResourcePlanError,
+    build_runtime_cpu_resource_plan,
+)
 
 BYTES_PER_GIB = 1024**3
 CHECKPOINT_MEMORY_HEADROOM_GIB = 24.0
@@ -131,25 +137,39 @@ def validate_runtime_resource_budget(
 
     snapshot = dict(snapshot or read_runtime_resource_snapshot())
     hardware = config["hardware"]
-    ray_config = runtime_section(config, "ray")
+    try:
+        ray_config = runtime_owned_section(config, "ray")
+    except ConfigError as exc:
+        raise RuntimeError(str(exc)) from exc
     expected_cpu = int(hardware["expected_cpu_cores"])
     expected_ram_gib = float(hardware["expected_host_ram_gb"])
     required_gpu_count = int(hardware.get("total_physical_gpus", 0))
     minimum_gpu_memory_gib = float(hardware.get("gpu_memory_gb", 0))
-    object_store_value = ray_config.get(
-        "object_store_gb", hardware.get("ray_object_store_gb")
-    )
+    object_store_value = ray_config.get("object_store_gb")
     if object_store_value is None:
         raise RuntimeError("runtime.ray.object_store_gb must be configured")
     object_store_gib = float(object_store_value)
-    reserve_value = ray_config.get(
-        "memory_safety_reserve_gb", hardware.get("memory_safety_reserve_gb")
-    )
+    reserve_value = ray_config.get("memory_safety_reserve_gb")
     if reserve_value is None:
         raise RuntimeError(
             "runtime.ray.memory_safety_reserve_gb must be configured"
         )
     reserve_gib = float(reserve_value)
+    try:
+        topology = TopologyPlan.from_config(config)
+        cpu_plan = build_runtime_cpu_resource_plan(
+            hardware,
+            ray_config,
+            learner_world_size=topology.learner_world_size,
+            formal_schedule=config.get("formal_schedule", {}),
+        )
+    except (RuntimeResourcePlanError, ValueError, KeyError) as exc:
+        raise RuntimeError(str(exc)) from exc
+    if cpu_plan.total_cpus > expected_cpu + 1.0e-9:
+        raise RuntimeError(
+            "Configured runtime CPU demand exceeds expected CPU cores: "
+            f"required={cpu_plan.total_cpus:g} available={expected_cpu}"
+        )
     actual_memory = snapshot.get("memory_limit_bytes")
     actual_cpu = snapshot.get("cpu_quota_cores")
 
@@ -208,6 +228,8 @@ def validate_runtime_resource_budget(
         "status": "PASS",
         "configured_expected_host_ram_gib": expected_ram_gib,
         "configured_expected_cpu_cores": expected_cpu,
+        "configured_runtime_required_cpu_cores": cpu_plan.total_cpus,
+        "runtime_cpu_resource_plan": cpu_plan.as_dict(),
         "configured_ray_object_store_gib": object_store_gib,
         "configured_memory_safety_reserve_gib": reserve_gib,
         "cgroup_memory_limit_gib": actual_ram_gib,

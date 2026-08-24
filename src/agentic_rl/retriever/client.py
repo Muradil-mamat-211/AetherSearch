@@ -14,8 +14,8 @@ from .protocol import RetrievalDocument, RetrievalResponse, parse_retrieval_payl
 @dataclass
 class HybridRetrieverClient:
     service_url: str
-    timeout_seconds: float = 180.0
-    default_top_k: int = 3
+    timeout_seconds: float
+    default_top_k: int
 
     def retrieve(
         self,
@@ -76,12 +76,12 @@ class AsyncHybridRetrieverClient:
         self,
         service_url: str,
         *,
-        timeout_seconds: float = 180.0,
-        default_top_k: int = 3,
-        maximum_concurrency: int = 64,
-        maximum_batch_queries: int = 256,
-        batch_wait_ms: float = 5.0,
-        network_retries: int = 2,
+        timeout_seconds: float,
+        default_top_k: int,
+        maximum_concurrency: int,
+        maximum_batch_queries: int,
+        batch_wait_ms: float,
+        network_retries: int,
     ) -> None:
         if maximum_concurrency <= 0 or maximum_batch_queries <= 0:
             raise ValueError("Retriever concurrency and batch size must be positive")

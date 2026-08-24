@@ -56,8 +56,12 @@ def test_async_retriever_batches_concurrent_queries_and_records_metadata() -> No
     async def run() -> None:
         client = AsyncHybridRetrieverClient(
             "http://127.0.0.1:8000",
+            timeout_seconds=30.0,
+            default_top_k=3,
+            maximum_concurrency=8,
             batch_wait_ms=5.0,
             maximum_batch_queries=8,
+            network_retries=2,
         )
         fake = _FakeSession()
         client._session = fake
@@ -78,7 +82,15 @@ def test_async_retriever_batches_concurrent_queries_and_records_metadata() -> No
 
 def test_async_retriever_rejects_empty_query() -> None:
     async def run() -> None:
-        client = AsyncHybridRetrieverClient("http://127.0.0.1:8000")
+        client = AsyncHybridRetrieverClient(
+            "http://127.0.0.1:8000",
+            timeout_seconds=30.0,
+            default_top_k=3,
+            maximum_concurrency=8,
+            maximum_batch_queries=8,
+            batch_wait_ms=5.0,
+            network_retries=2,
+        )
         try:
             await client.retrieve_one(" ", "trajectory", 0)
         except ValueError as exc:

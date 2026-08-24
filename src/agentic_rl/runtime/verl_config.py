@@ -3,8 +3,10 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Mapping
 
-from agentic_rl.config import runtime_section
+from agentic_rl.config import runtime_owned_section, runtime_section
 from agentic_rl.topology import TopologyPlan
+
+from .environment import retriever_runtime_options
 
 
 class RuntimeConfigurationError(RuntimeError):
@@ -81,7 +83,8 @@ def build_verl_config(
     learner = project_config["learner"]
     schedule = project_config["formal_schedule"]
     exact_ig = project_config["exact_ig"]
-    ray_config = runtime_section(project_config, "ray")
+    ray_config = runtime_owned_section(project_config, "ray")
+    retriever_runtime = retriever_runtime_options(project_config)
     runtime_root = Path(str(project_config["paths"]["runtime_root"])).resolve()
 
     with open_dict(config):
@@ -249,6 +252,30 @@ def build_verl_config(
         verl_rollout.load_format = "dummy"
         verl_rollout.calculate_log_probs = True
         verl_rollout.agent.num_workers = int(ray_config["agent_loop_worker_count"])
+        verl_rollout.project_http_server_num_cpus = float(
+            ray_config["vllm_http_server_cpus"]
+        )
+        verl_rollout.project_retriever_service_url = str(
+            project_config["retriever"]["service_url"]
+        )
+        verl_rollout.project_retriever_top_k = int(
+            project_config["retriever"]["top_k"]
+        )
+        verl_rollout.project_retriever_client_batch_wait_ms = float(
+            retriever_runtime["client_batch_wait_ms"]
+        )
+        verl_rollout.project_retriever_client_max_concurrency = int(
+            retriever_runtime["client_max_concurrency"]
+        )
+        verl_rollout.project_retriever_client_max_batch_queries = int(
+            retriever_runtime["client_max_batch_queries"]
+        )
+        verl_rollout.project_retriever_client_request_timeout_seconds = float(
+            retriever_runtime["client_request_timeout_seconds"]
+        )
+        verl_rollout.project_retriever_client_network_retries = int(
+            retriever_runtime["client_network_retries"]
+        )
         verl_rollout.agent.default_agent_loop = "search_exact_ig"
         search_task_mode = str(project_config["advantage"]["search_task_mode"])
         agent_loop_filename = (
