@@ -31,11 +31,12 @@ test -f "${CONFIG}"
 mapfile -d '' -t RUNTIME_VALUES < <(
   "${RL_PYTHON}" - "${CONFIG}" <<'PY'
 import sys
-from agentic_rl.config import load_config
+from agentic_rl.config import load_config, runtime_section
 from agentic_rl.topology import TopologyPlan
 
 config = load_config(sys.argv[1])
 plan = TopologyPlan.from_config(config)
+ray = runtime_section(config, "ray")
 values = (
     config["paths"]["rl_python"],
     "" if plan.retriever_physical_gpu is None else plan.retriever_cuda_visible_devices,
@@ -43,8 +44,8 @@ values = (
     plan.rl_cuda_visible_devices,
     config["retriever"]["service_url"],
     plan.learner_world_size,
-    config["ray"].get("memory_monitor_refresh_ms", 1000),
-    config["ray"].get("memory_usage_threshold", 0.80),
+    ray["memory_monitor_refresh_ms"],
+    ray["memory_usage_threshold"],
 )
 for value in values:
     print(value, end="\0")
@@ -62,6 +63,24 @@ RETRIEVER_URL="${RUNTIME_VALUES[4]}"
 RL_WORLD_SIZE="${RUNTIME_VALUES[5]}"
 RAY_MEMORY_REFRESH_MS="${RUNTIME_VALUES[6]}"
 RAY_MEMORY_THRESHOLD="${RUNTIME_VALUES[7]}"
+
+mapfile -d '' -t RUNTIME_ENV_ASSIGNMENTS < <(
+  "${RL_PYTHON}" - "${CONFIG}" <<'PY'
+import sys
+from agentic_rl.config import load_config
+from agentic_rl.runtime.environment import runtime_environment, runtime_process_environment
+
+config = load_config(sys.argv[1])
+for scope in ("driver", "process"):
+    values = runtime_process_environment(config) if scope == "process" else runtime_environment(config, scope)
+    for key, value in values.items():
+        print(f"{key}={value}", end="\0")
+PY
+)
+if [[ "${#RUNTIME_ENV_ASSIGNMENTS[@]}" -eq 0 ]]; then
+  printf 'Failed to resolve runtime process environment.\n' >&2
+  exit 1
+fi
 if [[ -z "${RETRIEVER_GPU}" || -z "${RL_GPUS}" ]]; then
   printf 'Resolved topology must assign Retriever and RL GPU roles.\n' >&2
   exit 1
@@ -153,7 +172,6 @@ fi
 
 export CUDA_VISIBLE_DEVICES="${RL_GPUS}"
 export AGENTIC_RL_EXPECTED_RL_CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}"
-export VLLM_WORKER_MULTIPROC_METHOD=spawn
 # Keep Ray's memory monitor active using the resolved runtime profile.
 export RAY_memory_monitor_refresh_ms="${RAY_MEMORY_REFRESH_MS}"
 export RAY_memory_usage_threshold="${RAY_MEMORY_THRESHOLD}"
@@ -162,12 +180,9 @@ export AGENTIC_RL_RUN_DIR="${RUN_DIR}"
 if [[ "${STAGE}" == "FORMAL" ]]; then
   export AGENTIC_RL_FORMAL_RUN_ROOT="${RUN_DIR}"
 fi
-export OMP_NUM_THREADS=1
-export MKL_NUM_THREADS=1
-export OPENBLAS_NUM_THREADS=1
-export NUMEXPR_NUM_THREADS=1
-export VECLIB_MAXIMUM_THREADS=1
-export RAYON_NUM_THREADS=1
+for assignment in "${RUNTIME_ENV_ASSIGNMENTS[@]}"; do
+  export "${assignment%%=*}=${assignment#*=}"
+done
 # A fresh formal launch must not inherit a resume path from the invoking shell.
 unset AGENTIC_RL_RESUME_CHECKPOINT
 if [[ -n "${RESUME_CHECKPOINT}" ]]; then

@@ -15,7 +15,7 @@ from typing import Any, Mapping, Sequence
 
 import numpy as np
 
-from agentic_rl.config import load_config
+from agentic_rl.config import load_config, runtime_section
 from agentic_rl.outcome.parser import parse_model_action, parse_model_trajectory
 from agentic_rl.outcome.workers import score_trajectory_outcome
 from agentic_rl.retriever.client import HybridRetrieverClient
@@ -125,10 +125,11 @@ def _evaluate_row(
     queries: list[str] = []
     system_valid = True
     environment_failure_code: str | None = None
-    max_search_turns = int(config["rollout"]["max_search_turns"])
-    max_model_tokens = int(config["rollout"]["max_model_tokens_per_turn"])
+    rollout = runtime_section(config, "rollout")
+    max_search_turns = int(rollout["max_search_turns"])
+    max_model_tokens = int(rollout["max_model_tokens_per_turn"])
     max_information_tokens = int(
-        config["rollout"]["max_information_tokens_per_turn"]
+        rollout["max_information_tokens_per_turn"]
     )
 
     for turn_index in range(max_search_turns + 1):
@@ -298,7 +299,7 @@ def _run_task(
     metadata = _verify_model_checkpoint(model_path)
     if metadata["actor_checksum"] != str(task["actor_checksum"]):
         raise RuntimeError("Eval queue/model Actor checksums differ")
-    evaluation = config["evaluation"]
+    evaluation = runtime_section(config, "evaluation")
     torch.cuda.set_per_process_memory_fraction(
         float(evaluation["max_memory_fraction"]),
         device=0,
@@ -424,8 +425,9 @@ def run_worker(config_path: Path, run_dir: Path) -> int:
 
     signal.signal(signal.SIGTERM, request_stop)
     signal.signal(signal.SIGINT, request_stop)
-    retry_seconds = int(config["evaluation"]["retry_seconds"])
-    minimum_free_mib = int(float(config["evaluation"]["minimum_free_memory_gib"]) * 1024)
+    evaluation = runtime_section(config, "evaluation")
+    retry_seconds = int(evaluation["retry_seconds"])
+    minimum_free_mib = int(float(evaluation["minimum_free_memory_gib"]) * 1024)
     while not stop_requested:
         task = claim_next_eval(run_dir, worker_pid=os.getpid())
         if task is None:

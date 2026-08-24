@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Mapping
 
+from agentic_rl.config import runtime_section
 from agentic_rl.topology import TopologyPlan
 
 
@@ -76,11 +77,11 @@ def build_verl_config(
     model_path = str(project_config["paths"]["actor_model"])
     reference_path = str(project_config["paths"]["reference_model"])
     topology = TopologyPlan.from_config(project_config)
-    rollout = project_config["rollout"]
+    rollout = runtime_section(project_config, "rollout")
     learner = project_config["learner"]
     schedule = project_config["formal_schedule"]
     exact_ig = project_config["exact_ig"]
-    ray_config = project_config["ray"]
+    ray_config = runtime_section(project_config, "ray")
     runtime_root = Path(str(project_config["paths"]["runtime_root"])).resolve()
 
     with open_dict(config):
@@ -247,9 +248,7 @@ def build_verl_config(
         verl_rollout.free_cache_engine = True
         verl_rollout.load_format = "dummy"
         verl_rollout.calculate_log_probs = True
-        verl_rollout.agent.num_workers = int(
-            ray_config.get("agent_loop_worker_count", 32)
-        )
+        verl_rollout.agent.num_workers = int(ray_config["agent_loop_worker_count"])
         verl_rollout.agent.default_agent_loop = "search_exact_ig"
         search_task_mode = str(project_config["advantage"]["search_task_mode"])
         agent_loop_filename = (

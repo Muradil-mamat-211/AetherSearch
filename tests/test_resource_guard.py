@@ -67,7 +67,7 @@ def test_formal_launchers_do_not_disable_ray_memory_monitor() -> None:
     launcher = (root / "scripts" / "_run_runtime_job.sh").read_text(
         encoding="utf-8"
     )
-    profile = (root / "configs" / "hardware" / "4x48gb_3rl.yaml").read_text(
+    profile = (root / "configs" / "runtime" / "verl_fsdp2_vllm_4x48_reference.yaml").read_text(
         encoding="utf-8"
     )
     assert "RAY_memory_monitor_refresh_ms=0" not in launcher

@@ -99,6 +99,24 @@ def test_reference_recipe_preserves_semantic_snapshot() -> None:
     expected = yaml.safe_load(REFERENCE_FIXTURE.read_text(encoding="utf-8"))
     expected["evaluation"].pop("physical_gpu", None)
     expected["evaluation"]["role"] = "eval"
+    # Runtime ownership metadata is a source-layer contract.  The legacy
+    # snapshot intentionally compares only effective algorithm/runtime flags,
+    # not the nested owner declarations used to materialize them.
+    resolved["runtime"] = {
+        key: value
+        for key, value in resolved["runtime"].items()
+        if key
+        not in {
+            "environment",
+            "ray",
+            "rollout",
+            "learner",
+            "evaluation",
+            "resume",
+            "safety",
+            "retriever",
+        }
+    }
     sections = (
         "project",
         "data",

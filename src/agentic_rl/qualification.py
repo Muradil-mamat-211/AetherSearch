@@ -12,6 +12,7 @@ from typing import Any, Mapping
 
 import yaml
 
+from agentic_rl.config import runtime_section
 from agentic_rl.topology import TopologyPlan
 
 
@@ -138,7 +139,8 @@ def validate_reference_qualification(
     if isinstance(backend, Mapping):
         _require(str(config["learner"]["strategy"]), str(backend["learner_strategy"]), "learner.strategy")
         _require(int(config["formal_schedule"]["learner_micro_batch_size"]), int(backend["learner_micro_batch_size"]), "formal_schedule.learner_micro_batch_size")
-        _require(float(config["rollout"]["gpu_memory_utilization"]), float(backend["gpu_memory_utilization"]), "rollout.gpu_memory_utilization")
+        rollout = runtime_section(config, "rollout")
+        _require(float(rollout["gpu_memory_utilization"]), float(backend["gpu_memory_utilization"]), "rollout.gpu_memory_utilization")
     return {
         "status": "PASS",
         "profile": str(profile_path or qualification_profile_path(config)),

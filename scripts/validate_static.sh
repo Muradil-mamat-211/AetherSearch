@@ -19,7 +19,9 @@ for test_file in \
   test_public_config.py \
   test_fixed_eval_full_manifest.py \
   test_config_schema.py \
-  test_strict_one_step_contract.py; do
+  test_strict_one_step_contract.py \
+  test_topology_decoupling.py \
+  test_runtime_ownership.py; do
   PYTHONPATH="${PROJECT_ROOT}/src" "${RL_PYTHON}" -m pytest -q \
     "${PROJECT_ROOT}/tests/${test_file}"
 done

@@ -11,9 +11,6 @@ retriever:
   dense_index_path: ${AETHERSEARCH_DENSE_INDEX_PATH}
   dense_encoder_path: ${AETHERSEARCH_DENSE_ENCODER_PATH}
   dense_encoder_name: e5
-  dense_index_type: GpuIndexFlatIP
-  require_faiss_gpu: true
-  faiss_device_inside_retriever_namespace: 0
   dense_query_batch_size: 64
   bm25_workers: 16
   request_batch_wait_ms: 5.0

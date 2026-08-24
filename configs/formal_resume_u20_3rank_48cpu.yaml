@@ -2,6 +2,7 @@ extends: formal_resume_u20_3rank.yaml
 
 includes:
   - hardware/4x48gb_3rl.yaml
+  - runtime/verl_fsdp2_vllm_4x48_reference.yaml
 
 # Distributed/resource-only validation profile for the four-GPU host with
 # three RL GPUs (physical 1-3) and 48 host CPU cores. Algorithm fields inherit

@@ -80,6 +80,75 @@ def _expand_environment(value: Any) -> Any:
     return os.path.expanduser(expanded)
 
 
+def runtime_section(config: Mapping[str, Any], name: str) -> dict[str, Any]:
+    """Return one runtime-owned section with legacy fields overlaid.
+
+    Runtime profiles are intentionally nested under ``runtime`` so the owner
+    is visible in source YAML.  The project still exposes the historical
+    top-level sections to existing adapters and snapshots; nested runtime
+    values are authoritative whenever both representations are present.
+    """
+
+    legacy = config.get(name, {})
+    if not isinstance(legacy, Mapping):
+        legacy = {}
+    runtime = config.get("runtime", {})
+    if not isinstance(runtime, Mapping):
+        runtime = {}
+    owned = runtime.get(name, {})
+    if not isinstance(owned, Mapping):
+        owned = {}
+    result = copy.deepcopy(dict(legacy))
+    result.update(copy.deepcopy(dict(owned)))
+    return result
+
+
+def _materialize_runtime_compatibility(config: dict[str, Any]) -> None:
+    """Project runtime-profile values into legacy adapter fields.
+
+    The compatibility projection is deliberately one-way: source ownership
+    remains in ``config.runtime`` while old adapters continue to receive the
+    exact field shape used by the frozen reference snapshot.  New runtime code
+    should read :func:`runtime_section` so a synthetic runtime mutation is
+    observed without rebuilding the complete config tree.
+    """
+
+    runtime = config.get("runtime", {})
+    if not isinstance(runtime, Mapping):
+        return
+
+    for section in ("ray", "rollout", "evaluation"):
+        owned = runtime.get(section)
+        if isinstance(owned, Mapping):
+            legacy = config.setdefault(section, {})
+            if not isinstance(legacy, dict):
+                legacy = {}
+                config[section] = legacy
+            legacy.update(copy.deepcopy(dict(owned)))
+
+    learner = runtime.get("learner", {})
+    if isinstance(learner, Mapping) and learner.get("micro_batch_size") is not None:
+        micro_batch = copy.deepcopy(learner["micro_batch_size"])
+        for schedule_name in ("formal_schedule", "runtime_smoke_schedule"):
+            schedule = config.setdefault(schedule_name, {})
+            if isinstance(schedule, dict):
+                schedule["learner_micro_batch_size"] = micro_batch
+
+    retriever_runtime = runtime.get("retriever", {})
+    if isinstance(retriever_runtime, Mapping):
+        retriever = config.setdefault("retriever", {})
+        if isinstance(retriever, dict):
+            # These aliases are retained solely for old health/qualification
+            # snapshots.  launch_retriever.sh consumes runtime.retriever.
+            aliases = {
+                "dense_index_type": "dense_index_type",
+                "require_faiss_gpu": "require_faiss_gpu",
+                "faiss_device_inside_retriever_namespace": "faiss_gpu_device",
+            }
+            for legacy_key, runtime_key in aliases.items():
+                if runtime_key in retriever_runtime:
+                    retriever[legacy_key] = copy.deepcopy(retriever_runtime[runtime_key])
+
 def _load_config_tree(config_path: Path, stack: tuple[Path, ...] = ()) -> dict[str, Any]:
     config_path = config_path.resolve()
     if config_path in stack:
@@ -103,6 +172,7 @@ def _load_config_tree(config_path: Path, stack: tuple[Path, ...] = ()) -> dict[s
 def load_config(path: str | Path = DEFAULT_CONFIG) -> dict[str, Any]:
     config_path = Path(path).resolve()
     config = _expand_environment(_load_config_tree(config_path))
+    _materialize_runtime_compatibility(config)
     materialize_topology(config)
     validate_config(config)
     return config
@@ -204,7 +274,7 @@ def validate_resources(config: Mapping[str, Any], plan: TopologyPlan) -> None:
     """Validate resource arithmetic without reference-machine assumptions."""
 
     hardware = config["hardware"]
-    ray_config = config["ray"]
+    ray_config = runtime_section(config, "ray")
     expected_cpu = int(hardware["expected_cpu_cores"])
     if expected_cpu < 1:
         raise ConfigError("hardware.expected_cpu_cores must be positive")
@@ -214,17 +284,27 @@ def validate_resources(config: Mapping[str, Any], plan: TopologyPlan) -> None:
         raise ConfigError("hardware.expected_host_ram_gb must be positive")
     if minimum_gpu_memory <= 0:
         raise ConfigError("hardware.gpu_memory_gb must be positive")
-    for key in (
-        "cpu_reserved_for_os",
-        "ray_object_store_gb",
+    if float(hardware["cpu_reserved_for_os"]) <= 0:
+        raise ConfigError("hardware.cpu_reserved_for_os must be positive")
+    object_store_gb = ray_config.get(
+        "object_store_gb", hardware.get("ray_object_store_gb")
+    )
+    if object_store_gb is None:
+        raise ConfigError("runtime.ray.object_store_gb must be configured")
+    reserve_gb = ray_config.get(
+        "memory_safety_reserve_gb", hardware.get("memory_safety_reserve_gb")
+    )
+    if reserve_gb is None:
+        raise ConfigError("runtime.ray.memory_safety_reserve_gb must be configured")
+    for key, value in (
+        ("runtime.ray.object_store_gb", object_store_gb),
+        ("runtime.ray.memory_safety_reserve_gb", reserve_gb),
     ):
-        if float(hardware[key]) <= 0:
-            raise ConfigError(f"hardware.{key} must be positive")
-    if float(hardware.get("memory_safety_reserve_gb", 64)) <= 0:
-        raise ConfigError("hardware.memory_safety_reserve_gb must be positive")
+        if float(value) <= 0:
+            raise ConfigError(f"{key} must be positive")
     if (
-        float(hardware["ray_object_store_gb"])
-        + float(hardware.get("memory_safety_reserve_gb", 64))
+        float(object_store_gb)
+        + float(reserve_gb)
         >= expected_ram
     ):
         raise ConfigError(
@@ -239,8 +319,11 @@ def validate_resources(config: Mapping[str, Any], plan: TopologyPlan) -> None:
     ):
         if int(ray_config.get(key, 0)) < 1:
             raise ConfigError(f"ray.{key} must be positive")
-    if int(ray_config.get("agent_loop_worker_count", 32)) < 1:
-        raise ConfigError("ray.agent_loop_worker_count must be positive")
+    agent_loop_worker_count = ray_config.get("agent_loop_worker_count")
+    if agent_loop_worker_count is None:
+        raise ConfigError("runtime.ray.agent_loop_worker_count must be configured")
+    if int(agent_loop_worker_count) < 1:
+        raise ConfigError("runtime.ray.agent_loop_worker_count must be positive")
     cpu_budget = (
         int(hardware["cpu_reserved_for_os"])
         + int(ray_config["retriever_pool_cpus"])
@@ -265,6 +348,11 @@ def validate_backend_compatibility(
 ) -> None:
     """Validate current veRL/FSDP2/vLLM adapter limits, not algorithm rules."""
 
+    if plan.cluster_mode == "existing":
+        raise ConfigError(
+            "parsed topology capability exists, but current AetherSearch "
+            "veRL runtime supports local Ray only"
+        )
     learner = config["learner"]
     if str(learner.get("strategy")) != "fsdp2":
         raise ConfigError("The current runtime adapter requires learner.strategy=fsdp2")

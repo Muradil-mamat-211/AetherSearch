@@ -14,10 +14,10 @@ from agentic_rl.workers.ray_actors import (
     PromptSamplerActor,
     ray_remote_class,
 )
+from agentic_rl.config import runtime_section
 from agentic_rl.topology import TopologyPlan
 
-from .capped_vllm import StrictAgentLoopManager
-from .fsdp_worker import StrictOnPolicyFSDP2Worker
+from .environment import runtime_environment
 from .resource_guard import validate_runtime_resource_budget
 from .verl_config import build_verl_config, effective_rollout_topology
 
@@ -101,7 +101,7 @@ class RuntimeRayTopology:
         self.verl_config: Any | None = None
         self.resource_pool: Any | None = None
         self.worker_group: Any | None = None
-        self.agent_loop_manager: StrictAgentLoopManager | None = None
+        self.agent_loop_manager: Any | None = None
         self.control_actors: dict[str, Any] = {}
 
     def assert_rl_gpu_isolation(self) -> None:
@@ -123,14 +123,14 @@ class RuntimeRayTopology:
         resource_budget = validate_runtime_resource_budget(self.project_config)
         import ray
 
-        ray_config = self.project_config["ray"]
+        ray_config = runtime_section(self.project_config, "ray")
         os.environ.setdefault(
             "RAY_memory_monitor_refresh_ms",
-            str(ray_config.get("memory_monitor_refresh_ms", 1000)),
+            str(ray_config["memory_monitor_refresh_ms"]),
         )
         os.environ.setdefault(
             "RAY_memory_usage_threshold",
-            str(ray_config.get("memory_usage_threshold", 0.80)),
+            str(ray_config["memory_usage_threshold"]),
         )
 
         if self.topology.cluster_mode == "existing":
@@ -142,22 +142,24 @@ class RuntimeRayTopology:
             runtime_root = Path(
                 str(self.project_config["paths"]["runtime_root"])
             ).resolve()
-            spill = runtime_root / "ray_spill"
+            spill_setting = Path(str(ray_config["object_spilling_directory"]))
+            if spill_setting.is_absolute():
+                spill = spill_setting
+            elif spill_setting.parts and spill_setting.parts[0] == "runtime":
+                spill = runtime_root.joinpath(*spill_setting.parts[1:])
+            else:
+                spill = runtime_root / spill_setting
             spill.mkdir(parents=True, exist_ok=True)
-            object_store_bytes = int(
-                self.project_config["hardware"]["ray_object_store_gb"]
-            ) * 1024**3
+            object_store_gb = ray_config.get("object_store_gb")
+            if object_store_gb is None:
+                raise RuntimeError(
+                    "runtime.ray.object_store_gb must be configured before Ray startup"
+                )
+            object_store_bytes = int(object_store_gb) * 1024**3
             runtime_kwargs: dict[str, Any] = {
                 "include_dashboard": False,
                 "runtime_env": {
-                    "env_vars": {
-                        "OMP_NUM_THREADS": "1",
-                        "MKL_NUM_THREADS": "1",
-                        "OPENBLAS_NUM_THREADS": "1",
-                        "NUMEXPR_NUM_THREADS": "1",
-                        "VECLIB_MAXIMUM_THREADS": "1",
-                        "RAYON_NUM_THREADS": "1",
-                    }
+                    "env_vars": runtime_environment(self.project_config, "driver")
                 },
             }
             runtime_kwargs.update(
@@ -266,9 +268,10 @@ class RuntimeRayTopology:
                 str(runtime_root / "checkpoint_events.jsonl")
             ),
         }
+        ray_config = runtime_section(self.project_config, "ray")
         self.control_actors["outcome_workers"] = [
             outcome_class.remote()
-            for _ in range(int(self.project_config["ray"]["outcome_worker_count"]))
+            for _ in range(int(ray_config["outcome_worker_count"]))
         ]
         maximum_extended = self.project_config["formal_schedule"].get(
             "maximum_extended_sequence_length"
@@ -290,9 +293,7 @@ class RuntimeRayTopology:
                 )
                 for _ in range(
                     int(
-                        self.project_config["ray"][
-                            "exact_ig_task_builder_count"
-                        ]
+                        ray_config["exact_ig_task_builder_count"]
                     )
                 )
             ]
@@ -304,6 +305,8 @@ class RuntimeRayTopology:
             RayClassWithInitArgs,
             RayWorkerGroup,
         )
+        from .capped_vllm import StrictAgentLoopManager
+        from .fsdp_worker import StrictOnPolicyFSDP2Worker
 
         self.verl_config = build_verl_config(
             self.project_config,
@@ -312,7 +315,9 @@ class RuntimeRayTopology:
         pool_wrapper = FixedBundleRayResourcePool(
             topology=self.topology,
             cpus_per_rank=int(
-                self.project_config["ray"]["rl_engine_cpus_per_gpu"]
+                runtime_section(self.project_config, "ray")[
+                    "rl_engine_cpus_per_gpu"
+                ]
             ),
             placement_strategy=self.topology.placement_strategy,
             name="strict_agentic_rl_",
@@ -330,16 +335,7 @@ class RuntimeRayTopology:
             bin_pack=self.topology.placement_strategy in {"PACK", "STRICT_PACK"},
             name_prefix="strict_fsdp2_",
             device_name="cuda",
-            worker_env={
-                "TORCH_NCCL_ASYNC_ERROR_HANDLING": "1",
-                "TOKENIZERS_PARALLELISM": "true",
-                "OMP_NUM_THREADS": "6",
-                "MKL_NUM_THREADS": "6",
-                "OPENBLAS_NUM_THREADS": "1",
-                "NUMEXPR_NUM_THREADS": "1",
-                "VECLIB_MAXIMUM_THREADS": "1",
-                "RAYON_NUM_THREADS": "1",
-            },
+            worker_env=runtime_environment(self.project_config, "worker"),
         )
         identities = self.worker_group.init_model()
         expected_world_size = int(self.topology.learner_world_size)

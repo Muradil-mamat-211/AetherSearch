@@ -1,0 +1,75 @@
+# Runtime-only tuning for the formally qualified 4x48 GiB reference profile.
+#
+# Physical devices, node layout, and role assignment belong exclusively to
+# configs/hardware/4x48gb_3rl.yaml.  This file owns process/runtime capacity;
+# config loading materializes legacy top-level compatibility fields from here.
+runtime:
+  ray:
+    retriever_pool_cpus: 8
+    rl_engine_cpus_per_gpu: 3
+    controller_cpu_workers: 5
+    outcome_worker_count: 4
+    exact_ig_task_builder_count: 2
+    agent_loop_worker_count: 12
+    memory_monitor_refresh_ms: 1000
+    memory_usage_threshold: 0.80
+    object_store_gb: 48
+    memory_safety_reserve_gb: 64
+    object_spilling_directory: runtime/ray_spill
+
+  rollout:
+    gpu_memory_utilization: 0.48
+    max_num_seqs: 64
+
+  learner:
+    micro_batch_size: 6
+
+  evaluation:
+    minimum_free_memory_gib: 10
+    max_memory_fraction: 0.24
+
+  resume:
+    allow_world_size_change_on_resume: true
+
+  safety:
+    forbid_retriever_in_rl_process_group: true
+
+  environment:
+    driver:
+      OMP_NUM_THREADS: "1"
+      MKL_NUM_THREADS: "1"
+      OPENBLAS_NUM_THREADS: "1"
+      NUMEXPR_NUM_THREADS: "1"
+      VECLIB_MAXIMUM_THREADS: "1"
+      RAYON_NUM_THREADS: "1"
+    worker:
+      TORCH_NCCL_ASYNC_ERROR_HANDLING: "1"
+      TOKENIZERS_PARALLELISM: "true"
+      OMP_NUM_THREADS: "6"
+      MKL_NUM_THREADS: "6"
+      OPENBLAS_NUM_THREADS: "1"
+      NUMEXPR_NUM_THREADS: "1"
+      VECLIB_MAXIMUM_THREADS: "1"
+      RAYON_NUM_THREADS: "1"
+    process:
+      VLLM_WORKER_MULTIPROC_METHOD: spawn
+    retriever:
+      OMP_NUM_THREADS: "4"
+      MKL_NUM_THREADS: "4"
+      OPENBLAS_NUM_THREADS: "1"
+      NUMEXPR_NUM_THREADS: "1"
+      VECLIB_MAXIMUM_THREADS: "1"
+      RAYON_NUM_THREADS: "1"
+
+  retriever:
+    query_max_length: 256
+    retrieval_use_fp16: true
+    faiss_gpu: true
+    require_faiss_gpu: true
+    faiss_gpu_stream_flat: true
+    faiss_gpu_device: 0
+    faiss_gpu_use_fp16: true
+    faiss_temp_memory_mb: 256
+    faiss_add_batch_size: 0
+    dense_device: cuda
+    dense_index_type: GpuIndexFlatIP

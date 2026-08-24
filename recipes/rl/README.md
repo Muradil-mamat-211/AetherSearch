@@ -9,7 +9,8 @@ The entry recipe composes four independent concerns:
 |---|---|
 | experiment and schedule | inherited algorithm configuration |
 | external artifacts | `AETHERSEARCH_ASSET_MANIFEST` and local path variables |
-| hardware/runtime mapping | `configs/hardware/4x48gb_3rl.yaml` |
+| hardware mapping | `configs/hardware/4x48gb_3rl.yaml` |
+| runtime mapping | `configs/runtime/verl_fsdp2_vllm_4x48_reference.yaml` |
 | verified-machine contract | `configs/qualification/official_4x48gb_v1.yaml` |
 
 The current reference profile uses four 48 GiB GPUs: one dedicated role hosts

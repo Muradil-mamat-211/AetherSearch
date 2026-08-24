@@ -14,6 +14,8 @@ import subprocess
 from pathlib import Path
 from typing import Any, Mapping
 
+from agentic_rl.config import runtime_section
+
 BYTES_PER_GIB = 1024**3
 CHECKPOINT_MEMORY_HEADROOM_GIB = 24.0
 CHECKPOINT_MEMORY_IO_SAFETY_GIB = 4.0
@@ -129,12 +131,25 @@ def validate_runtime_resource_budget(
 
     snapshot = dict(snapshot or read_runtime_resource_snapshot())
     hardware = config["hardware"]
+    ray_config = runtime_section(config, "ray")
     expected_cpu = int(hardware["expected_cpu_cores"])
     expected_ram_gib = float(hardware["expected_host_ram_gb"])
     required_gpu_count = int(hardware.get("total_physical_gpus", 0))
     minimum_gpu_memory_gib = float(hardware.get("gpu_memory_gb", 0))
-    object_store_gib = float(hardware["ray_object_store_gb"])
-    reserve_gib = float(hardware.get("memory_safety_reserve_gb", 64))
+    object_store_value = ray_config.get(
+        "object_store_gb", hardware.get("ray_object_store_gb")
+    )
+    if object_store_value is None:
+        raise RuntimeError("runtime.ray.object_store_gb must be configured")
+    object_store_gib = float(object_store_value)
+    reserve_value = ray_config.get(
+        "memory_safety_reserve_gb", hardware.get("memory_safety_reserve_gb")
+    )
+    if reserve_value is None:
+        raise RuntimeError(
+            "runtime.ray.memory_safety_reserve_gb must be configured"
+        )
+    reserve_gib = float(reserve_value)
     actual_memory = snapshot.get("memory_limit_bytes")
     actual_cpu = snapshot.get("cpu_quota_cores")
 

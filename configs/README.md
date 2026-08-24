@@ -2,8 +2,8 @@
 
 The supported public entry configuration is
 `recipes/rl/train_4x48gb.yaml`. It composes the training experiment, external
-assets, hardware resources, runtime mapping, and official qualification
-contract. Machine-local paths come from `environment/env.local.sh`.
+assets, physical hardware/topology, runtime mapping, and official
+qualification contract. Machine-local paths come from `environment/env.local.sh`.
 
 The public prompt filter ranks candidate prompts by raw terminal-outcome sample
 variance and retains the shortest prefix carrying the configured cumulative
@@ -17,13 +17,16 @@ filtering step.
 | experiment | algorithm and training schedule |
 | assets | model, dataset, tokenizer, corpus, and index identities |
 | hardware | physical GPUs, nodes, CPU/RAM, and role placement |
-| runtime | Ray and backend resource mapping |
+| runtime | Ray/backend capacity, process environments, and server tuning |
 | qualification | exact contract for the verified reference run |
 
 `base.yaml` and inherited experiment YAML files are abstract layers. They do
 not select a GPU count, CUDA mapping, Ray capacity, rollout replica layout,
 GPU-memory limit, or learner micro-batch capacity. Those values come from an
-explicit hardware/runtime profile.
+explicit hardware/runtime profile. The formally qualified pair is
+`configs/hardware/4x48gb_3rl.yaml` plus
+`configs/runtime/verl_fsdp2_vllm_4x48_reference.yaml`; the former contains no
+Ray/vLLM/retriever tuning policy.
 
 ## Topology Resolution
 
@@ -62,4 +65,20 @@ embedded server paths or design documents.
 
 Other root YAML files preserve inherited experiment, retriever, schedule,
 capacity, and historical compatibility layers. Public launches should resolve
-the recipe rather than invoke those layers directly.
+the recipe rather than invoke those layers directly. Runtime values are nested
+under `runtime.*` in the runtime profile and are projected into legacy
+top-level fields only for compatibility with existing adapters and snapshots;
+new runtime code reads the nested owner.
+
+## Repository classification
+
+- `recipes/rl/train_4x48gb.yaml` and its layered includes are the active
+  runtime contract.
+- `configs/qualification/` is the exact 4x48 GiB reference qualification.
+- `tests/fixtures/` contains portable or compatibility test compositions.
+- Root `configs/*5x48gb*`, formal resume snapshots, and related historical
+  files preserve reproduction facts; they are not portable entrypoints.
+- `third_party/` and vendored examples retain upstream ownership.
+
+Historical GPU counts and paths in those snapshots are intentional evidence,
+not active runtime policy.

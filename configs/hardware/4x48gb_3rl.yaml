@@ -3,13 +3,9 @@
 hardware:
   total_physical_gpus: 4
   gpu_memory_gb: 48
-  allow_world_size_change_on_resume: true
-  forbid_retriever_in_rl_process_group: true
   expected_host_ram_gb: 360
   expected_cpu_cores: 48
   cpu_reserved_for_os: 4
-  ray_object_store_gb: 48
-  memory_safety_reserve_gb: 64
 
 # Canonical topology input. Runtime code derives all compatibility fields from
 # this block; new profiles should not duplicate those derived values.
@@ -30,28 +26,3 @@ topology:
   rollout:
     data_parallel_size: 3
     tensor_parallel_size: 1
-
-ray:
-  retriever_pool_cpus: 8
-  rl_engine_cpus_per_gpu: 3
-  controller_cpu_workers: 5
-  outcome_worker_count: 4
-  exact_ig_task_builder_count: 2
-  agent_loop_worker_count: 12
-  memory_monitor_refresh_ms: 1000
-  memory_usage_threshold: 0.80
-  object_spilling_directory: runtime/ray_spill
-
-rollout:
-  gpu_memory_utilization: 0.48
-  max_num_seqs: 64
-
-formal_schedule:
-  learner_micro_batch_size: 6
-
-runtime_smoke_schedule:
-  learner_micro_batch_size: 6
-
-evaluation:
-  minimum_free_memory_gib: 10
-  max_memory_fraction: 0.24

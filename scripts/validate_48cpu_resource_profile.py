@@ -6,7 +6,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from agentic_rl.config import load_config
+from agentic_rl.config import load_config, runtime_section
 from agentic_rl.runtime.verl_config import build_verl_config, effective_rollout_topology
 from agentic_rl.workers.resource_plan import build_resource_plan
 
@@ -70,7 +70,8 @@ def validate() -> dict:
     resolved = build_verl_config(config, require_optimizer=True)
     topology = effective_rollout_topology(resolved)
 
-    ray = config["ray"]
+    ray = runtime_section(config, "ray")
+    runtime_rollout = runtime_section(config, "rollout")
     hardware = config["hardware"]
     static_control_cpu = (
         2  # PromptSamplerActor
@@ -115,8 +116,8 @@ def validate() -> dict:
         "gpu": {
             "world_size": int(hardware["rl_world_size"]),
             "physical_gpus": list(hardware["rl_physical_gpus"]),
-            "gpu_memory_utilization": float(config["rollout"]["gpu_memory_utilization"]),
-            "max_num_seqs": int(config["rollout"]["max_num_seqs"]),
+            "gpu_memory_utilization": float(runtime_rollout["gpu_memory_utilization"]),
+            "max_num_seqs": int(runtime_rollout["max_num_seqs"]),
         },
         "learner": {
             "micro_batch_size": int(config["formal_schedule"]["learner_micro_batch_size"]),
