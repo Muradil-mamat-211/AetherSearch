@@ -455,6 +455,54 @@ def test_reference_qualification_is_separate_from_portable_validation() -> None:
         )
 
 
+def test_release_manifest_pins_complete_retriever_asset_set() -> None:
+    manifest_path = ROOT / "configs" / "assets" / "aethersearch_release_v1.yaml"
+    manifest = yaml.safe_load(manifest_path.read_text(encoding="utf-8"))
+    assets = manifest["assets"]
+    assert set(assets) >= {
+        "retriever_corpus",
+        "retriever_bm25_index",
+        "retriever_index",
+        "retriever_encoder_weights",
+        "retriever_encoder_config",
+        "retriever_encoder_tokenizer",
+        "retriever_config",
+    }
+    expected_sources = {
+        "retriever_corpus": (
+            "PeterJinGo/wiki-18-corpus",
+            "69c1c00ffe7c5554c68d8548355cb22e46aabc51",
+        ),
+        "retriever_bm25_index": (
+            "PeterJinGo/wiki-18-bm25-index",
+            "2c7554f25f425038c4bcb155735a0f831851fd78",
+        ),
+        "retriever_index": (
+            "PeterJinGo/wiki-18-e5-index",
+            "a4d31160a035f30764604f4827cd8f1d0315eb86",
+        ),
+        "retriever_encoder_weights": (
+            "intfloat/e5-base-v2",
+            "f52bf8ec8c7124536f0efb74aca902b2995e5bcd",
+        ),
+        "retriever_encoder_config": (
+            "intfloat/e5-base-v2",
+            "f52bf8ec8c7124536f0efb74aca902b2995e5bcd",
+        ),
+        "retriever_encoder_tokenizer": (
+            "intfloat/e5-base-v2",
+            "f52bf8ec8c7124536f0efb74aca902b2995e5bcd",
+        ),
+    }
+    for name, (repo_id, revision) in expected_sources.items():
+        assert assets[name]["source"]["repo_id"] == repo_id
+        assert assets[name]["source"]["revision"] == revision
+        assert len(assets[name]["sha256"]) == 64
+    assert assets["retriever_corpus"]["expected_passage_count"] == 21_015_324
+    assert assets["retriever_index"]["expected_passage_count"] == 21_015_324
+    assert assets["retriever_index"]["embedding_dimension"] == 768
+
+
 @pytest.mark.skipif(
     not os.environ.get("AETHERSEARCH_ASSET_MANIFEST"),
     reason="asset manifest path is supplied by the local environment",

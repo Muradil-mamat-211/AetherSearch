@@ -11,6 +11,9 @@ service configuration:
 Model, corpus, and index artifacts are external inputs configured through
 `environment/env.local.sh` and the asset manifest. GPU placement is derived
 from the resolved topology rather than fixed in this directory.
+Pinned upstream revisions, download and assembly commands, expected sizes, and
+checksums are documented in `../../EXTERNAL_ASSETS.md`. Those assets remain in
+their upstream repositories and are not copied into this GitHub repository.
 
 Use `scripts/launch_retriever.sh` through the public training launcher; the
 server file is a runtime component, not a standalone reproduction entrypoint.

@@ -28,6 +28,7 @@
 | 🤗 SFT data | [muradil211/aethersearch_sft](https://huggingface.co/datasets/muradil211/aethersearch_sft) | full JSONL payload, provenance manifest, checksums, and dataset card |
 | 🤗 Search-R1 train data | [PeterJinGo/nq_hotpotqa_train](https://huggingface.co/datasets/PeterJinGo/nq_hotpotqa_train) | upstream `train.parquet`, pinned by checksum in `EXTERNAL_ASSETS.md` |
 | 🤗 Full eval data | [muradil211/AetherSearch-Eval](https://huggingface.co/datasets/muradil211/AetherSearch-Eval) | complete 51,713-row Search-R1 `test.parquet`, provenance, and checksums |
+| Retriever assets | [`EXTERNAL_ASSETS.md`](EXTERNAL_ASSETS.md#retriever-assets) | pinned upstream corpus, BM25, FAISS, and E5 revisions with checksums and download commands |
 | Code | this repository | SFT build scripts, RL training code, configs, runtime assets, and tests |
 
 ## Table of Contents

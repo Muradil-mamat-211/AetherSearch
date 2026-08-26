@@ -34,10 +34,71 @@ assets:
       nq: 3610
       popqa: 14267
       triviaqa: 11313
+  retriever_corpus:
+    kind: file
+    path: ${AETHERSEARCH_CORPUS_PATH}
+    sha256: 85a787a692e73fdd657e86411bfd1ac810ed193b1eea4a478de449d4871c06b9
+    expected_size_bytes: 14393579520
+    expected_passage_count: 21015324
+    source:
+      repo_id: PeterJinGo/wiki-18-corpus
+      repo_type: dataset
+      revision: 69c1c00ffe7c5554c68d8548355cb22e46aabc51
+      file: wiki-18.jsonl.gz
+      file_sha256: 7abd929223399cd63c52b499f289bf4f9039be1e9f8c43e1cb3938305b2317db
+  retriever_bm25_index:
+    kind: tree
+    path: ${AETHERSEARCH_BM25_INDEX_PATH}
+    sha256: d5635cabf617e999749697bb0fa686ab4509ba9c4bd33be7d52c6187cc956724
+    expected_size_bytes: 2297615435
+    source:
+      repo_id: PeterJinGo/wiki-18-bm25-index
+      repo_type: dataset
+      revision: 2c7554f25f425038c4bcb155735a0f831851fd78
   retriever_index:
     kind: file
     path: ${AETHERSEARCH_DENSE_INDEX_PATH}
     sha256: 69c98463fdb41fc08737d88513c597725f311c44f7ba4dca4b05d8c7c658d166
+    expected_size_bytes: 64559075373
+    expected_passage_count: 21015324
+    embedding_dimension: 768
+    index_type: IndexFlatIP
+    source:
+      repo_id: PeterJinGo/wiki-18-e5-index
+      repo_type: dataset
+      revision: a4d31160a035f30764604f4827cd8f1d0315eb86
+      parts:
+        part_aa:
+          size_bytes: 42949672960
+          sha256: a8a6a246951da4bbc8771a223283ef61963882a32864d9044ec00abb90fc3023
+        part_ab:
+          size_bytes: 21609402413
+          sha256: b6d9bc943626fe7cb44de4c849e9379e7f272ab216c0552acbcf2390cc033c11
+  retriever_encoder_weights:
+    kind: file
+    path: ${AETHERSEARCH_DENSE_ENCODER_PATH}/model.safetensors
+    sha256: d0d559c47d5f71b1d280b13b62a2657f3e3bc70c0786f9ab91a36545e6a8f693
+    expected_size_bytes: 437955512
+    source:
+      repo_id: intfloat/e5-base-v2
+      repo_type: model
+      revision: f52bf8ec8c7124536f0efb74aca902b2995e5bcd
+  retriever_encoder_config:
+    kind: file
+    path: ${AETHERSEARCH_DENSE_ENCODER_PATH}/config.json
+    sha256: 01cc39aa39538a8179aa131c8a16adc03b506c92009f091502e4eb0c702f5f78
+    source:
+      repo_id: intfloat/e5-base-v2
+      repo_type: model
+      revision: f52bf8ec8c7124536f0efb74aca902b2995e5bcd
+  retriever_encoder_tokenizer:
+    kind: tokenizer
+    path: ${AETHERSEARCH_DENSE_ENCODER_PATH}
+    sha256: f529fd7999007e7ef1bf956fcd222da1e613d5a59e10392e213d905a085c6adf
+    source:
+      repo_id: intfloat/e5-base-v2
+      repo_type: model
+      revision: f52bf8ec8c7124536f0efb74aca902b2995e5bcd
   retriever_config:
     kind: file
     path: ${AETHERSEARCH_PROJECT_ROOT}/runtime_assets/retriever/retriever.yaml
