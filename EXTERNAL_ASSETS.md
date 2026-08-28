@@ -9,8 +9,8 @@ local locations in `environment/env.local.sh`.
   [muradil211/AetherSearch](https://huggingface.co/muradil211/AetherSearch).
 - SFT-2000 model output repository:
   [muradil211/AetherSearch-SFT](https://huggingface.co/muradil211/AetherSearch-SFT).
-  This repository is designated for the checkpoint produced by the public
-  one-stage SFT-2000 trainer.
+  The checkpoint was trained in one stage on the frozen 2,000-record dataset
+  using the public SFT-2000 trainer.
 
 ## Base/Reference Model
 

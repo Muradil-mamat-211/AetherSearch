@@ -4,21 +4,21 @@ This inventory covers every non-ignored file in the AetherSearch GitHub
 release. Model weights, optimizer checkpoints, eval result bundles, report
 archives, and runtime snapshots are not included.
 
-Generated UTC: `2026-08-28T14:19:20Z`
+Generated UTC: `2026-08-28T15:16:48Z`
 
 ## Summary
 
 - `assets`: `3` files, `8100` bytes
-- `configs`: `24` files, `45263` bytes
-- `documentation`: `4` files, `43643` bytes
-- `environment`: `6` files, `14856` bytes
+- `configs`: `24` files, `45517` bytes
+- `documentation`: `4` files, `44124` bytes
+- `environment`: `6` files, `15177` bytes
 - `recipes`: `2` files, `5388` bytes
 - `repo_root`: `3` files, `1596` bytes
 - `runtime_assets`: `3` files, `29691` bytes
 - `scripts`: `18` files, `75391` bytes
-- `sft`: `8` files, `61712` bytes
+- `sft`: `8` files, `64235` bytes
 - `src`: `89` files, `1280776` bytes
-- `tests`: `54` files, `473222` bytes
+- `tests`: `54` files, `475060` bytes
 - `third_party`: `5` files, `126026` bytes
 
 ## Files
@@ -35,7 +35,7 @@ Generated UTC: `2026-08-28T14:19:20Z`
 
 | path | bytes | sha256 |
 |---|---:|---|
-| `configs/README.md` | 4879 | `27fd86f71fc751827b194292cb6773d8ae3c87c6885048aec255f4cd3e4f97e8` |
+| `configs/README.md` | 5133 | `0c2537b244a2a18d564405f915647bd76f23d441a7207b5bd029ca762f3811a9` |
 | `configs/assets/aethersearch_release_v1.yaml` | 3857 | `94ebdfe31c239ead4d79821d23428fd480191c901fc4d649c710c2cff14878a7` |
 | `configs/base.yaml` | 6335 | `4c725cfa92a048e1d772cb0db04771b91d0f7076190fefeea93c3ad22a47c2be` |
 | `configs/exact_ig.yaml` | 4081 | `f62726defbd24e1a1fca8c8083c85da7481f08a312ed49e26480d6b6d6195ab0` |
@@ -64,16 +64,16 @@ Generated UTC: `2026-08-28T14:19:20Z`
 
 | path | bytes | sha256 |
 |---|---:|---|
-| `EXTERNAL_ASSETS.md` | 7107 | `d01c7122713ca3c1c7432668d8763f13627258b82a67d79fa01d5cd00dd90334` |
-| `README.md` | 28916 | `7d6634871546c999b5e5ba0831fbc8d7a22636b6fa072f4de8ba5eaeb7d4126f` |
+| `EXTERNAL_ASSETS.md` | 7117 | `75d8bca14cb96207d554c585a571b1bf39708a969e464a09c1b76c7f5d4d3bb1` |
+| `README.md` | 29100 | `6223dd73eaaf35a6cf4515d5a79331e8a39c187f20014ad2e3708ed19603074f` |
 | `THIRD_PARTY_NOTICES.md` | 6098 | `f5eb49726de47e3ad7b3897840482d5aee7c854fc1921465e77cf8ff03dae682` |
-| `TRAINING_REPRODUCTION.md` | 1522 | `7e811b3365a58d8d84f320e4086725d9090224c8ce5196b7c2577e58896fa38f` |
+| `TRAINING_REPRODUCTION.md` | 1809 | `04fbe9ae95cb14c987e2560c4a7643d460b1b85f289728d1975edb50f9354f5b` |
 
 ### environment
 
 | path | bytes | sha256 |
 |---|---:|---|
-| `environment/README.md` | 2535 | `2a404f507190d63e9d6d0460dbfe600de81cd4da6c1a8b2505128c8681c32358` |
+| `environment/README.md` | 2856 | `d58bbe9dc684367d69de3abd536c8843d1049462f944ee67c46ac27762b61972` |
 | `environment/RUNTIME_VERSIONS.md` | 522 | `e52951f548ed1f590b7bc391b07cc5243ae5a9a7708cbe69c5bac811cc4b2d97` |
 | `environment/env.template.sh` | 3298 | `de0bf67567411d846eed7d607db5d75edebd328da3fc5f026be3a7d889d26917` |
 | `environment/requirements-core-observed.txt` | 388 | `e1b7c50395c6326deea04daefea70257a19370235c477559952f425ea96c4338` |
@@ -131,13 +131,13 @@ Generated UTC: `2026-08-28T14:19:20Z`
 | path | bytes | sha256 |
 |---|---:|---|
 | `sft/ATTRIBUTION.md` | 2762 | `7f1e16de50767976fc723a8fd74d343581f07d183358ddf3da220e2a0f43e688` |
-| `sft/README.md` | 6919 | `ad9b026d31e84e0397057cde5e66d5b38680541744e7e2ff850e69048dd55533` |
-| `sft/checksums.sha256` | 419 | `326889fa627dacb5d109f394c0518495e717691e264248d6b179296cff3b0147` |
+| `sft/README.md` | 8175 | `181b60eecdc6b03c175d32f80c18cfc93b1a3e9038333dad6dbe13a0a466a0e7` |
+| `sft/checksums.sha256` | 419 | `89202783bd2b7df6e1a3e35bdec5e9a104d865ae4cc74e690a2e9c7373f93d07` |
 | `sft/configs/ds_zero3_bf16.json` | 569 | `41e04c1a169b122eb058f1018edba49648f8c1ebd8f732751c279e10d0d981f9` |
 | `sft/dataset_manifest.json` | 1444 | `3b6ca2879d1d680d3226ed96c326e1ee1ff566d4eabe73ed005619096e02de8e` |
 | `sft/requirements.txt` | 152 | `f4192c805bbefd20f901cdf4fc6861486b54d158fd2123551f60d7078a4c6c32` |
-| `sft/scripts/run_train_sft_2000_zero3.sh` | 7261 | `cb4c6451e975d3358e1ae0ffaa6947465d6b8dafeeac6b96d5bec517fd080586` |
-| `sft/scripts/train_sft_2000.py` | 42186 | `be3467077273b64417719ce51b05e2c89c64e7e660c7b0d6c436a98acc8d0f90` |
+| `sft/scripts/run_train_sft_2000_zero3.sh` | 8303 | `0bb0bc4b49514dbf0f5d62db3407d212b7e13d355c0d9587f8d5a74813f12537` |
+| `sft/scripts/train_sft_2000.py` | 42411 | `84f1bdd8ad9ee6a064e1096d027a57c2a4a08833b3325017054981ed86f07fb1` |
 
 ### src
 
@@ -237,7 +237,7 @@ Generated UTC: `2026-08-28T14:19:20Z`
 
 | path | bytes | sha256 |
 |---|---:|---|
-| `tests/README.md` | 851 | `4540a89191cb2bef88c4913b63dc1db436714f812cf34c7f6e25f516d7e18a3c` |
+| `tests/README.md` | 890 | `7cd17e15120917cbbb99d3781d29b540b49716a66dfbd4561ebcb381217b525e` |
 | `tests/config_support.py` | 882 | `c0260abe9c5e2c925b3a42950460c9207f91f643dd656b867575023d6d323aca` |
 | `tests/fixtures/base_5x48gb.yaml` | 1180 | `1c4bd3ac03dfaa434bab9f677e00bca4ec0a8b71b57c27b8d1f50ed1906f0648` |
 | `tests/fixtures/formal_resume_u20_3rank_4x48gb.yaml` | 236 | `1c77111b8ceaf5d4a1c21fec749153c89e355ed816b4abb9f562ccd889c0e8bc` |
@@ -281,7 +281,7 @@ Generated UTC: `2026-08-28T14:19:20Z`
 | `tests/test_scale_update_stages.py` | 7459 | `c62032232800cdc6c6ec98b7b9c21ebb93a147facc73e5d3d1e629fb37ec8da6` |
 | `tests/test_selection_boundaries.py` | 3891 | `dcb74be9d0c099e3d0591d0b36cc9958dffd4a81b8df278da46224a9e1289098` |
 | `tests/test_selection_math.py` | 6788 | `6d0423fe27153d11388c746bb19b04bb121b8016d38e8223796163ffa53bd1b0` |
-| `tests/test_sft_2000_trainer.py` | 5905 | `aa0e1159f5c39cbfdd5d363916609847b8d7ca1a293416aff3730d92cf44c3f9` |
+| `tests/test_sft_2000_trainer.py` | 7704 | `c63efacf46a2a8233f79daf01f3034d328c2927b6cad3c834b474b3774903dcb` |
 | `tests/test_snapshot_checkpoint_contract.py` | 3789 | `c9cd0a265ef1abc6e7b56fbecf10533f3f416babedad426f2806d55861bc2143` |
 | `tests/test_stop_branching.py` | 22763 | `6aeb327d4ba8e543f3043b851fefd752c7d48204cde357dbd88bbc16dcda8745` |
 | `tests/test_stop_continue_advantage.py` | 13167 | `d01f9bc5e075dc558c4aeeaee6adec516ec438d652d4e5614f68c0627c8f071e` |

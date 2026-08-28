@@ -20,7 +20,11 @@ The SFT-2000 trainer is a separate, self-contained entrypoint and does not use
 the Ray/veRL runtime topology. Install its compact dependency set from
 [`sft/requirements.txt`](../sft/requirements.txt); the launcher selects its
 interpreter with `PYTHON_BIN` and all model/data/output paths through explicit
-environment variables.
+environment variables. It discovers visible GPUs, derives accumulation from a
+fixed effective global batch, and leaves GPU selection, NCCL fabric policy,
+and allocator tuning to the surrounding runtime. Its public launcher uses a
+single-node `torchrun` boundary so it does not encode assumptions about a
+cluster scheduler or shared filesystem.
 
 FSDP2 is not a separate pip distribution. It is provided by
 `torch.distributed` in `torch==2.8.0+cu128`; veRL selects the `fsdp2` strategy,

@@ -15,7 +15,12 @@ bash sft/scripts/run_train_sft_2000_zero3.sh
 This is one public SFT stage: the pinned Qwen base model is supervised on the
 frozen 2,000-record full-trajectory dataset and exported to `final_model/`.
 The [AetherSearch-SFT repository](https://huggingface.co/muradil211/AetherSearch-SFT)
-is reserved for the checkpoint produced by this recipe.
+releases the checkpoint produced by this procedure.
+
+The launcher discovers the number of visible GPUs and derives gradient
+accumulation to preserve global batch 24. It does not assign GPU IDs or embed
+machine-local paths. Topology and paths are supplied through environment
+variables; the 2,000-record count and dataset SHA-256 remain fixed.
 
 ## Agentic RL
 

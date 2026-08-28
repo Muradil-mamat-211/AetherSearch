@@ -27,7 +27,7 @@
 | Resource | Link | Contents |
 |---|---|---|
 | 🤗 Final model | [muradil211/AetherSearch](https://huggingface.co/muradil211/AetherSearch) | final model weights, tokenizer, config, and model card |
-| 🤗 SFT-2000 model repository | [muradil211/AetherSearch-SFT](https://huggingface.co/muradil211/AetherSearch-SFT) | release target for the checkpoint produced by the public SFT-2000 recipe, including weights, tokenizer, integrity manifest, and model card |
+| 🤗 SFT-2000 model repository | [muradil211/AetherSearch-SFT](https://huggingface.co/muradil211/AetherSearch-SFT) | checkpoint trained in one SFT stage on the frozen 2,000-record dataset, with weights, tokenizer, integrity manifest, and model card |
 | 🤗 SFT-2000 data | [muradil211/AetherSearch_SFT](https://huggingface.co/datasets/muradil211/AetherSearch_SFT) | full JSONL payload, provenance manifest, checksums, and dataset card |
 | 🤗 Search-R1 train data | [PeterJinGo/nq_hotpotqa_train](https://huggingface.co/datasets/PeterJinGo/nq_hotpotqa_train) | upstream `train.parquet`, pinned by checksum in `EXTERNAL_ASSETS.md` |
 | 🤗 Full eval data | [muradil211/AetherSearch-Eval](https://huggingface.co/datasets/muradil211/AetherSearch-Eval) | complete 51,713-row Search-R1 `test.parquet`, provenance, and checksums |
@@ -64,7 +64,7 @@ retrieved evidence changes canonical-answer likelihood, and assigns both
 immediate and delayed credit to Search actions.
 
 The public release provides the strict SFT-2000 trainer, SFT assets and
-metadata, a repository for the SFT-2000 output checkpoint, the complete RL
+metadata, the SFT-2000 checkpoint repository, the complete RL
 training layer, a qualified reference recipe, and portable topology
 configuration. The preference-optimization warm start is supplied as an
 external actor/reference checkpoint; its trainer and preference-data
@@ -153,6 +153,10 @@ The resolved configuration is materialized inside each new run directory.
 | SFT | one-stage cold-start full-trajectory supervision over the frozen 2,000-record dataset | [SFT stage](sft/), [trainer](sft/scripts/train_sft_2000.py), [launcher](sft/scripts/run_train_sft_2000_zero3.sh), [model output repository](https://huggingface.co/muradil211/AetherSearch-SFT) |
 | DPO warm start | externally produced actor/reference initialization | [AETHERSEARCH_ACTOR_MODEL](environment/env.template.sh), [AETHERSEARCH_REFERENCE_MODEL](environment/env.template.sh) |
 | RL | search-augmented rollout and policy optimization | [src/agentic_rl/](src/agentic_rl/), [scripts/](scripts/), [recipes/rl/](recipes/rl/) |
+
+The SFT launcher fixes the canonical 2,000-record identity and effective global
+batch while discovering the visible local worker topology at launch time. It
+does not embed GPU IDs, node addresses, or server-local paths.
 
 RL starts from the DPO warm-start actor/reference checkpoint; it does not start
 directly from the SFT stage.
@@ -915,7 +919,7 @@ stability, throughput, or production qualification.
   launcher/configuration, and dependency pins.
   The full JSONL payload is hosted on
   [Hugging Face Datasets](https://huggingface.co/datasets/muradil211/AetherSearch_SFT).
-  The release repository designated for the SFT-2000 output checkpoint is
+  The SFT-2000 checkpoint release repository is
   [muradil211/AetherSearch-SFT](https://huggingface.co/muradil211/AetherSearch-SFT).
 - `src/agentic_rl/`: RL training, rollout, credit assignment, policy loss,
   retriever, checkpoint, and runtime adapter code.
@@ -934,10 +938,10 @@ stability, throughput, or production qualification.
 
 📦 The public repository covers SFT assets, metadata, and the strict
 SFT-2000 training implementation plus the complete Agentic RL training layer.
-The SFT model repository is reserved for a checkpoint produced by the public
-one-stage SFT-2000 recipe. The DPO warm start is an externally supplied model
-checkpoint; the DPO trainer and preference-data generation pipeline are not
-part of this release.
+The SFT checkpoint was trained in one stage on the frozen 2,000-record dataset
+using the public SFT-2000 recipe. The DPO warm start is an externally supplied
+model checkpoint; the DPO trainer and preference-data generation pipeline are
+not part of this release.
 
 Large model weights, optimizer-state checkpoints, eval result bundles, report
 archives, and runtime snapshots are intentionally not committed to this GitHub

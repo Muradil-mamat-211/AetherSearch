@@ -7,7 +7,11 @@ qualification contract. Machine-local paths come from `environment/env.local.sh`
 
 These are RL configurations. The independent SFT-2000 DeepSpeed configuration
 is [`sft/configs/ds_zero3_bf16.json`](../sft/configs/ds_zero3_bf16.json), with
-its supported launcher under [`sft/scripts/`](../sft/scripts/).
+its supported launcher under [`sft/scripts/`](../sft/scripts/). The DeepSpeed
+file fixes optimization semantics but contains no GPU count, GPU ID, node,
+host, or filesystem path. The launcher resolves local worker count and
+machine-local paths from its environment inside a documented single-node
+`torchrun` boundary.
 
 The public prompt filter ranks candidate prompts by raw terminal-outcome sample
 variance and retains the shortest prefix carrying the configured cumulative

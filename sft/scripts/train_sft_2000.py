@@ -37,6 +37,9 @@ PUBLIC_FIELD_ORDER = (
     "full_trajectory_text",
 )
 PUBLIC_FIELDS = set(PUBLIC_FIELD_ORDER)
+CANONICAL_DATA_SHA256 = (
+    "fec609652d3832c7a6c0ee2861c6f946b6cf7c3d3d40fc5d9be9b75df6325dcb"
+)
 
 INFORMATION_RE = re.compile(r"<information>.*?</information>", flags=re.S)
 SEARCH_RE = re.compile(r"<search>(.*?)</search>", flags=re.S)
@@ -751,7 +754,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max_seq_len", type=int, default=4096)
     parser.add_argument("--long_sample_policy", choices=["error", "filter"], default="error")
     parser.add_argument("--expected_num_samples", type=int, default=2000)
-    parser.add_argument("--expected_sha256", default=None)
+    parser.add_argument(
+        "--expected_sha256",
+        default=CANONICAL_DATA_SHA256,
+        help="Expected training-file SHA-256 (defaults to canonical SFT-2000 data).",
+    )
     parser.add_argument("--allow_extra_fields", action="store_true")
     parser.add_argument("--tokenization_batch_size", type=int, default=64)
     parser.add_argument("--check_data_only", action="store_true")

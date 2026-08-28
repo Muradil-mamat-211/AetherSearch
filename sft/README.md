@@ -145,32 +145,52 @@ input tokens, a maximum length of 2,901 tokens, 326,451 prompt-masked tokens,
 1,625,435 information-masked tokens, and 167,778 supervised tokens. All 2,000
 segmented sequences decode back to the tokenizer-normalized source.
 
-Start the single-node BF16 ZeRO-3 recipe on all visible GPUs:
+Start the BF16 ZeRO-3 recipe. By default, the launcher uses every GPU already
+visible to the process; it never selects physical GPU IDs itself:
 
 ```bash
-CUDA_VISIBLE_DEVICES=0,1,2 \
-NPROC_PER_NODE=3 \
 bash sft/scripts/run_train_sft_2000_zero3.sh
 ```
 
 The launcher defaults to the immutable Qwen base revision above, one epoch,
 sequence length 4,096, learning rate `2e-6`, per-device batch size 1, gradient
-accumulation 8, cosine scheduling, BF16, TF32, gradient checkpointing,
+accumulation derived to preserve an effective global batch size of 24, cosine
+scheduling, BF16, TF32, gradient checkpointing,
 length-grouped dynamic padding, and no intermediate checkpoint. It runs the
 full preflight first, refuses to overwrite existing output, validates BF16
-support and free disk, and exports `final_model/` through an atomic directory
-rename. Paths and hyperparameters are configurable through the environment
-variables declared at the top of the launcher.
+support, optionally enforces a configured free-disk floor, and exports
+`final_model/` through an atomic directory rename. Paths and hyperparameters
+are configurable through the environment variables declared at the top of the
+launcher.
+
+The reference three-worker topology therefore resolves to micro-batch 1 and
+gradient accumulation 8. On one, two, four, or eight workers, accumulation is
+derived as 24, 12, 6, or 3 so optimizer batch semantics remain unchanged. Set
+`CUDA_VISIBLE_DEVICES` outside the script to choose devices, or set
+`NPROC_PER_NODE` to use a subset of already visible devices on that host. The
+launcher deliberately owns only a single-node `torchrun` boundary, avoiding
+assumptions about cluster schedulers or shared filesystems. It rejects a local
+worker topology that cannot divide global batch 24 exactly;
+`GLOBAL_BATCH_SIZE` is explicit if a deliberately different training recipe
+is required.
+
+Machine-local controls such as `PYTHON_BIN`, `DATA_FILE`, `OUTPUT_DIR`,
+`DEEPSPEED_CONFIG`, `DATALOADER_NUM_WORKERS`, and `MINIMUM_FREE_KB` remain
+environment inputs. The script does not set GPU IDs, NCCL fabric policy, CUDA
+allocator tuning, or server-specific absolute paths. `DATA_FILE` may point to
+any local copy, but its contents must still match the canonical 2,000-record
+count and SHA-256.
 
 The trainer has passed the complete CPU-side data/mask/collator preflight and
 source tests.
 
-## Model release contract
+## SFT-2000 checkpoint
 
-The canonical public SFT procedure is one supervised fine-tuning stage from the
-pinned Qwen base model over the frozen 2,000-record `final_sft_2000.jsonl`.
-The [AetherSearch-SFT repository](https://huggingface.co/muradil211/AetherSearch-SFT)
-is reserved for the `final_model/` checkpoint produced by this exact recipe.
+The [AetherSearch-SFT checkpoint](https://huggingface.co/muradil211/AetherSearch-SFT)
+was produced in one supervised fine-tuning stage from the pinned Qwen base
+model over the frozen 2,000-record `final_sft_2000.jsonl`. Training ran on a
+separate server; the public release contains the final model artifacts and the
+reproduction recipe, not server-local training logs.
 
 ## Limitations
 

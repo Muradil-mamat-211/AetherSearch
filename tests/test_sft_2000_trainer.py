@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import re
 import sys
 from pathlib import Path
 from types import SimpleNamespace
@@ -169,3 +170,52 @@ def test_cli_validation_rejects_unsafe_values(tmp_path: Path) -> None:
     )
     with pytest.raises(ValueError, match="max_seq_len"):
         TRAINER.validate_cli_args(args)
+
+
+def test_public_cli_defaults_lock_canonical_sft_2000_data(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            str(TRAINER_PATH),
+            "--model_name_or_path",
+            "Qwen/Qwen2.5-3B-Instruct",
+            "--train_file",
+            "final_sft_2000.jsonl",
+            "--output_dir",
+            "outputs/sft",
+        ],
+    )
+    args = TRAINER.parse_args()
+    assert args.expected_num_samples == 2000
+    assert args.expected_sha256 == TRAINER.CANONICAL_DATA_SHA256
+    assert args.long_sample_policy == "error"
+    assert args.allow_extra_fields is False
+
+
+def test_launcher_separates_training_semantics_from_hardware_topology() -> None:
+    launcher = (
+        PROJECT_ROOT / "sft" / "scripts" / "run_train_sft_2000_zero3.sh"
+    ).read_text(encoding="utf-8")
+
+    assert 'canonical_num_samples=2000' in launcher
+    assert f'canonical_data_sha256="{TRAINER.CANONICAL_DATA_SHA256}"' in launcher
+    assert "EXPECTED_NUM_SAMPLES" not in launcher
+    assert "EXPECTED_SHA256" not in launcher
+    assert 'global_batch_size="${GLOBAL_BATCH_SIZE:-24}"' in launcher
+    assert 'world_size="${nproc_per_node}"' in launcher
+    assert (
+        "gradient_accumulation="
+        "$((global_batch_size / micro_batch_across_workers))"
+    ) in launcher
+    assert 'nproc_per_node="${NPROC_PER_NODE:-${visible_gpu_count}}"' in launcher
+    assert "--standalone" in launcher
+    assert "NNODES" not in launcher
+    assert "NODE_RANK" not in launcher
+    assert not re.search(r"(?:export\s+)?CUDA_VISIBLE_DEVICES=", launcher)
+    assert "NCCL_IB_DISABLE=" not in launcher
+    assert "PYTORCH_CUDA_ALLOC_CONF=" not in launcher
+    assert "OMP_NUM_THREADS=" not in launcher
+    assert "/root/" not in launcher
