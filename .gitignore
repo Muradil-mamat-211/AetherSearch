@@ -34,6 +34,11 @@ configs/local/
 *.token
 *.secret
 
+# Hugging Face-hosted SFT payloads (metadata and code remain in Git).
+/provenance_manifest.jsonl
+/sft/final_sft_2000.jsonl
+/sft/provenance_manifest.jsonl
+
 # Model weights and optimizer shards belong on HuggingFace/LFS, not normal Git.
 *.safetensors
 *.bin

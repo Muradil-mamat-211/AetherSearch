@@ -5,6 +5,10 @@ The supported public entry configuration is
 assets, physical hardware/topology, runtime mapping, and official
 qualification contract. Machine-local paths come from `environment/env.local.sh`.
 
+These are RL configurations. The independent SFT-2000 DeepSpeed configuration
+is [`sft/configs/ds_zero3_bf16.json`](../sft/configs/ds_zero3_bf16.json), with
+its supported launcher under [`sft/scripts/`](../sft/scripts/).
+
 The public prompt filter ranks candidate prompts by raw terminal-outcome sample
 variance and retains the shortest prefix carrying the configured cumulative
 variance mass. Retrieval scoring and Search credit are applied only after that

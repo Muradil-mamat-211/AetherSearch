@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate README text integrity and repository-local references."""
+"""Validate Markdown text integrity and repository-local references."""
 
 from __future__ import annotations
 
@@ -149,7 +149,7 @@ def validate(path: Path) -> list[str]:
         if reference.startswith("#"):
             anchor = urllib.parse.unquote(reference[1:]).lower()
             if anchor not in slugs:
-                errors.append(f"missing README anchor: {reference}")
+                errors.append(f"missing Markdown anchor: {reference}")
             continue
         parsed = urllib.parse.urlsplit(reference)
         if parsed.scheme or reference.startswith("//"):
@@ -198,20 +198,20 @@ def validate(path: Path) -> list[str]:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument(
-        "path",
-        nargs="?",
-        type=Path,
-        default=Path(__file__).resolve().parents[1] / "README.md",
-    )
+    parser.add_argument("paths", nargs="*", type=Path)
     args = parser.parse_args()
-    errors = validate(args.path.resolve())
-    if errors:
-        for error in errors:
-            print(f"README validation failed: {error}", file=sys.stderr)
-        return 1
-    print(f"README validation passed: {args.path.resolve()}")
-    return 0
+    paths = args.paths or [Path(__file__).resolve().parents[1] / "README.md"]
+    failed = False
+    for path in paths:
+        resolved = path.resolve()
+        errors = validate(resolved)
+        if errors:
+            failed = True
+            for error in errors:
+                print(f"Markdown validation failed ({resolved}): {error}", file=sys.stderr)
+        else:
+            print(f"Markdown validation passed: {resolved}")
+    return int(failed)
 
 
 if __name__ == "__main__":

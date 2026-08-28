@@ -7,13 +7,15 @@
 **✨ A 3B multi-turn search agent trained with full-trajectory SFT, DPO, and information-gain-guided Agentic RL.**
 
 [![Model](https://img.shields.io/badge/%F0%9F%A4%97%20Model-AetherSearch-yellow)](https://huggingface.co/muradil211/AetherSearch)
-[![SFT Data](https://img.shields.io/badge/%F0%9F%A4%97%20Data-AetherSearch%20SFT-yellow)](https://huggingface.co/datasets/muradil211/aethersearch_sft)
+[![SFT Model](https://img.shields.io/badge/%F0%9F%A4%97%20Model-AetherSearch%20SFT-yellow)](https://huggingface.co/muradil211/AetherSearch-SFT)
+[![SFT Data](https://img.shields.io/badge/%F0%9F%A4%97%20Data-AetherSearch%20SFT-yellow)](https://huggingface.co/datasets/muradil211/AetherSearch_SFT)
 [![Eval Data](https://img.shields.io/badge/%F0%9F%A4%97%20Eval-Search--R1%20Full-yellow)](https://huggingface.co/datasets/muradil211/AetherSearch-Eval)
 [![Code](https://img.shields.io/badge/GitHub-Code-181717?logo=github)](https://github.com/Muradil-mamat-211/AetherSearch)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue?logo=python&logoColor=white)](pyproject.toml)
 
 🤗 [AetherSearch Model](https://huggingface.co/muradil211/AetherSearch) |
-🤗 [AetherSearch SFT Data](https://huggingface.co/datasets/muradil211/aethersearch_sft) |
+🤗 [AetherSearch SFT Model](https://huggingface.co/muradil211/AetherSearch-SFT) |
+🤗 [AetherSearch SFT Data](https://huggingface.co/datasets/muradil211/AetherSearch_SFT) |
 🤗 [Full Eval Data](https://huggingface.co/datasets/muradil211/AetherSearch-Eval)
 
 </div>
@@ -24,12 +26,13 @@
 
 | Resource | Link | Contents |
 |---|---|---|
-| 🤗 Model | [muradil211/AetherSearch](https://huggingface.co/muradil211/AetherSearch) | model weights, tokenizer, config, and model card |
-| 🤗 SFT data | [muradil211/aethersearch_sft](https://huggingface.co/datasets/muradil211/aethersearch_sft) | full JSONL payload, provenance manifest, checksums, and dataset card |
+| 🤗 Final model | [muradil211/AetherSearch](https://huggingface.co/muradil211/AetherSearch) | final model weights, tokenizer, config, and model card |
+| 🤗 SFT checkpoint repository | [muradil211/AetherSearch-SFT](https://huggingface.co/muradil211/AetherSearch-SFT) | release target for the historical pre-SFT-2000 V3.1 Repair weights, tokenizer, integrity manifest, and qualified model card |
+| 🤗 SFT-2000 data | [muradil211/AetherSearch_SFT](https://huggingface.co/datasets/muradil211/AetherSearch_SFT) | full JSONL payload, provenance manifest, checksums, and dataset card |
 | 🤗 Search-R1 train data | [PeterJinGo/nq_hotpotqa_train](https://huggingface.co/datasets/PeterJinGo/nq_hotpotqa_train) | upstream `train.parquet`, pinned by checksum in `EXTERNAL_ASSETS.md` |
 | 🤗 Full eval data | [muradil211/AetherSearch-Eval](https://huggingface.co/datasets/muradil211/AetherSearch-Eval) | complete 51,713-row Search-R1 `test.parquet`, provenance, and checksums |
 | Retriever assets | [`EXTERNAL_ASSETS.md`](EXTERNAL_ASSETS.md#retriever-assets) | pinned upstream corpus, BM25, FAISS, and E5 revisions with checksums and download commands |
-| Code | this repository | SFT build scripts, RL training code, configs, runtime assets, and tests |
+| Code | this repository | strict SFT-2000 trainer and build scripts, RL training code, configs, runtime assets, and tests |
 
 ## Table of Contents
 
@@ -60,8 +63,9 @@ updates on prompts with useful within-group outcome variation, measures how
 retrieved evidence changes canonical-answer likelihood, and assigns both
 immediate and delayed credit to Search actions.
 
-The public release provides SFT assets and metadata, the complete RL training
-layer, a qualified reference recipe, and portable topology configuration. The
+The public release provides the strict SFT-2000 trainer, SFT assets and
+metadata, a repository for the historical SFT checkpoint, the complete RL
+training layer, a qualified reference recipe, and portable topology configuration. The
 preference-optimization warm start is supplied as an external actor/reference
 checkpoint; its trainer and preference-data generation pipeline are outside
 the current release scope.
@@ -146,7 +150,7 @@ The resolved configuration is materialized inside each new run directory.
 
 | Stage | Purpose | Primary locations |
 |---|---|---|
-| SFT | cold-start full-trajectory supervision | [sft_data/](sft_data/), [sft_data/scripts/](sft_data/scripts/) |
+| SFT | cold-start full-trajectory supervision | [SFT stage](sft/), [trainer](sft/scripts/train_sft_2000.py), [launcher](sft/scripts/run_train_sft_2000_zero3.sh), [checkpoint release repository](https://huggingface.co/muradil211/AetherSearch-SFT) |
 | DPO warm start | externally produced actor/reference initialization | [AETHERSEARCH_ACTOR_MODEL](environment/env.template.sh), [AETHERSEARCH_REFERENCE_MODEL](environment/env.template.sh) |
 | RL | search-augmented rollout and policy optimization | [src/agentic_rl/](src/agentic_rl/), [scripts/](scripts/), [recipes/rl/](recipes/rl/) |
 
@@ -907,8 +911,12 @@ stability, throughput, or production qualification.
 
 ## Repository Layout
 
-- `sft_data/`: SFT data release metadata and build scripts. The full SFT JSONL
-  payload is hosted on [Hugging Face Datasets](https://huggingface.co/datasets/muradil211/aethersearch_sft).
+- `sft/`: SFT-2000 data metadata, historical build scripts, strict
+  full-trajectory trainer, ZeRO-3 launcher/configuration, dependency pins, and
+  the model-evaluation qualification. The full JSONL payload is hosted on
+  [Hugging Face Datasets](https://huggingface.co/datasets/muradil211/AetherSearch_SFT).
+  The separate release repository for the historical SFT checkpoint is
+  [muradil211/AetherSearch-SFT](https://huggingface.co/muradil211/AetherSearch-SFT).
 - `src/agentic_rl/`: RL training, rollout, credit assignment, policy loss,
   retriever, checkpoint, and runtime adapter code.
 - `scripts/`: launch, preflight, resume, validation, and operational scripts
@@ -924,8 +932,11 @@ stability, throughput, or production qualification.
 
 ## Release Scope
 
-📦 The public repository covers SFT assets and metadata plus the complete
-Agentic RL training layer. The DPO warm start is an externally supplied model
+📦 The public repository covers SFT assets, metadata, and the strict
+SFT-2000 training implementation plus the complete Agentic RL training layer.
+The historical SFT checkpoint has a separate Hugging Face release repository;
+its files are uploaded independently by the maintainer. It predates and was
+not trained on SFT-2000. The DPO warm start is an externally supplied model
 checkpoint; the DPO trainer and preference-data generation pipeline are not
 part of this release.
 

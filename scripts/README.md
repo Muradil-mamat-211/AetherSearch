@@ -1,5 +1,10 @@
 # Operational Scripts
 
+This root directory owns RL/runtime operations. The separately audited
+SFT-2000 trainer and launcher live under
+[`sft/scripts/`](../sft/scripts/) so the two training stages retain explicit
+dependency and runtime boundaries.
+
 ## Public Entrypoints
 
 - `train_rl.sh`: resolve, preflight, and launch the supported RL recipe.
@@ -7,7 +12,8 @@
   validation.
 - `validate_static.sh`: lightweight source, shell, and configuration checks.
 - `validate_readme.py`: strict UTF-8, Markdown fence, link, anchor, table, and
-  repository-owned SVG checks for the root README.
+  repository-owned SVG checks for one or more Markdown files. Static validation
+  applies it to every Markdown file in the repository.
 - `test_code.sh`: run selected tests, or all test modules in isolated
   processes when no paths are supplied.
 - `validate_48cpu_resource_profile.py`: check the supported three-rank

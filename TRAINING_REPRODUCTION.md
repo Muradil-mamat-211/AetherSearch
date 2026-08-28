@@ -1,4 +1,24 @@
-# RL Training Reproduction
+# Training Reproduction
+
+## SFT-2000
+
+The strict SFT implementation is documented in [`sft/`](sft/). Download the
+frozen 2,000-record dataset from
+[muradil211/AetherSearch_SFT](https://huggingface.co/datasets/muradil211/AetherSearch_SFT),
+install `sft/requirements.txt`, run the data-only preflight, and then launch the
+single-node BF16 ZeRO-3 recipe:
+
+```bash
+bash sft/scripts/run_train_sft_2000_zero3.sh
+```
+
+The checkpoint designated for separate release through the
+[AetherSearch-SFT repository](https://huggingface.co/muradil211/AetherSearch-SFT)
+predates SFT-2000 and must not be treated as the output of this command. Its
+evaluation scope is recorded in
+[`sft/MODEL_EVALUATION.md`](sft/MODEL_EVALUATION.md).
+
+## Agentic RL
 
 The supported public entrypoint is:
 

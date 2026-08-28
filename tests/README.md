@@ -1,8 +1,8 @@
 # Test Suite
 
-The test suite covers algorithm contracts, configuration resolution, topology
-planning, checkpoint/resume behavior, runtime adapters, and source-level
-integration boundaries.
+The test suite covers the SFT-2000 schema/masking/collation contract, algorithm
+contracts, configuration resolution, topology planning, checkpoint/resume
+behavior, runtime adapters, and source-level integration boundaries.
 
 Run the complete suite:
 

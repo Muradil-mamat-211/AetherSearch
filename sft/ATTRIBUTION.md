@@ -52,8 +52,10 @@ The retrieval-corpus redistribution gate therefore remains unresolved.
 - Search-R1 references were used for filtering and are not included as release
   records:
   <https://github.com/PeterGriffinJin/Search-R1>
-- Qwen2.5-3B-Instruct is a model-format reference only; model weights are not
-  included in this release and no model license is asserted for this data.
+- Qwen2.5-3B-Instruct is the base/model-format reference. The historical SFT
+  checkpoint has a separate release repository at
+  <https://huggingface.co/muradil211/AetherSearch-SFT>; no model license is
+  asserted by this data attribution record.
 
 ## Required user action before redistribution
 

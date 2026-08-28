@@ -16,6 +16,12 @@ environment per engine:
 2. The Retriever environment runs Pyserini, FAISS GPU, the dense encoder, and
    the hybrid retrieval server on the dedicated Retriever GPU.
 
+The SFT-2000 trainer is a separate, self-contained entrypoint and does not use
+the Ray/veRL runtime topology. Install its compact dependency set from
+[`sft/requirements.txt`](../sft/requirements.txt); the launcher selects its
+interpreter with `PYTHON_BIN` and all model/data/output paths through explicit
+environment variables.
+
 FSDP2 is not a separate pip distribution. It is provided by
 `torch.distributed` in `torch==2.8.0+cu128`; veRL selects the `fsdp2` strategy,
 and `src/agentic_rl/runtime/fsdp_worker.py` supplies the project-specific
