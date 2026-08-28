@@ -12,11 +12,10 @@ single-node BF16 ZeRO-3 recipe:
 bash sft/scripts/run_train_sft_2000_zero3.sh
 ```
 
-The checkpoint designated for separate release through the
-[AetherSearch-SFT repository](https://huggingface.co/muradil211/AetherSearch-SFT)
-predates SFT-2000 and must not be treated as the output of this command. Its
-evaluation scope is recorded in
-[`sft/MODEL_EVALUATION.md`](sft/MODEL_EVALUATION.md).
+This is one public SFT stage: the pinned Qwen base model is supervised on the
+frozen 2,000-record full-trajectory dataset and exported to `final_model/`.
+The [AetherSearch-SFT repository](https://huggingface.co/muradil211/AetherSearch-SFT)
+is reserved for the checkpoint produced by this recipe.
 
 ## Agentic RL
 

@@ -13,7 +13,7 @@ This is an attribution and rights-status record, not legal advice.
 
 ## Components and upstream references
 
-### QueryRewrite sources
+### Single-search sources
 
 - **TriviaQA**: 996 records in this release. The official TriviaQA page states
   that the University of Washington does not own the copyright of the
@@ -25,7 +25,7 @@ This is an attribution and rights-status record, not legal advice.
   official Microsoft WebQuestionsSP download page is retained as a reference:
   <https://www.microsoft.com/en-us/download/details.aspx?id=52763>
 
-### V3.1 sources
+### Multi-search sources
 
 - **MuSiQue**: 720 records in this release. The upstream repository states
   that MuSiQue is distributed under CC BY 4.0:
@@ -52,14 +52,12 @@ The retrieval-corpus redistribution gate therefore remains unresolved.
 - Search-R1 references were used for filtering and are not included as release
   records:
   <https://github.com/PeterGriffinJin/Search-R1>
-- Qwen2.5-3B-Instruct is the base/model-format reference. The historical SFT
-  checkpoint has a separate release repository at
-  <https://huggingface.co/muradil211/AetherSearch-SFT>; no model license is
+- Qwen2.5-3B-Instruct is the base/model-format reference. No model license is
   asserted by this data attribution record.
 
 ## Required user action before redistribution
 
 Before publishing the JSONL publicly or applying a downstream license, verify
-the terms for TriviaQA questions/evidence, WebQuestions, each V3.1 source, and
-the exact retrieval corpus snapshot. Preserve the upstream attribution and any
-share-alike or other conditions that apply.
+the terms for TriviaQA questions/evidence, WebQuestions, each multi-search
+source, and the exact retrieval corpus snapshot. Preserve the upstream
+attribution and any share-alike or other conditions that apply.

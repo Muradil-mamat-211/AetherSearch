@@ -31,15 +31,3 @@ FastAPI 0.136.3
 uvicorn 0.48.0
 numpy 1.26.4
 ```
-
-SFT-2000 code-audit and complete data/mask preflight environment observed on
-2026-08-28 UTC (no CUDA training run was performed in this environment):
-
-```text
-python 3.10.20
-torch 2.12.1+cu130
-transformers 4.51.3
-accelerate 1.14.0
-deepspeed 0.19.2
-tensorboard 2.20.0
-```

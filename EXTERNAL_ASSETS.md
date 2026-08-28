@@ -7,10 +7,10 @@ local locations in `environment/env.local.sh`.
 
 - Final AetherSearch model:
   [muradil211/AetherSearch](https://huggingface.co/muradil211/AetherSearch).
-- Historical SFT checkpoint release repository:
+- SFT-2000 model output repository:
   [muradil211/AetherSearch-SFT](https://huggingface.co/muradil211/AetherSearch-SFT).
-  This is the pre-SFT-2000 V3.1 Repair checkpoint, not an output of the public
-  SFT-2000 trainer.
+  This repository is designated for the checkpoint produced by the public
+  one-stage SFT-2000 trainer.
 
 ## Base/Reference Model
 

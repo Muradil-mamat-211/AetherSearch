@@ -4,19 +4,19 @@ This inventory covers every non-ignored file in the AetherSearch GitHub
 release. Model weights, optimizer checkpoints, eval result bundles, report
 archives, and runtime snapshots are not included.
 
-Generated UTC: `2026-08-28T13:43:20Z`
+Generated UTC: `2026-08-28T14:19:20Z`
 
 ## Summary
 
 - `assets`: `3` files, `8100` bytes
 - `configs`: `24` files, `45263` bytes
-- `documentation`: `4` files, `43740` bytes
-- `environment`: `6` files, `15128` bytes
+- `documentation`: `4` files, `43643` bytes
+- `environment`: `6` files, `14856` bytes
 - `recipes`: `2` files, `5388` bytes
 - `repo_root`: `3` files, `1596` bytes
 - `runtime_assets`: `3` files, `29691` bytes
 - `scripts`: `18` files, `75391` bytes
-- `sft`: `12` files, `77604` bytes
+- `sft`: `8` files, `61712` bytes
 - `src`: `89` files, `1280776` bytes
 - `tests`: `54` files, `473222` bytes
 - `third_party`: `5` files, `126026` bytes
@@ -64,17 +64,17 @@ Generated UTC: `2026-08-28T13:43:20Z`
 
 | path | bytes | sha256 |
 |---|---:|---|
-| `EXTERNAL_ASSETS.md` | 7114 | `c4a787950b9357dfd2ae1436c8997d5ac809cd951a45a9d587f88b988179b854` |
-| `README.md` | 28998 | `a91cb886bc5ba84decedcfab0ef77d3e48dd0143e89c65e627fdf0cab9a3109e` |
+| `EXTERNAL_ASSETS.md` | 7107 | `d01c7122713ca3c1c7432668d8763f13627258b82a67d79fa01d5cd00dd90334` |
+| `README.md` | 28916 | `7d6634871546c999b5e5ba0831fbc8d7a22636b6fa072f4de8ba5eaeb7d4126f` |
 | `THIRD_PARTY_NOTICES.md` | 6098 | `f5eb49726de47e3ad7b3897840482d5aee7c854fc1921465e77cf8ff03dae682` |
-| `TRAINING_REPRODUCTION.md` | 1530 | `26eadb035e8f8f230369a6a5d561efa377dfeb619f4b9791a277e4d2b8948717` |
+| `TRAINING_REPRODUCTION.md` | 1522 | `7e811b3365a58d8d84f320e4086725d9090224c8ce5196b7c2577e58896fa38f` |
 
 ### environment
 
 | path | bytes | sha256 |
 |---|---:|---|
 | `environment/README.md` | 2535 | `2a404f507190d63e9d6d0460dbfe600de81cd4da6c1a8b2505128c8681c32358` |
-| `environment/RUNTIME_VERSIONS.md` | 794 | `4668f3ca65337f1fbcf8f46695c268941f988d76e081ba968a28f99cd8740248` |
+| `environment/RUNTIME_VERSIONS.md` | 522 | `e52951f548ed1f590b7bc391b07cc5243ae5a9a7708cbe69c5bac811cc4b2d97` |
 | `environment/env.template.sh` | 3298 | `de0bf67567411d846eed7d607db5d75edebd328da3fc5f026be3a7d889d26917` |
 | `environment/requirements-core-observed.txt` | 388 | `e1b7c50395c6326deea04daefea70257a19370235c477559952f425ea96c4338` |
 | `environment/retriever_pip_freeze.txt` | 3728 | `f077f160bb383b3dda5ebcdaf2526b511a6b0ee0612ca6510f9660cd7a5cd397` |
@@ -130,17 +130,13 @@ Generated UTC: `2026-08-28T13:43:20Z`
 
 | path | bytes | sha256 |
 |---|---:|---|
-| `sft/ATTRIBUTION.md` | 2870 | `ba28876cee412a85278acbbcc1aad667eb48f697ab2f0e00c7990c26f5ff4c39` |
-| `sft/MODEL_EVALUATION.md` | 6024 | `4cedac839ddd842e85907fed683b26b24ec2d69d33cf1b5ef9b32c7b58b377f7` |
-| `sft/README.md` | 7838 | `0a58173e7e24d20b8d2f153ab11f83291ec993c9ec4822aea740b74662974bfe` |
-| `sft/checksums.sha256` | 419 | `ea42de1fa92452a296cff92e3151e49e57e4a0638093bf6f4ad18a5613f614fb` |
+| `sft/ATTRIBUTION.md` | 2762 | `7f1e16de50767976fc723a8fd74d343581f07d183358ddf3da220e2a0f43e688` |
+| `sft/README.md` | 6919 | `ad9b026d31e84e0397057cde5e66d5b38680541744e7e2ff850e69048dd55533` |
+| `sft/checksums.sha256` | 419 | `326889fa627dacb5d109f394c0518495e717691e264248d6b179296cff3b0147` |
 | `sft/configs/ds_zero3_bf16.json` | 569 | `41e04c1a169b122eb058f1018edba49648f8c1ebd8f732751c279e10d0d981f9` |
 | `sft/dataset_manifest.json` | 1444 | `3b6ca2879d1d680d3226ed96c326e1ee1ff566d4eabe73ed005619096e02de8e` |
 | `sft/requirements.txt` | 152 | `f4192c805bbefd20f901cdf4fc6861486b54d158fd2123551f60d7078a4c6c32` |
-| `sft/scripts/build_audited_queryrewrite.sh` | 4533 | `36cb1cbf7497c12a615d50f141839eee2c9944ceb22a71a911a379eb6680a566` |
-| `sft/scripts/build_final_sft.sh` | 3054 | `913d285bf31732d0109efb7556af0eb59145ec94333a72da271311a752393a4f` |
 | `sft/scripts/run_train_sft_2000_zero3.sh` | 7261 | `cb4c6451e975d3358e1ae0ffaa6947465d6b8dafeeac6b96d5bec517fd080586` |
-| `sft/scripts/standardize_queryrewrite_think.pl` | 1254 | `4f6d97cd6cb28c241f6b5e4807f61f39abdcd628cdaa1d03e661604e65ba2ff6` |
 | `sft/scripts/train_sft_2000.py` | 42186 | `be3467077273b64417719ce51b05e2c89c64e7e660c7b0d6c436a98acc8d0f90` |
 
 ### src

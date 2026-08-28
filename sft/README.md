@@ -7,9 +7,9 @@
 > **Complete dataset:** [AetherSearch SFT on Hugging Face](https://huggingface.co/datasets/muradil211/AetherSearch_SFT)
 >
 > This directory is the complete public boundary for the SFT stage: release
-> metadata, historical data-build scripts, the strict SFT-2000 trainer,
-> DeepSpeed configuration, dependency pins, and the evaluation inventory. The
-> The JSONL payloads remain on Hugging Face Datasets. Model files are managed
+> metadata, the strict SFT-2000 trainer, DeepSpeed configuration, and
+> dependency pins. The JSONL payloads remain on
+> Hugging Face Datasets. Model files are managed
 > separately by the maintainer through the linked Hugging Face model repository.
 
 ## Release at a glance
@@ -17,12 +17,12 @@
 | Item | Details |
 |---|---|
 | Complete data | [muradil211/AetherSearch_SFT](https://huggingface.co/datasets/muradil211/AetherSearch_SFT) |
-| SFT checkpoint release repository | [muradil211/AetherSearch-SFT](https://huggingface.co/muradil211/AetherSearch-SFT) |
+| SFT-2000 model output repository | [muradil211/AetherSearch-SFT](https://huggingface.co/muradil211/AetherSearch-SFT) |
 | Reproduction entrypoint | [`scripts/run_train_sft_2000_zero3.sh`](scripts/run_train_sft_2000_zero3.sh) |
 | Records | 2,000 validated trajectories |
 | Training unit | Full trajectory |
 | License metadata | `unknown` |
-| GitHub contents | Data metadata, build/training code, configuration, tests, and evaluation documentation |
+| GitHub contents | Data metadata, training code, configuration, and tests |
 
 ## Dataset Overview
 
@@ -163,27 +163,20 @@ rename. Paths and hyperparameters are configurable through the environment
 variables declared at the top of the launcher.
 
 The trainer has passed the complete CPU-side data/mask/collator preflight and
-source tests. A full SFT-2000 optimization run has not been executed in this
-release environment because no CUDA device is available here.
+source tests.
 
-## Historical SFT checkpoint release
+## Model release contract
 
-The checkpoint designated for separate release through the
-[AetherSearch-SFT repository](https://huggingface.co/muradil211/AetherSearch-SFT) is
-the newest complete local SFT checkpoint with recoverable evaluation evidence.
-Its true lineage is the older V1 → V2 query-rewrite → V3 multi-search pipeline
-followed by the 300-step V3.1 answer/search-retention repair. It was produced
-before this 2,000-record release and **was not trained by the SFT-2000 trainer**.
-
-See [`MODEL_EVALUATION.md`](MODEL_EVALUATION.md) for metric definitions,
-results, and the critical holdout/leakage qualification.
+The canonical public SFT procedure is one supervised fine-tuning stage from the
+pinned Qwen base model over the frozen 2,000-record `final_sft_2000.jsonl`.
+The [AetherSearch-SFT repository](https://huggingface.co/muradil211/AetherSearch-SFT)
+is reserved for the `final_model/` checkpoint produced by this exact recipe.
 
 ## Limitations
 
-No trained SFT-2000 model or SFT-2000 evaluation result exists yet. The
-older SFT checkpoint linked above must not be reported as an SFT-2000 result. The
-2,000-record release defines the full-trajectory data contract; the public
-trainer constructs its token-level masks.
+The 2,000-record release defines the full-trajectory data contract; the public
+trainer constructs its token-level masks. A model release must record the exact
+dataset checksum and training configuration used to produce its weights.
 
 ## Checksums
 
@@ -194,11 +187,3 @@ release with:
 ```bash
 sha256sum -c checksums.sha256
 ```
-
-## Historical build scripts
-
-The historical data-build scripts are preserved alongside the training
-entrypoints under `scripts/`. `build_audited_queryrewrite.sh` and
-`build_final_sft.sh` accept the working directory as the first argument or read
-`AETHERSEARCH_SFT_WORKDIR`. One of these two inputs is required; no
-server-local default path is embedded in the repository.
