@@ -16,14 +16,15 @@ environment per engine:
 2. The Retriever environment runs Pyserini, FAISS GPU, the dense encoder, and
    the hybrid retrieval server on the dedicated Retriever GPU.
 
-The SFT-2000 trainer is a separate, self-contained entrypoint and does not use
-the Ray/veRL runtime topology. Install its compact dependency set from
-[`sft/requirements.txt`](../sft/requirements.txt); the launcher selects its
-interpreter with `PYTHON_BIN` and all model/data/output paths through explicit
-environment variables. It discovers visible GPUs, derives accumulation from a
-fixed effective global batch, and leaves GPU selection, NCCL fabric policy,
-and allocator tuning to the surrounding runtime. Its public launcher uses a
-single-node `torchrun` boundary so it does not encode assumptions about a
+The SFT and DPO trainers are separate, self-contained entrypoints and do not
+use the Ray/veRL runtime topology. Install their compact dependency sets from
+[`sft/requirements.txt`](../sft/requirements.txt) and
+[`dpo/requirements.txt`](../dpo/requirements.txt). Both launchers select an
+interpreter with `PYTHON_BIN` and receive model/data/output paths through
+explicit environment variables. They discover visible GPUs, derive
+accumulation from a fixed effective global batch, and leave GPU selection,
+NCCL fabric policy, and allocator tuning to the surrounding runtime. Their
+public launchers use a single-node `torchrun` boundary and do not assume a
 cluster scheduler or shared filesystem.
 
 FSDP2 is not a separate pip distribution. It is provided by

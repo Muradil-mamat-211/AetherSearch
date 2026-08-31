@@ -1,8 +1,8 @@
 # Operational Scripts
 
-This root directory owns RL/runtime operations. The separately audited
-SFT-2000 trainer and launcher live under
-[`sft/scripts/`](../sft/scripts/) so the two training stages retain explicit
+This root directory owns RL/runtime operations. The separately audited SFT and
+DPO trainers and launchers live under [`sft/scripts/`](../sft/scripts/) and
+[`dpo/scripts/`](../dpo/scripts/), so all three training stages retain explicit
 dependency and runtime boundaries.
 
 ## Public Entrypoints

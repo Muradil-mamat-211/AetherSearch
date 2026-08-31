@@ -8,14 +8,20 @@ local locations in `environment/env.local.sh`.
 - Final AetherSearch model:
   [muradil211/AetherSearch](https://huggingface.co/muradil211/AetherSearch).
 - SFT-2000 model output repository:
-  [muradil211/AetherSearch-SFT](https://huggingface.co/muradil211/AetherSearch-SFT).
+  [muradil211/AetherSearch_SFT](https://huggingface.co/muradil211/AetherSearch_SFT).
   The checkpoint was trained in one stage on the frozen 2,000-record dataset
   using the public SFT-2000 trainer.
+- DPO model output repository:
+  [muradil211/AetherSearch_DPO](https://huggingface.co/muradil211/AetherSearch_DPO).
+  The checkpoint was trained in one stage from AetherSearch SFT on the complete
+  2,126-pair preference dataset using the public trainer under `dpo/`.
 
 ## Base/Reference Model
 
-- Actor/reference start model: `AETHERSEARCH_ACTOR_MODEL` and
-  `AETHERSEARCH_REFERENCE_MODEL`
+- Actor/reference start model: download
+  [muradil211/AetherSearch_DPO](https://huggingface.co/muradil211/AetherSearch_DPO)
+  and point `AETHERSEARCH_ACTOR_MODEL` and `AETHERSEARCH_REFERENCE_MODEL` at
+  that immutable local checkpoint.
 
 ## Training And Validation Data
 
@@ -23,6 +29,10 @@ local locations in `environment/env.local.sh`.
   [muradil211/AetherSearch_SFT](https://huggingface.co/datasets/muradil211/AetherSearch_SFT),
   file `final_sft_2000.jsonl`, 2,000 records, SHA-256
   `fec609652d3832c7a6c0ee2861c6f946b6cf7c3d3d40fc5d9be9b75df6325dcb`.
+- DPO data:
+  [muradil211/AetherSearch_DPO](https://huggingface.co/datasets/muradil211/AetherSearch_DPO),
+  file `train.jsonl`, 2,126 preference pairs, SHA-256
+  `c42adcb0f194cff3126134b37afd85e4b89aa9917e5c98dda4b09904509f61e9`.
 - Train data: `AETHERSEARCH_TRAIN_DATA`; use the upstream Search-R1 dataset
   [`PeterJinGo/nq_hotpotqa_train`](https://huggingface.co/datasets/PeterJinGo/nq_hotpotqa_train),
   file `train.parquet`. The released source identity is 169,615 rows and

@@ -39,6 +39,9 @@ configs/local/
 /sft/final_sft_2000.jsonl
 /sft/provenance_manifest.jsonl
 
+# Hugging Face-hosted DPO payload (metadata and code remain in Git).
+/dpo/train.jsonl
+
 # Model weights and optimizer shards belong on HuggingFace/LFS, not normal Git.
 *.safetensors
 *.bin

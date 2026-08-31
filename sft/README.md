@@ -1,6 +1,6 @@
 # AetherSearch SFT
 
-[![SFT Model](https://img.shields.io/badge/%F0%9F%A4%97%20Model-AetherSearch--SFT-yellow)](https://huggingface.co/muradil211/AetherSearch-SFT)
+[![SFT Model](https://img.shields.io/badge/%F0%9F%A4%97%20Model-AetherSearch__SFT-yellow)](https://huggingface.co/muradil211/AetherSearch_SFT)
 [![SFT Data](https://img.shields.io/badge/%F0%9F%A4%97%20Dataset-AetherSearch__SFT-yellow)](https://huggingface.co/datasets/muradil211/AetherSearch_SFT)
 [![Checksums](https://img.shields.io/badge/checksums-sha256-blue)](checksums.sha256)
 
@@ -17,7 +17,7 @@
 | Item | Details |
 |---|---|
 | Complete data | [muradil211/AetherSearch_SFT](https://huggingface.co/datasets/muradil211/AetherSearch_SFT) |
-| SFT-2000 model output repository | [muradil211/AetherSearch-SFT](https://huggingface.co/muradil211/AetherSearch-SFT) |
+| SFT-2000 model output repository | [muradil211/AetherSearch_SFT](https://huggingface.co/muradil211/AetherSearch_SFT) |
 | Reproduction entrypoint | [`scripts/run_train_sft_2000_zero3.sh`](scripts/run_train_sft_2000_zero3.sh) |
 | Records | 2,000 validated trajectories |
 | Training unit | Full trajectory |
@@ -186,7 +186,7 @@ source tests.
 
 ## SFT-2000 checkpoint
 
-The [AetherSearch-SFT checkpoint](https://huggingface.co/muradil211/AetherSearch-SFT)
+The [AetherSearch SFT checkpoint](https://huggingface.co/muradil211/AetherSearch_SFT)
 was produced in one supervised fine-tuning stage from the pinned Qwen base
 model over the frozen 2,000-record `final_sft_2000.jsonl`. Training ran on a
 separate server; the public release contains the final model artifacts and the

@@ -2,8 +2,8 @@
 
 This directory contains the public entry configuration for the verified
 AetherSearch RL topology. It does not contain SFT or DPO training recipes. The
-independent SFT-2000 entrypoint is documented in
-[`../../sft/`](../../sft/).
+independent entrypoints are documented in [`../../sft/`](../../sft/) and
+[`../../dpo/`](../../dpo/).
 
 The entry recipe composes four independent concerns:
 

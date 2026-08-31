@@ -7,15 +7,19 @@
 **✨ A 3B multi-turn search agent trained with full-trajectory SFT, DPO, and information-gain-guided Agentic RL.**
 
 [![Model](https://img.shields.io/badge/%F0%9F%A4%97%20Model-AetherSearch-yellow)](https://huggingface.co/muradil211/AetherSearch)
-[![SFT Model](https://img.shields.io/badge/%F0%9F%A4%97%20Model-AetherSearch%20SFT-yellow)](https://huggingface.co/muradil211/AetherSearch-SFT)
+[![SFT Model](https://img.shields.io/badge/%F0%9F%A4%97%20Model-AetherSearch%20SFT-yellow)](https://huggingface.co/muradil211/AetherSearch_SFT)
 [![SFT Data](https://img.shields.io/badge/%F0%9F%A4%97%20Data-AetherSearch%20SFT-yellow)](https://huggingface.co/datasets/muradil211/AetherSearch_SFT)
+[![DPO Model](https://img.shields.io/badge/%F0%9F%A4%97%20Model-AetherSearch%20DPO-yellow)](https://huggingface.co/muradil211/AetherSearch_DPO)
+[![DPO Data](https://img.shields.io/badge/%F0%9F%A4%97%20Data-AetherSearch%20DPO-yellow)](https://huggingface.co/datasets/muradil211/AetherSearch_DPO)
 [![Eval Data](https://img.shields.io/badge/%F0%9F%A4%97%20Eval-Search--R1%20Full-yellow)](https://huggingface.co/datasets/muradil211/AetherSearch-Eval)
 [![Code](https://img.shields.io/badge/GitHub-Code-181717?logo=github)](https://github.com/Muradil-mamat-211/AetherSearch)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue?logo=python&logoColor=white)](pyproject.toml)
 
 🤗 [AetherSearch Model](https://huggingface.co/muradil211/AetherSearch) |
-🤗 [AetherSearch SFT Model](https://huggingface.co/muradil211/AetherSearch-SFT) |
+🤗 [AetherSearch SFT Model](https://huggingface.co/muradil211/AetherSearch_SFT) |
 🤗 [AetherSearch SFT Data](https://huggingface.co/datasets/muradil211/AetherSearch_SFT) |
+🤗 [AetherSearch DPO Model](https://huggingface.co/muradil211/AetherSearch_DPO) |
+🤗 [AetherSearch DPO Data](https://huggingface.co/datasets/muradil211/AetherSearch_DPO) |
 🤗 [Full Eval Data](https://huggingface.co/datasets/muradil211/AetherSearch-Eval)
 
 </div>
@@ -27,12 +31,14 @@
 | Resource | Link | Contents |
 |---|---|---|
 | 🤗 Final model | [muradil211/AetherSearch](https://huggingface.co/muradil211/AetherSearch) | final model weights, tokenizer, config, and model card |
-| 🤗 SFT-2000 model repository | [muradil211/AetherSearch-SFT](https://huggingface.co/muradil211/AetherSearch-SFT) | checkpoint trained in one SFT stage on the frozen 2,000-record dataset, with weights, tokenizer, integrity manifest, and model card |
+| 🤗 SFT-2000 model repository | [muradil211/AetherSearch_SFT](https://huggingface.co/muradil211/AetherSearch_SFT) | checkpoint trained in one SFT stage on the frozen 2,000-record dataset, with weights, tokenizer, integrity manifest, and model card |
 | 🤗 SFT-2000 data | [muradil211/AetherSearch_SFT](https://huggingface.co/datasets/muradil211/AetherSearch_SFT) | full JSONL payload, provenance manifest, checksums, and dataset card |
+| 🤗 DPO model repository | [muradil211/AetherSearch_DPO](https://huggingface.co/muradil211/AetherSearch_DPO) | checkpoint trained from AetherSearch SFT on the canonical 2,126-pair preference dataset |
+| 🤗 DPO data | [muradil211/AetherSearch_DPO](https://huggingface.co/datasets/muradil211/AetherSearch_DPO) | train-only preference pairs, release manifest, attribution, and checksums |
 | 🤗 Search-R1 train data | [PeterJinGo/nq_hotpotqa_train](https://huggingface.co/datasets/PeterJinGo/nq_hotpotqa_train) | upstream `train.parquet`, pinned by checksum in `EXTERNAL_ASSETS.md` |
 | 🤗 Full eval data | [muradil211/AetherSearch-Eval](https://huggingface.co/datasets/muradil211/AetherSearch-Eval) | complete 51,713-row Search-R1 `test.parquet`, provenance, and checksums |
 | Retriever assets | [`EXTERNAL_ASSETS.md`](EXTERNAL_ASSETS.md#retriever-assets) | pinned upstream corpus, BM25, FAISS, and E5 revisions with checksums and download commands |
-| Code | this repository | strict SFT-2000 trainer and launcher, RL training code, configs, runtime assets, and tests |
+| Code | this repository | strict SFT and DPO trainers and launchers, RL training code, configs, runtime assets, and tests |
 
 ## Table of Contents
 
@@ -63,12 +69,10 @@ updates on prompts with useful within-group outcome variation, measures how
 retrieved evidence changes canonical-answer likelihood, and assigns both
 immediate and delayed credit to Search actions.
 
-The public release provides the strict SFT-2000 trainer, SFT assets and
-metadata, the SFT-2000 checkpoint repository, the complete RL
-training layer, a qualified reference recipe, and portable topology
-configuration. The preference-optimization warm start is supplied as an
-external actor/reference checkpoint; its trainer and preference-data
-generation pipeline are outside the current release scope.
+The public release provides the strict SFT and DPO trainers, their frozen data
+identities and checkpoint repositories, the complete RL training layer, a
+qualified reference recipe, and portable topology configuration. Large model
+and dataset payloads remain in their linked Hugging Face repositories.
 
 ## Highlights
 
@@ -150,13 +154,17 @@ The resolved configuration is materialized inside each new run directory.
 
 | Stage | Purpose | Primary locations |
 |---|---|---|
-| SFT | one-stage cold-start full-trajectory supervision over the frozen 2,000-record dataset | [SFT stage](sft/), [trainer](sft/scripts/train_sft_2000.py), [launcher](sft/scripts/run_train_sft_2000_zero3.sh), [model output repository](https://huggingface.co/muradil211/AetherSearch-SFT) |
-| DPO warm start | externally produced actor/reference initialization | [AETHERSEARCH_ACTOR_MODEL](environment/env.template.sh), [AETHERSEARCH_REFERENCE_MODEL](environment/env.template.sh) |
+| SFT | one-stage cold-start full-trajectory supervision over the frozen 2,000-record dataset | [SFT stage](sft/), [trainer](sft/scripts/train_sft_2000.py), [launcher](sft/scripts/run_train_sft_2000_zero3.sh), [model output repository](https://huggingface.co/muradil211/AetherSearch_SFT) |
+| DPO | one-stage preference optimization over the canonical 2,126-pair dataset, starting from the frozen SFT checkpoint | [DPO stage](dpo/), [trainer](dpo/scripts/train_dpo.py), [launcher](dpo/scripts/run_train_dpo_zero3.sh), [data](https://huggingface.co/datasets/muradil211/AetherSearch_DPO), [model output](https://huggingface.co/muradil211/AetherSearch_DPO) |
 | RL | search-augmented rollout and policy optimization | [src/agentic_rl/](src/agentic_rl/), [scripts/](scripts/), [recipes/rl/](recipes/rl/) |
 
 The SFT launcher fixes the canonical 2,000-record identity and effective global
 batch while discovering the visible local worker topology at launch time. It
 does not embed GPU IDs, node addresses, or server-local paths.
+
+The DPO launcher likewise fixes the canonical 2,126-pair identity and global
+batch while deriving its worker count from externally visible devices. Its
+prompt and retrieved-information masks are enforced before model allocation.
 
 RL starts from the DPO warm-start actor/reference checkpoint; it does not start
 directly from the SFT stage.
@@ -920,7 +928,13 @@ stability, throughput, or production qualification.
   The full JSONL payload is hosted on
   [Hugging Face Datasets](https://huggingface.co/datasets/muradil211/AetherSearch_SFT).
   The SFT-2000 checkpoint release repository is
-  [muradil211/AetherSearch-SFT](https://huggingface.co/muradil211/AetherSearch-SFT).
+  [muradil211/AetherSearch_SFT](https://huggingface.co/muradil211/AetherSearch_SFT).
+- `dpo/`: canonical preference-data metadata, strict prompt/information mask
+  construction, DPO objective, BF16 ZeRO-3 launcher/configuration, dependency
+  pins, and source checks. The complete data is hosted at
+  [muradil211/AetherSearch_DPO](https://huggingface.co/datasets/muradil211/AetherSearch_DPO),
+  and the resulting checkpoint is hosted at
+  [muradil211/AetherSearch_DPO](https://huggingface.co/muradil211/AetherSearch_DPO).
 - `src/agentic_rl/`: RL training, rollout, credit assignment, policy loss,
   retriever, checkpoint, and runtime adapter code.
 - `scripts/`: launch, preflight, resume, validation, and operational scripts
@@ -936,12 +950,13 @@ stability, throughput, or production qualification.
 
 ## Release Scope
 
-📦 The public repository covers SFT assets, metadata, and the strict
-SFT-2000 training implementation plus the complete Agentic RL training layer.
-The SFT checkpoint was trained in one stage on the frozen 2,000-record dataset
-using the public SFT-2000 recipe. The DPO warm start is an externally supplied
-model checkpoint; the DPO trainer and preference-data generation pipeline are
-not part of this release.
+📦 The public repository covers SFT and DPO data metadata, their strict
+training implementations, and the complete Agentic RL training layer. The SFT
+checkpoint was trained once on the frozen 2,000-record dataset. The DPO
+checkpoint was then trained once from that SFT checkpoint on all 2,126 public
+preference pairs using the code under `dpo/`. Both training runs were performed
+on separate servers; the linked Hugging Face repositories contain the released
+model and dataset artifacts.
 
 Large model weights, optimizer-state checkpoints, eval result bundles, report
 archives, and runtime snapshots are intentionally not committed to this GitHub

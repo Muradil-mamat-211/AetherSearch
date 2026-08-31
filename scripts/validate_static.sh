@@ -8,6 +8,7 @@ source "${PROJECT_ROOT}/scripts/bootstrap_env.sh"
   "${PROJECT_ROOT}/src" \
   "${PROJECT_ROOT}/scripts" \
   "${PROJECT_ROOT}/sft/scripts" \
+  "${PROJECT_ROOT}/dpo/scripts" \
   "${PROJECT_ROOT}/tests"
 "${RL_PYTHON}" -c "import agentic_rl; import agentic_rl.config"
 markdown_files=()
@@ -25,6 +26,7 @@ while IFS= read -r script; do
   bash -n "${script}"
 done < <(
   find "${PROJECT_ROOT}/scripts" "${PROJECT_ROOT}/sft/scripts" \
+    "${PROJECT_ROOT}/dpo/scripts" \
     -maxdepth 1 -type f -name '*.sh' -print | sort
 )
 
@@ -41,5 +43,7 @@ done
 
 PYTHONPATH="${PROJECT_ROOT}/src" "${RL_PYTHON}" -m pytest -q \
   "${PROJECT_ROOT}/tests/test_sft_2000_trainer.py"
+PYTHONPATH="${PROJECT_ROOT}/src" "${RL_PYTHON}" -m pytest -q \
+  "${PROJECT_ROOT}/tests/test_dpo_trainer.py"
 
 printf 'AETHERSEARCH_STATIC_VALIDATION=PASS\n'

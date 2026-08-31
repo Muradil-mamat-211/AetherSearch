@@ -14,13 +14,36 @@ bash sft/scripts/run_train_sft_2000_zero3.sh
 
 This is one public SFT stage: the pinned Qwen base model is supervised on the
 frozen 2,000-record full-trajectory dataset and exported to `final_model/`.
-The [AetherSearch-SFT repository](https://huggingface.co/muradil211/AetherSearch-SFT)
+The [AetherSearch SFT repository](https://huggingface.co/muradil211/AetherSearch_SFT)
 releases the checkpoint produced by this procedure.
 
 The launcher discovers the number of visible GPUs and derives gradient
 accumulation to preserve global batch 24. It does not assign GPU IDs or embed
 machine-local paths. Topology and paths are supplied through environment
 variables; the 2,000-record count and dataset SHA-256 remain fixed.
+
+## DPO
+
+The strict preference-training implementation is documented in
+[`dpo/`](dpo/). Download the canonical 2,126-pair `train.jsonl` from
+[muradil211/AetherSearch_DPO](https://huggingface.co/datasets/muradil211/AetherSearch_DPO),
+install `dpo/requirements.txt`, run the data-only preflight, and start the
+single-node BF16 ZeRO-3 recipe:
+
+```bash
+bash dpo/scripts/run_train_dpo_zero3.sh
+```
+
+This is one public DPO stage: the pinned AetherSearch SFT checkpoint is used
+for both the initial policy and frozen reference, all canonical preference
+pairs are consumed without truncation, and the result is exported atomically
+to `final_model/`. The resulting checkpoint is released at
+[muradil211/AetherSearch_DPO](https://huggingface.co/muradil211/AetherSearch_DPO).
+
+The launcher discovers already-visible GPUs and derives gradient accumulation
+to preserve global batch 12. It does not assign GPU IDs, embed machine-local
+paths, or set host-specific communication and allocator policy. The pair count
+and dataset SHA-256 remain fixed.
 
 ## Agentic RL
 

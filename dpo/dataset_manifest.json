@@ -1,0 +1,97 @@
+{
+  "dataset_name": "AetherSearch_DPO",
+  "release_date_utc": "2026-08-31",
+  "split": {
+    "train": 2126
+  },
+  "total_preference_pairs": 2126,
+  "public_schema": [
+    "id",
+    "question",
+    "source_dataset",
+    "answers",
+    "pair_type",
+    "prompt_text",
+    "chosen",
+    "rejected"
+  ],
+  "preference_unit": "shared_prompt_with_chosen_and_rejected_continuations",
+  "deduplication": {
+    "key": "normalized_question",
+    "normalization": "Unicode NFKC + casefold + collapse whitespace + strip trailing ASCII/fullwidth question marks",
+    "unique_questions": 2126
+  },
+  "ordering": {
+    "policy": "deterministic_seeded_hash_shuffle",
+    "seed": 42,
+    "ids": "000001 through 002126 assigned after shuffle"
+  },
+  "source_distribution": {
+    "2wikimultihopqa": 54,
+    "musique": 410,
+    "nq": 130,
+    "triviaqa": 1445,
+    "web_questions": 87
+  },
+  "pair_type_distribution": {
+    "answer_hard_negative": 1166,
+    "evidence_misread_negative": 94,
+    "insufficient_information_continue_search": 173,
+    "multi_hop_decomposition_negative": 30,
+    "premature_answer_negative": 93,
+    "query_hard_negative": 289,
+    "query_refinement_negative": 18,
+    "regression_protection_pair": 28,
+    "true_full_trajectory_preference": 235
+  },
+  "character_length_summary": {
+    "question": {
+      "min": 18,
+      "p50": 72,
+      "p95": 153,
+      "max": 366
+    },
+    "prompt_text": {
+      "min": 743,
+      "p50": 3060,
+      "p95": 7411,
+      "max": 8431
+    },
+    "chosen": {
+      "min": 77,
+      "p50": 91,
+      "p95": 4459,
+      "max": 8667
+    },
+    "rejected": {
+      "min": 77,
+      "p50": 89,
+      "p95": 2242,
+      "max": 6274
+    }
+  },
+  "integrity_audit": {
+    "source_rows": 2126,
+    "output_rows": 2126,
+    "unique_public_ids": 2126,
+    "unique_normalized_questions": 2126,
+    "nonempty_chosen": 2126,
+    "nonempty_rejected": 2126,
+    "identical_pairs": 0,
+    "public_field_order_exact": true,
+    "internal_release_labels_present": false,
+    "orthographic_normalization_affected_pairs": 3,
+    "orthographic_normalization_by_field": {
+      "prompt_text": 3
+    }
+  },
+  "release_scope": {
+    "train_split_only": true,
+    "benchmark_artifacts_included": false,
+    "training_logs_included": false,
+    "model_outputs_included": false,
+    "private_provenance_included": false
+  },
+  "input_content_sha256": "e65af44f977142d33e81958afb8fe7f75bc549abd42e9e1106a007e0abea20ee",
+  "train_jsonl_sha256": "c42adcb0f194cff3126134b37afd85e4b89aa9917e5c98dda4b09904509f61e9"
+}

@@ -1,9 +1,10 @@
 # Test Suite
 
-The test suite covers the SFT-2000 schema/masking/collation/data-identity and
-hardware-decoupling contracts, algorithm contracts, configuration resolution,
-topology planning, checkpoint/resume behavior, runtime adapters, and
-source-level integration boundaries.
+The test suite covers the SFT schema/masking/collation/data-identity contract,
+the DPO pair schema, two-sided information masking, preference objective,
+reference freezing and hardware-independent launcher, algorithm contracts,
+configuration resolution, topology planning, checkpoint/resume behavior,
+runtime adapters, and source-level integration boundaries.
 
 Run the complete suite:
 

@@ -4,21 +4,22 @@ This inventory covers every non-ignored file in the AetherSearch GitHub
 release. Model weights, optimizer checkpoints, eval result bundles, report
 archives, and runtime snapshots are not included.
 
-Generated UTC: `2026-08-28T15:16:48Z`
+Generated UTC: `2026-08-31T10:57:10Z`
 
 ## Summary
 
 - `assets`: `3` files, `8100` bytes
-- `configs`: `24` files, `45517` bytes
-- `documentation`: `4` files, `44124` bytes
-- `environment`: `6` files, `15177` bytes
-- `recipes`: `2` files, `5388` bytes
-- `repo_root`: `3` files, `1596` bytes
+- `configs`: `24` files, `45613` bytes
+- `documentation`: `4` files, `47481` bytes
+- `dpo`: `8` files, `74020` bytes
+- `environment`: `6` files, `15222` bytes
+- `recipes`: `2` files, `5412` bytes
+- `repo_root`: `3` files, `1683` bytes
 - `runtime_assets`: `3` files, `29691` bytes
-- `scripts`: `18` files, `75391` bytes
+- `scripts`: `18` files, `75616` bytes
 - `sft`: `8` files, `64235` bytes
 - `src`: `89` files, `1280776` bytes
-- `tests`: `54` files, `475060` bytes
+- `tests`: `55` files, `486670` bytes
 - `third_party`: `5` files, `126026` bytes
 
 ## Files
@@ -35,7 +36,7 @@ Generated UTC: `2026-08-28T15:16:48Z`
 
 | path | bytes | sha256 |
 |---|---:|---|
-| `configs/README.md` | 5133 | `0c2537b244a2a18d564405f915647bd76f23d441a7207b5bd029ca762f3811a9` |
+| `configs/README.md` | 5229 | `546c827178ec53274daf2044b004e60f58586bf0bb29fae7d17bfc3159465b03` |
 | `configs/assets/aethersearch_release_v1.yaml` | 3857 | `94ebdfe31c239ead4d79821d23428fd480191c901fc4d649c710c2cff14878a7` |
 | `configs/base.yaml` | 6335 | `4c725cfa92a048e1d772cb0db04771b91d0f7076190fefeea93c3ad22a47c2be` |
 | `configs/exact_ig.yaml` | 4081 | `f62726defbd24e1a1fca8c8083c85da7481f08a312ed49e26480d6b6d6195ab0` |
@@ -64,18 +65,31 @@ Generated UTC: `2026-08-28T15:16:48Z`
 
 | path | bytes | sha256 |
 |---|---:|---|
-| `EXTERNAL_ASSETS.md` | 7117 | `75d8bca14cb96207d554c585a571b1bf39708a969e464a09c1b76c7f5d4d3bb1` |
-| `README.md` | 29100 | `6223dd73eaaf35a6cf4515d5a79331e8a39c187f20014ad2e3708ed19603074f` |
+| `EXTERNAL_ASSETS.md` | 7755 | `ff3b6d9f0a30fff3dd74e76701e74f279702669d621b50567531d6d902bd9851` |
+| `README.md` | 30785 | `bc3a2c176fb1eb7766ae902b2a0263840ff578b885fd648c28152c5f5011af36` |
 | `THIRD_PARTY_NOTICES.md` | 6098 | `f5eb49726de47e3ad7b3897840482d5aee7c854fc1921465e77cf8ff03dae682` |
-| `TRAINING_REPRODUCTION.md` | 1809 | `04fbe9ae95cb14c987e2560c4a7643d460b1b85f289728d1975edb50f9354f5b` |
+| `TRAINING_REPRODUCTION.md` | 2843 | `6d86436ce3efc4b9bfc30e45a41d3ef333c8aa62267c2b1f5e368e756e58d374` |
+
+### dpo
+
+| path | bytes | sha256 |
+|---|---:|---|
+| `dpo/ATTRIBUTION.md` | 2720 | `e5b2efa91817590bf764a5eb753b3728ca9599a74d6f5778bc65c1f356abae3b` |
+| `dpo/README.md` | 9605 | `1d3eabb1e8465316fbd5490650affaeff3d8e00c01fc96636d759a7eb9011b76` |
+| `dpo/checksums.sha256` | 319 | `ccacbe09568f61406c99073277392f6d556696a83336817c4c9ca390e234d5fd` |
+| `dpo/configs/ds_zero3_bf16.json` | 569 | `41e04c1a169b122eb058f1018edba49648f8c1ebd8f732751c279e10d0d981f9` |
+| `dpo/dataset_manifest.json` | 2529 | `0ee034122d6ad3b88580ed3923658f4e1cc3aaa53504b7dce3c3483cc8a8f676` |
+| `dpo/requirements.txt` | 152 | `f4192c805bbefd20f901cdf4fc6861486b54d158fd2123551f60d7078a4c6c32` |
+| `dpo/scripts/run_train_dpo_zero3.sh` | 8605 | `abd0fdb5bfac1903a473f758a5fef3d66c1f796d305df3ef2c02391090dbaa6f` |
+| `dpo/scripts/train_dpo.py` | 49521 | `a128620f562acf5833376bcadf19a7ab9f37a11e68557b0a4fbb4bb9c37d78b7` |
 
 ### environment
 
 | path | bytes | sha256 |
 |---|---:|---|
-| `environment/README.md` | 2856 | `d58bbe9dc684367d69de3abd536c8843d1049462f944ee67c46ac27762b61972` |
+| `environment/README.md` | 2898 | `a5dcd97e6f95a8ca392514f71a8ab88f55a61e484fcd27d73ef0629bfe18fbed` |
 | `environment/RUNTIME_VERSIONS.md` | 522 | `e52951f548ed1f590b7bc391b07cc5243ae5a9a7708cbe69c5bac811cc4b2d97` |
-| `environment/env.template.sh` | 3298 | `de0bf67567411d846eed7d607db5d75edebd328da3fc5f026be3a7d889d26917` |
+| `environment/env.template.sh` | 3301 | `a4ac1e0fc57853239e9492e60181f174f8ebb84d6c559041d36b207fae3c9478` |
 | `environment/requirements-core-observed.txt` | 388 | `e1b7c50395c6326deea04daefea70257a19370235c477559952f425ea96c4338` |
 | `environment/retriever_pip_freeze.txt` | 3728 | `f077f160bb383b3dda5ebcdaf2526b511a6b0ee0612ca6510f9660cd7a5cd397` |
 | `environment/rl_pip_freeze.txt` | 4385 | `2ec3728256325ed4723e0f2948888192bacc6cc140fe03c4a4b4e15453788fc8` |
@@ -84,7 +98,7 @@ Generated UTC: `2026-08-28T15:16:48Z`
 
 | path | bytes | sha256 |
 |---|---:|---|
-| `recipes/rl/README.md` | 3415 | `02ea80957f8581652c826f8935fd54fd665e5348c1eca5b9d9628c48f2a75f8c` |
+| `recipes/rl/README.md` | 3439 | `284fce72409799984a9c461df40d1a789b20d5f3a3ac6a463d6d570987a5a49e` |
 | `recipes/rl/train_4x48gb.yaml` | 1973 | `8c5c74fff2fe869a2f826ede7a6bc25f71dc84c52955fed125a2d196c80a6d3d` |
 
 ### repo_root
@@ -92,7 +106,7 @@ Generated UTC: `2026-08-28T15:16:48Z`
 | path | bytes | sha256 |
 |---|---:|---|
 | `.gitattributes` | 220 | `3a62a151b7887ee92f18a8813b4dd7257ae8864d820910233fce1d6b799b6a88` |
-| `.gitignore` | 677 | `5541b8cd90ac788f07cf5afe515f2e93d2fdbd450d68c1bc02268661b81b1357` |
+| `.gitignore` | 764 | `79397da0a43bad9426b0f72cba44080946c2f887f4ba4f9f9be83e966fbaf08b` |
 | `pyproject.toml` | 699 | `9d56ccd76f2c5b6ec4ea56022340c87fe070e3ed9ba02801ed2ec9df48efb9cd` |
 
 ### runtime_assets
@@ -107,7 +121,7 @@ Generated UTC: `2026-08-28T15:16:48Z`
 
 | path | bytes | sha256 |
 |---|---:|---|
-| `scripts/README.md` | 1992 | `c173ac57ca862a447ad74c232e3fc170fac071ff38a24a3e6426202483c128b7` |
+| `scripts/README.md` | 2038 | `94fdf8ca9969b3852b3082e7a452c36eae53c7b7fbf6ae5758c2f9362c40880d` |
 | `scripts/_run_runtime_job.sh` | 6680 | `e2992460e9231587935ab3ebb4401fe57f83f94749ad739b5100361342930107` |
 | `scripts/async_eval_worker.sh` | 1016 | `aeec7cb7da9fd8a9289560e911e01acaac8b1830521c949ac518a5a4e326d6e1` |
 | `scripts/bootstrap_env.sh` | 947 | `d1e17970e9ed9746625d67d207115e99ecce8281cfdbc905d82ccfaf9bc07376` |
@@ -123,7 +137,7 @@ Generated UTC: `2026-08-28T15:16:48Z`
 | `scripts/train_rl.sh` | 2473 | `0ac0c8e3a75ee49b66ee16e017d067c0b9808b1663d06e86d43ad41ce47ac397` |
 | `scripts/validate_48cpu_resource_profile.py` | 4712 | `73d6f24edab2f69498106642a8658e7f8c781b9eb360e205fc36598aa3369f59` |
 | `scripts/validate_readme.py` | 7746 | `5c07bbfd9e4bcbe38017dc0660b121133d3e571e93b5da1416b1370e8539bf1f` |
-| `scripts/validate_static.sh` | 1408 | `bbfb5a54cc8ce47ee059c49066c0c0e3e62232e3412ddbbc70f17c83b9e0e848` |
+| `scripts/validate_static.sh` | 1587 | `47a638b14f79d8d762604d5fc070946032ad2bff2670152577396c7456637a0d` |
 | `scripts/verify_checkpoint_readonly.py` | 2659 | `c8af6683b6f6e09e96fa91c16cf679706b4673d947e5437428239d542e6ad9d2` |
 
 ### sft
@@ -131,8 +145,8 @@ Generated UTC: `2026-08-28T15:16:48Z`
 | path | bytes | sha256 |
 |---|---:|---|
 | `sft/ATTRIBUTION.md` | 2762 | `7f1e16de50767976fc723a8fd74d343581f07d183358ddf3da220e2a0f43e688` |
-| `sft/README.md` | 8175 | `181b60eecdc6b03c175d32f80c18cfc93b1a3e9038333dad6dbe13a0a466a0e7` |
-| `sft/checksums.sha256` | 419 | `89202783bd2b7df6e1a3e35bdec5e9a104d865ae4cc74e690a2e9c7373f93d07` |
+| `sft/README.md` | 8175 | `5030c2c6d8472ab3ed5ac368aad7f3e7e7fffd699280a92228842491d95f305f` |
+| `sft/checksums.sha256` | 419 | `4f4cbafee9c7dfcf24eca0ebd829b03944b7924f4afa433c074f3d0233cd4d51` |
 | `sft/configs/ds_zero3_bf16.json` | 569 | `41e04c1a169b122eb058f1018edba49648f8c1ebd8f732751c279e10d0d981f9` |
 | `sft/dataset_manifest.json` | 1444 | `3b6ca2879d1d680d3226ed96c326e1ee1ff566d4eabe73ed005619096e02de8e` |
 | `sft/requirements.txt` | 152 | `f4192c805bbefd20f901cdf4fc6861486b54d158fd2123551f60d7078a4c6c32` |
@@ -237,7 +251,7 @@ Generated UTC: `2026-08-28T15:16:48Z`
 
 | path | bytes | sha256 |
 |---|---:|---|
-| `tests/README.md` | 890 | `7cd17e15120917cbbb99d3781d29b540b49716a66dfbd4561ebcb381217b525e` |
+| `tests/README.md` | 988 | `0542e9d452605486497eb6255397b11b532450bf9470557441b0d03effb3750d` |
 | `tests/config_support.py` | 882 | `c0260abe9c5e2c925b3a42950460c9207f91f643dd656b867575023d6d323aca` |
 | `tests/fixtures/base_5x48gb.yaml` | 1180 | `1c4bd3ac03dfaa434bab9f677e00bca4ec0a8b71b57c27b8d1f50ed1906f0648` |
 | `tests/fixtures/formal_resume_u20_3rank_4x48gb.yaml` | 236 | `1c77111b8ceaf5d4a1c21fec749153c89e355ed816b4abb9f562ccd889c0e8bc` |
@@ -256,6 +270,7 @@ Generated UTC: `2026-08-28T15:16:48Z`
 | `tests/test_async_retriever_client.py` | 3026 | `319456e20f6b7764dc1094f81ad2938f042614a08e91061d83f12562b0831031` |
 | `tests/test_config_schema.py` | 8095 | `bc07855bf0e8298bdd7a68b139e015e700d01737d1204d6485e6fbfa6aeff359` |
 | `tests/test_dataset_view.py` | 1600 | `66a57c987800e61425d5eb30452b0baaa118f42a7925b55eeb0430d434051d54` |
+| `tests/test_dpo_trainer.py` | 11512 | `f27b754a7a7fdc1678e0205f9402a900b640f6e9954bba3d7f9ba54dec14184e` |
 | `tests/test_exact_ig_fast_path_independent_contract.py` | 9699 | `1da5f0ab5455644978be2a6c34f75c02de770746c4abdd75b1147f12675c2873` |
 | `tests/test_exact_ig_precision.py` | 7749 | `20532ce55af4cb40859bef1c5b17da735f158a7cbfc9f0f015ce7d8241051269` |
 | `tests/test_exact_ig_structure.py` | 17018 | `476e8775f9da17163110e337bbaad22900773d117e3adbf8972c1be4b5f3609e` |

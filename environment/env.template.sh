@@ -16,8 +16,8 @@ export AETHERSEARCH_ENV_SCRIPT=${AETHERSEARCH_ENV_SCRIPT:-${BASH_SOURCE[0]}}
 
 # Model and Search-R1 data. Download train.parquet from
 # PeterJinGo/nq_hotpotqa_train and the full test.parquet from the AetherSearch
-# eval dataset before launching. Actor and Reference may point to the same
-# immutable starting model, matching the released formal run.
+# eval dataset before launching. Actor and Reference point to the same local
+# copy of the released muradil211/AetherSearch_DPO checkpoint.
 export AETHERSEARCH_ACTOR_MODEL=${AETHERSEARCH_ACTOR_MODEL:-/path/to/actor-model}
 export AETHERSEARCH_REFERENCE_MODEL=${AETHERSEARCH_REFERENCE_MODEL:-${AETHERSEARCH_ACTOR_MODEL}}
 export AETHERSEARCH_TRAIN_DATA=${AETHERSEARCH_TRAIN_DATA:-/path/to/train.parquet}
