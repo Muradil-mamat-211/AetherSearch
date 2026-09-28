@@ -6,9 +6,9 @@
 
 > **Complete dataset:** [AetherSearch SFT on Hugging Face](https://huggingface.co/datasets/muradil211/AetherSearch_SFT)
 >
-> This directory is the complete public boundary for the SFT stage: release
-> metadata, the strict SFT-2000 trainer, DeepSpeed configuration, and
-> dependency pins. The JSONL payloads remain on
+> This directory is the public boundary for the SFT stage: release
+> metadata, the strict SFT-2000 trainer, new-data generation code, DeepSpeed
+> configuration, and dependency pins. The frozen JSONL payloads remain on
 > Hugging Face Datasets. Model files are managed
 > separately by the maintainer through the linked Hugging Face model repository.
 
@@ -22,7 +22,7 @@
 | Records | 2,000 validated trajectories |
 | Training unit | Full trajectory |
 | License metadata | `unknown` |
-| GitHub contents | Data metadata, training code, configuration, and tests |
+| GitHub contents | Data metadata, generation/training code, configuration, and tests |
 
 ## Dataset Overview
 
@@ -102,6 +102,53 @@ search/information turn through the final answer.
 pre-shuffle public id, legacy source identifiers, source hashes, the pre-EOT
 full-trajectory hash, the post-EOT full-trajectory hash, and the deterministic
 shuffle key.
+
+## Generate New Search-SFT Trajectories
+
+The [DeepSeek teacher controller](data_generation/search_sft_teacher/deepseek_rollout.py)
+creates **new** auditable trajectories; it does not modify or reproduce the
+frozen SFT-2000 dataset above. Its [detailed generation guide](data_generation/search_sft_teacher/README.md)
+documents the API protocol, multi-turn continuation, student-token budgets,
+checkpoint/retry semantics, review and export. Keep the
+[new-data provenance note](data_generation/search_sft_teacher/DATASET_PROVENANCE.md)
+with any newly released dataset.
+
+The teacher offers one local retrieval tool: wiki18 BM25 top-20 plus
+E5-base-v2/FAISS `IndexFlatIP` top-20, fused by RRF (`k=60`) to top-3. It
+uses the AetherSearch RL `e5_Flat.index` **asset**, but not the RL hybrid
+server's weighted fusion. The Search-R1 dense-only server is a separate
+long-running process; the controller owns BM25, RRF and corpus-identity checks.
+With `--concurrency 8`, independent trajectories run concurrently and up to
+eight dense queries share one HTTP batch. There is no synthetic evidence or
+silent dense-only fallback.
+
+Run from the repository root, with `AETHERSEARCH_SFT_WORKSPACE` pointing at
+the directory containing the external corpus, BM25 SQLite index, FlatIP
+index, E5 model, student tokenizer and retriever environment. These assets,
+the DeepSeek key, raw API receipts, logs and checkpoints are **not** in Git.
+The input must be a locally prepared, verified QA JSONL containing `id`,
+`question`, `golden_answers`, `data_source` and `split=train`. The frozen
+five-field SFT release is **not** accepted directly as this input: it has no
+`golden_answers` field, and its old `<information>` is never reused.
+
+```bash
+export AETHERSEARCH_SFT_WORKSPACE=/absolute/path/to/runtime-assets
+python3 -B sft/data_generation/search_sft_teacher/deepseek_rollout.py --doctor
+conda run --no-capture-output -p "$AETHERSEARCH_SFT_WORKSPACE/envs/retriever" \
+  python sft/data_generation/search_sft_teacher/deepseek_rollout.py \
+  --run --questions /absolute/path/to/verified_train_qa.jsonl \
+  --db logs/search_sft_teacher/pilot.sqlite --max-examples 10 \
+  --max-searches 5 --max-api-requests 100 --concurrency 8
+```
+
+`--doctor` must report `ready=true` before paid API calls. This command
+creates candidates in a resumable SQLite checkpoint, **not** approved training
+data. Run the independent validator, inspect the review packet and approve
+individual supported trajectories before `--export-approved` writes the
+five-field public format. Zero-search answers are excluded from that export.
+The standalone [teacher validator](data_generation/search_sft_teacher/validate_teacher_rollout.py)
+also verifies approved exports against their checkpoint. Starting the teacher
+is data generation, not the SFT-2000 model-training launcher below.
 
 ## Reproduce SFT-2000
 
