@@ -12,6 +12,21 @@ committed here.
 
 ## Production entry point
 
+For a fail-closed candidate-generation launcher from the repository root, set
+`QUESTIONS_FILE` to an absolute path to verified train QA JSONL, export the
+runtime asset root if it differs from the Git checkout, and run:
+
+```bash
+export AETHERSEARCH_SFT_WORKSPACE=/path/to/runtime-assets
+export QUESTIONS_FILE=/path/to/verified_train_qa.jsonl
+bash sft/data_generation/run_teacher_rollout.sh
+```
+
+The launcher defaults to a 10-question pilot and refuses to call DeepSeek
+unless `--doctor` reports `ready=true`. Increase `MAX_EXAMPLES` and
+`MAX_API_REQUESTS` deliberately for larger runs. It only creates checkpointed
+candidates; manual review and `--export-approved` remain separate gates.
+
 Use `deepseek_rollout.py` for DeepSeek. It calls the official fixed endpoint
 `https://api.deepseek.com/beta/chat/completions` and reads the private key file
 described below. No OpenAI account, SDK installation, or environment-variable

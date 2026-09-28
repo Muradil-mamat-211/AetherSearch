@@ -133,15 +133,16 @@ five-field SFT release is **not** accepted directly as this input: it has no
 
 ```bash
 export AETHERSEARCH_SFT_WORKSPACE=/absolute/path/to/runtime-assets
-python3 -B sft/data_generation/search_sft_teacher/deepseek_rollout.py --doctor
-conda run --no-capture-output -p "$AETHERSEARCH_SFT_WORKSPACE/envs/retriever" \
-  python sft/data_generation/search_sft_teacher/deepseek_rollout.py \
-  --run --questions /absolute/path/to/verified_train_qa.jsonl \
-  --db logs/search_sft_teacher/pilot.sqlite --max-examples 10 \
-  --max-searches 5 --max-api-requests 100 --concurrency 8
+export QUESTIONS_FILE=/absolute/path/to/verified_train_qa.jsonl
+bash sft/data_generation/run_teacher_rollout.sh
 ```
 
-`--doctor` must report `ready=true` before paid API calls. This command
+The [launcher](data_generation/run_teacher_rollout.sh) defaults to 10 candidate
+questions, five searches per question, eight concurrent trajectories and a
+100-attempt API budget. `MAX_EXAMPLES`, `MAX_API_REQUESTS`, `DB_FILE`,
+`TEACHER_MODEL`, `TEACHER_THINKING` and `REASONING_EFFORT` are optional
+environment overrides. It checks `--doctor` for `ready=true` before paid API
+calls. This command
 creates candidates in a resumable SQLite checkpoint, **not** approved training
 data. Run the independent validator, inspect the review packet and approve
 individual supported trajectories before `--export-approved` writes the
