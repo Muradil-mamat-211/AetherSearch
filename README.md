@@ -31,7 +31,6 @@
 | Resource | Link | Contents |
 |---|---|---|
 | 🤗 Final model | [muradil211/AetherSearch](https://huggingface.co/muradil211/AetherSearch) | final model weights, tokenizer, config, and model card |
-| 🤗 SFT-2600 model repository | [muradil211/AetherSearch_SFT](https://huggingface.co/muradil211/AetherSearch_SFT) | SFT model weights, tokenizer, integrity manifest, and model card |
 | 🤗 SFT-2600 data | [muradil211/AetherSearch_SFT](https://huggingface.co/datasets/muradil211/AetherSearch_SFT) | 2,600 full trajectories, provenance manifest, checksums, and dataset card |
 | 🤗 DPO model repository | [muradil211/AetherSearch_DPO](https://huggingface.co/muradil211/AetherSearch_DPO) | checkpoint trained from AetherSearch SFT on the canonical 2,126-pair preference dataset |
 | 🤗 DPO data | [muradil211/AetherSearch_DPO](https://huggingface.co/datasets/muradil211/AetherSearch_DPO) | train-only preference pairs, release manifest, attribution, and checksums |
