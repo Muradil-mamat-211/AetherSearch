@@ -29,6 +29,13 @@ teacher and real local retrieval. Because the public five-field rows do not
 expose `golden_answers` separately, the local QA input must also supply the
 independently verified answer labels required by the controller.
 
+For SFT-2600, the project maintainer reports Qwen experiments on the question
+groups: Qwen could correctly answer the `direct_answer` questions without
+retrieval and chose to search on the retrieval-trajectory questions. This
+Qwen behavior verification concerns the selected questions; DeepSeek generates
+the visible teacher trajectories. The exported `search_count` describes those
+training trajectories and does not assert an identical Qwen search depth.
+
 Run commands from the AetherSearch repository root. Set
 `AETHERSEARCH_SFT_WORKSPACE` to the absolute directory
 holding `data/`, `models/`, `envs/`, and `code/Search-R1`; it defaults to the

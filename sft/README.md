@@ -45,6 +45,18 @@ running retriever, DPO data, or RL data. Those inputs belong to data generation.
 | `multi_search` | 975 | 37.50% |
 | **Total** | **2,600** | **100.00%** |
 
+### Qwen behavior verification
+
+The question groups reflect Qwen experiments reported by the project
+maintainer. Qwen was tested on the `direct_answer` questions and could answer
+them correctly without retrieval. On the questions used for `single_search`
+and `multi_search` trajectories, Qwen chose to search before answering.
+
+These experiments establish the Qwen behavior observed on the selected
+questions. DeepSeek supplies the visible teacher actions used for SFT; the
+released `search_count` records the exported training trajectory's search
+count, not necessarily the number of searches in the Qwen experiment.
+
 | Search count | Records | Share |
 |---:|---:|---:|
 | 0 | 600 | 23.08% |

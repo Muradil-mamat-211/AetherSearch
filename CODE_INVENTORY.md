@@ -4,7 +4,7 @@ This inventory covers every non-ignored file in the AetherSearch GitHub
 release. Model weights, optimizer checkpoints, eval result bundles, report
 archives, and runtime snapshots are not included.
 
-Generated UTC: `2026-09-29T12:59:43Z`
+Generated UTC: `2026-09-29T14:24:12Z`
 
 ## Summary
 
@@ -17,7 +17,7 @@ Generated UTC: `2026-09-29T12:59:43Z`
 - `repo_root`: `3` files, `1683` bytes
 - `runtime_assets`: `3` files, `29691` bytes
 - `scripts`: `18` files, `75616` bytes
-- `sft`: `46` files, `651067` bytes
+- `sft`: `46` files, `652144` bytes
 - `src`: `89` files, `1280776` bytes
 - `tests`: `55` files, `487760` bytes
 - `third_party`: `5` files, `126026` bytes
@@ -145,14 +145,14 @@ Generated UTC: `2026-09-29T12:59:43Z`
 | path | bytes | sha256 |
 |---|---:|---|
 | `sft/ATTRIBUTION.md` | 3643 | `1f690b238f77cc3ff112a8bb8404a5fe5806d20128d9214d40743857299fc038` |
-| `sft/README.md` | 11907 | `8973b39b1a11532d2c92dd232880047846086b06c3d95268b11268560dd9007f` |
-| `sft/checksums.sha256` | 424 | `84de5966b67432bf6dffbf674d615423cb134a913fd67d6d1db8303e9c6b49ee` |
+| `sft/README.md` | 12526 | `e1b4006fd7681e4240e5dbe2e4d16723c7d9e90483e10508053adca92ddee736` |
+| `sft/checksums.sha256` | 424 | `d42e06b92ca7e2444374a538112892e71be27a93acb262ba4de7f4adfe554c15` |
 | `sft/configs/ds_zero3_bf16.json` | 569 | `41e04c1a169b122eb058f1018edba49648f8c1ebd8f732751c279e10d0d981f9` |
 | `sft/data_generation/run_teacher_rollout.sh` | 1906 | `0b4af6b685ed6ddcd0df4196f0d40d68742f8fac8b37822d7cd35c06eee7af54` |
 | `sft/data_generation/search_sft_hybrid_v1/build_bm25_index.py` | 9938 | `789a3a8df399c73e8d85346f7fc683c8a154301323684f8bd6a56bad6482f17f` |
 | `sft/data_generation/search_sft_hybrid_v1/hybrid_retriever_v1.py` | 18419 | `a5ebc811807bae6a697688454ce37f63796c6477e4fa635598ea71fcc0c6c775` |
 | `sft/data_generation/search_sft_teacher/DATASET_PROVENANCE.md` | 4087 | `d1cdebd6e45a10c020dd94cf4b3b5a2c64d75fa497a4af19e6df109b78cbb6a7` |
-| `sft/data_generation/search_sft_teacher/README.md` | 69154 | `54910950013848bf81385697d1a297a47ea87fbf501b0a2a53238109ed268678` |
+| `sft/data_generation/search_sft_teacher/README.md` | 69612 | `c5ede6dd88a273e48f3bbc1be54bea48fa8bda1c4c1d82aeeb802169b8737e0a` |
 | `sft/data_generation/search_sft_teacher/answer_utils.py` | 4716 | `fd025c137fc60ba8567af789ef614d57ed51b0cd1e5b58c5b0a54b0bfb70302a` |
 | `sft/data_generation/search_sft_teacher/batched_retriever.py` | 3725 | `d726dd5772a13357731f4b1e4edb4aa6d5fabbe08e65d2ed079d48ecddb5fc1c` |
 | `sft/data_generation/search_sft_teacher/build_sft_2600_release.py` | 16660 | `2d3d677a8eee67941bfe097ad07cd5394a9fbb657bb9791b016b64ce95748db6` |
