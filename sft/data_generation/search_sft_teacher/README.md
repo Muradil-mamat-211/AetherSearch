@@ -1,8 +1,29 @@
 # Adaptive DeepSeek Search-SFT teacher rollout
 
-This directory is the new-data generation implementation, not the frozen
-2,000-row release or its training launcher. Run commands from the AetherSearch
-repository root. Set `AETHERSEARCH_SFT_WORKSPACE` to the absolute directory
+This directory contains the data-construction pipeline used to build
+AetherSearch Search-SFT trajectories by distilling DeepSeek's search behavior.
+DeepSeek is the teacher: for each verified QA question it decides whether and
+how to search, generates the visible `<think>...<search>...` actions, consumes
+real local retrieval observations, performs additional search turns when
+needed, and generates the final `<think>...<answer>...` action. These visible
+actions become the student supervision. DeepSeek's private
+`reasoning_content` is retained only for API continuation/audit and is never
+exported as student training text.
+
+The retriever, not DeepSeek, produces every `<information>` block. The
+controller executes the teacher's query through wiki18 BM25 plus
+E5-base-v2/FAISS FlatIP and RRF, then injects the real top-3 passages into the
+next API turn. The controller validates the teacher answer against the hidden
+reference and visible evidence, preserves the model-written search actions,
+normalizes only the final public `<think>` summary to the dataset schema, and
+exports approved trajectories in the same five-field format used by
+`muradil211/AetherSearch_SFT`. This is behavioral trajectory distillation, not
+weight distillation and not synthetic evidence generation.
+The Search-SFT dataset used by AetherSearch is formed from trajectories built
+by this process and exported through the review and validation gates below.
+
+Run commands from the AetherSearch repository root. Set
+`AETHERSEARCH_SFT_WORKSPACE` to the absolute directory
 holding `data/`, `models/`, `envs/`, and `code/Search-R1`; it defaults to the
 repository root. The runtime directory may be a different volume from the
 Git checkout. Set `AETHERSEARCH_DENSE_INDEX_PATH` if the released FlatIP index
@@ -817,8 +838,8 @@ and passes top-3 real passages back to DeepSeek. It is not live web search.
 This follows AetherSearch RL's service/port *topology*, not its released
 min-max weighted fusion algorithm; substituting that RL hybrid server would
 change the SFT evidence distribution. See `DATASET_PROVENANCE.md` for wording
-to accompany **new** exports. Do not apply this provenance retroactively to
-the frozen 2,000-row published dataset.
+to accompany generated exports. Pair every published snapshot with the exact
+checkpoint, generator version and dataset manifest used to construct it.
 
 After all corpus, index, model, and environment assets exist, start the dense
 server in its own persistent terminal session. This reads existing assets; it

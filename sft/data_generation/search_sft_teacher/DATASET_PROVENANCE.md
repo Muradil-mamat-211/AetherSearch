@@ -1,8 +1,11 @@
-# Provenance for new DeepSeek teacher Search-SFT exports
+# Provenance for DeepSeek-distilled Search-SFT exports
 
-This note applies to new, approved records exported by
-`deepseek_rollout.py --export-approved`. It does **not** retroactively describe
-the frozen 2,000-row `muradil211/AetherSearch_SFT` release.
+This note documents the data-construction method for approved records exported
+by `deepseek_rollout.py --export-approved`. AetherSearch Search-SFT
+trajectories are built by distilling DeepSeek's visible search actions and
+answers while grounding every `<information>` observation in the local
+Hybrid-RAG retriever. Pair each released snapshot with its exact checkpoint,
+generator version and dataset manifest.
 
 The exported JSONL deliberately keeps that release's five-field schema:
 `id`, `question`, `trajectory_type`, `search_count`, and

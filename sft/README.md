@@ -7,7 +7,8 @@
 > **Complete dataset:** [AetherSearch SFT on Hugging Face](https://huggingface.co/datasets/muradil211/AetherSearch_SFT)
 >
 > This directory is the public boundary for the SFT stage: release
-> metadata, the strict SFT-2000 trainer, new-data generation code, DeepSpeed
+> metadata, the strict SFT-2000 trainer, DeepSeek-distillation data
+> construction code, DeepSpeed
 > configuration, and dependency pins. The frozen JSONL payloads remain on
 > Hugging Face Datasets. Model files are managed
 > separately by the maintainer through the linked Hugging Face model repository.
@@ -103,15 +104,46 @@ pre-shuffle public id, legacy source identifiers, source hashes, the pre-EOT
 full-trajectory hash, the post-EOT full-trajectory hash, and the deterministic
 shuffle key.
 
-## Generate New Search-SFT Trajectories
+## Build Search-SFT Data by Distilling DeepSeek
+
+This is the data-construction method used to build AetherSearch Search-SFT
+trajectories. DeepSeek acts as the teacher model and rolls out the visible
+agent actions: it decides when retrieval is needed, writes each
+`<think>...</think><search>...</search>` action, reads the returned evidence,
+continues across multiple search turns when necessary, and finally produces
+`<think>...</think><answer>...</answer>`. The controller records those actions
+as student training targets. In this sense, the resulting Search-SFT data
+distills DeepSeek's search behavior into the AetherSearch trajectory format;
+it does not copy DeepSeek weights or expose its private `reasoning_content`.
+The Search-SFT dataset used by this project is produced from trajectories
+constructed by this method and then rendered into the five-field public schema
+described above.
 
 The [DeepSeek teacher controller](data_generation/search_sft_teacher/deepseek_rollout.py)
-creates **new** auditable trajectories; it does not modify or reproduce the
-frozen SFT-2000 dataset above. Its [detailed generation guide](data_generation/search_sft_teacher/README.md)
+implements the complete construction pipeline used for this data. The
+[detailed generation guide](data_generation/search_sft_teacher/README.md)
 documents the API protocol, multi-turn continuation, student-token budgets,
 checkpoint/retry semantics, review and export. Keep the
-[new-data provenance note](data_generation/search_sft_teacher/DATASET_PROVENANCE.md)
-with any newly released dataset.
+[data provenance note](data_generation/search_sft_teacher/DATASET_PROVENANCE.md)
+with generated releases.
+
+The rollout is grounded in real retrieval. DeepSeek never invents the
+`<information>` block: the controller executes the model's query against the
+local retriever and inserts the returned passages into the next turn. The
+reference answer is retained by the controller for acceptance checks and is
+not supplied to DeepSeek as retrieval evidence. Search-turn rationales,
+queries and final answers are distilled from DeepSeek; the controller
+standardizes only the final training `<think>` sentence and applies the
+information loss mask. The resulting trajectory is:
+
+```text
+verified QA question
+  -> DeepSeek search action
+  -> real local <information> observation
+  -> optional additional DeepSeek search actions and observations
+  -> DeepSeek final answer action
+  -> controller validation, semantic review and SFT export
+```
 
 The teacher offers one local retrieval tool: wiki18 BM25 top-20 plus
 E5-base-v2/FAISS `IndexFlatIP` top-20, fused by RRF (`k=60`) to top-3. It
@@ -143,13 +175,14 @@ questions, five searches per question, eight concurrent trajectories and a
 `TEACHER_MODEL`, `TEACHER_THINKING` and `REASONING_EFFORT` are optional
 environment overrides. It checks `--doctor` for `ready=true` before paid API
 calls. This command
-creates candidates in a resumable SQLite checkpoint, **not** approved training
-data. Run the independent validator, inspect the review packet and approve
+creates distilled candidates in a resumable SQLite checkpoint. Run the
+independent validator, inspect the review packet and approve
 individual supported trajectories before `--export-approved` writes the
 five-field public format. Zero-search answers are excluded from that export.
 The standalone [teacher validator](data_generation/search_sft_teacher/validate_teacher_rollout.py)
-also verifies approved exports against their checkpoint. Starting the teacher
-is data generation, not the SFT-2000 model-training launcher below.
+also verifies approved exports against their checkpoint. The approved export
+is the Search-SFT training data; starting the teacher performs its data
+construction, while the launcher below performs model training over that data.
 
 ## Reproduce SFT-2000
 
