@@ -119,6 +119,11 @@ The Search-SFT dataset used by this project is produced from trajectories
 constructed by this method and then rendered into the five-field public schema
 described above.
 
+The source questions are exactly the same questions published in
+[`muradil211/AetherSearch_SFT`](https://huggingface.co/datasets/muradil211/AetherSearch_SFT);
+this pipeline regenerates the complete trajectories for those questions using
+the DeepSeek teacher and real local retrieval.
+
 The [DeepSeek teacher controller](data_generation/search_sft_teacher/deepseek_rollout.py)
 implements the complete construction pipeline used for this data. The
 [detailed generation guide](data_generation/search_sft_teacher/README.md)

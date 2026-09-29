@@ -22,6 +22,13 @@ weight distillation and not synthetic evidence generation.
 The Search-SFT dataset used by AetherSearch is formed from trajectories built
 by this process and exported through the review and validation gates below.
 
+The source questions are exactly the same questions published in
+[`muradil211/AetherSearch_SFT`](https://huggingface.co/datasets/muradil211/AetherSearch_SFT);
+this pipeline regenerates their complete trajectories using the DeepSeek
+teacher and real local retrieval. Because the public five-field rows do not
+expose `golden_answers` separately, the local QA input must also supply the
+independently verified answer labels required by the controller.
+
 Run commands from the AetherSearch repository root. Set
 `AETHERSEARCH_SFT_WORKSPACE` to the absolute directory
 holding `data/`, `models/`, `envs/`, and `code/Search-R1`; it defaults to the
