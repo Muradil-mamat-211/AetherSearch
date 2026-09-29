@@ -4,20 +4,20 @@ This inventory covers every non-ignored file in the AetherSearch GitHub
 release. Model weights, optimizer checkpoints, eval result bundles, report
 archives, and runtime snapshots are not included.
 
-Generated UTC: `2026-09-29T12:30:59Z`
+Generated UTC: `2026-09-29T12:59:43Z`
 
 ## Summary
 
 - `assets`: `3` files, `8100` bytes
 - `configs`: `24` files, `45613` bytes
-- `documentation`: `4` files, `47282` bytes
+- `documentation`: `4` files, `47096` bytes
 - `dpo`: `8` files, `74020` bytes
 - `environment`: `6` files, `15222` bytes
 - `recipes`: `2` files, `5412` bytes
 - `repo_root`: `3` files, `1683` bytes
 - `runtime_assets`: `3` files, `29691` bytes
 - `scripts`: `18` files, `75616` bytes
-- `sft`: `46` files, `648091` bytes
+- `sft`: `46` files, `651067` bytes
 - `src`: `89` files, `1280776` bytes
 - `tests`: `55` files, `487760` bytes
 - `third_party`: `5` files, `126026` bytes
@@ -66,7 +66,7 @@ Generated UTC: `2026-09-29T12:30:59Z`
 | path | bytes | sha256 |
 |---|---:|---|
 | `EXTERNAL_ASSETS.md` | 7701 | `59793ef9918d341a353c1b7d5e4999dcbae3f4564dbaa6ef7e8a3b5241860c58` |
-| `README.md` | 30652 | `17617cb5f3c5c2b23e4e7272aba4df5d9e2fb47e5ba31d4aa4c1e08ca267b878` |
+| `README.md` | 30466 | `a27f0d80ec2a1fd141095461fedd82ff1b11c2a34ae941e7bfe1cc529db8570d` |
 | `THIRD_PARTY_NOTICES.md` | 6098 | `f5eb49726de47e3ad7b3897840482d5aee7c854fc1921465e77cf8ff03dae682` |
 | `TRAINING_REPRODUCTION.md` | 2831 | `4221de81e3e1723071cd6f65d30084dca486f559b1a63477bdbc374a38df8b01` |
 
@@ -145,8 +145,8 @@ Generated UTC: `2026-09-29T12:30:59Z`
 | path | bytes | sha256 |
 |---|---:|---|
 | `sft/ATTRIBUTION.md` | 3643 | `1f690b238f77cc3ff112a8bb8404a5fe5806d20128d9214d40743857299fc038` |
-| `sft/README.md` | 8931 | `33083f74905dd945056d6e6104a01c2862112f46bb25009d502df574a1ff7eb6` |
-| `sft/checksums.sha256` | 424 | `e43f5214e1d869f79d8bed9077dc70326e7f2efd1b9814efb78176046af4277e` |
+| `sft/README.md` | 11907 | `8973b39b1a11532d2c92dd232880047846086b06c3d95268b11268560dd9007f` |
+| `sft/checksums.sha256` | 424 | `84de5966b67432bf6dffbf674d615423cb134a913fd67d6d1db8303e9c6b49ee` |
 | `sft/configs/ds_zero3_bf16.json` | 569 | `41e04c1a169b122eb058f1018edba49648f8c1ebd8f732751c279e10d0d981f9` |
 | `sft/data_generation/run_teacher_rollout.sh` | 1906 | `0b4af6b685ed6ddcd0df4196f0d40d68742f8fac8b37822d7cd35c06eee7af54` |
 | `sft/data_generation/search_sft_hybrid_v1/build_bm25_index.py` | 9938 | `789a3a8df399c73e8d85346f7fc683c8a154301323684f8bd6a56bad6482f17f` |
