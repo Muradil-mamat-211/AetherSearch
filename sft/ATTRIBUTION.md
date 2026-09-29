@@ -4,7 +4,7 @@
 
 `PUBLIC_LICENSE_GATE = UNRESOLVED`.
 
-No blanket license is asserted for the combined JSONL. No `LICENSE` file is
+No blanket license is asserted for the release JSONL. No `LICENSE` file is
 included because the local project materials do not establish that one license
 can authorize redistribution of every question, answer, and retrieved
 information span in this release.
@@ -13,7 +13,7 @@ This is an attribution and rights-status record, not legal advice.
 
 ## Components and upstream references
 
-### Single-search sources
+### QueryRewrite sources
 
 - **TriviaQA**: 996 records in this release. The official TriviaQA page states
   that the University of Washington does not own the copyright of the
@@ -25,7 +25,7 @@ This is an attribution and rights-status record, not legal advice.
   official Microsoft WebQuestionsSP download page is retained as a reference:
   <https://www.microsoft.com/en-us/download/details.aspx?id=52763>
 
-### Multi-search sources
+### V3.1 sources
 
 - **MuSiQue**: 720 records in this release. The upstream repository states
   that MuSiQue is distributed under CC BY 4.0:
@@ -33,6 +33,22 @@ This is an attribution and rights-status record, not legal advice.
 - **2WikiMultihopQA**: 255 records in this release. The upstream repository is
   marked Apache-2.0:
   <https://github.com/Alab-NII/2wikimultihop>
+
+### Direct-answer question sources
+
+- **Natural Questions (NQ)**: 300 direct-answer records. The upstream project
+  and its data-use terms remain the authoritative reference:
+  <https://github.com/google-research-datasets/natural-questions>
+- **WebQuestions**: 329 records: 300 direct-answer records and 29 QueryRewrite
+  records. The local materials identify the source but do not establish a
+  blanket redistribution license. The Microsoft
+  WebQuestionsSP page remains the reference:
+  <https://www.microsoft.com/en-us/download/details.aspx?id=52763>
+
+The direct-answer actions were generated through the DeepSeek API with no
+tools registered, then accepted by a controller only after normalized reference
+matching. This provenance statement does not grant rights beyond the applicable
+question-source and API terms.
 
 ### Retrieved information corpus
 
@@ -52,12 +68,13 @@ The retrieval-corpus redistribution gate therefore remains unresolved.
 - Search-R1 references were used for filtering and are not included as release
   records:
   <https://github.com/PeterGriffinJin/Search-R1>
-- Qwen2.5-3B-Instruct is the base/model-format reference. No model license is
-  asserted by this data attribution record.
+- Qwen2.5-3B-Instruct is a model-format reference only; model weights are not
+  included in this release and no model license is asserted for this data.
 
 ## Required user action before redistribution
 
 Before publishing the JSONL publicly or applying a downstream license, verify
-the terms for TriviaQA questions/evidence, WebQuestions, each multi-search
-source, and the exact retrieval corpus snapshot. Preserve the upstream
-attribution and any share-alike or other conditions that apply.
+the terms for TriviaQA questions/evidence, Natural Questions, WebQuestions,
+each V3.1 source, the DeepSeek-generated actions, and the exact retrieval
+corpus snapshot. Preserve upstream attribution and any share-alike or other
+conditions that apply.

@@ -31,8 +31,8 @@
 | Resource | Link | Contents |
 |---|---|---|
 | 🤗 Final model | [muradil211/AetherSearch](https://huggingface.co/muradil211/AetherSearch) | final model weights, tokenizer, config, and model card |
-| 🤗 SFT-2000 model repository | [muradil211/AetherSearch_SFT](https://huggingface.co/muradil211/AetherSearch_SFT) | checkpoint trained in one SFT stage on the frozen 2,000-record dataset, with weights, tokenizer, integrity manifest, and model card |
-| 🤗 SFT-2000 data | [muradil211/AetherSearch_SFT](https://huggingface.co/datasets/muradil211/AetherSearch_SFT) | full JSONL payload, provenance manifest, checksums, and dataset card |
+| 🤗 SFT-2600 model repository | [muradil211/AetherSearch_SFT](https://huggingface.co/muradil211/AetherSearch_SFT) | SFT model weights, tokenizer, integrity manifest, and model card |
+| 🤗 SFT-2600 data | [muradil211/AetherSearch_SFT](https://huggingface.co/datasets/muradil211/AetherSearch_SFT) | 2,600 full trajectories, provenance manifest, checksums, and dataset card |
 | 🤗 DPO model repository | [muradil211/AetherSearch_DPO](https://huggingface.co/muradil211/AetherSearch_DPO) | checkpoint trained from AetherSearch SFT on the canonical 2,126-pair preference dataset |
 | 🤗 DPO data | [muradil211/AetherSearch_DPO](https://huggingface.co/datasets/muradil211/AetherSearch_DPO) | train-only preference pairs, release manifest, attribution, and checksums |
 | 🤗 Search-R1 train data | [PeterJinGo/nq_hotpotqa_train](https://huggingface.co/datasets/PeterJinGo/nq_hotpotqa_train) | upstream `train.parquet`, pinned by checksum in `EXTERNAL_ASSETS.md` |
@@ -154,11 +154,11 @@ The resolved configuration is materialized inside each new run directory.
 
 | Stage | Purpose | Primary locations |
 |---|---|---|
-| SFT | one-stage cold-start full-trajectory supervision over the frozen 2,000-record dataset | [SFT stage](sft/), [trainer](sft/scripts/train_sft_2000.py), [launcher](sft/scripts/run_train_sft_2000_zero3.sh), [model output repository](https://huggingface.co/muradil211/AetherSearch_SFT) |
+| SFT | one-stage cold-start full-trajectory supervision over the frozen 2,600-record dataset | [SFT stage](sft/), [trainer](sft/scripts/train_sft_2600.py), [launcher](sft/scripts/run_train_sft_2600_zero3.sh), [model output repository](https://huggingface.co/muradil211/AetherSearch_SFT) |
 | DPO | one-stage preference optimization over the canonical 2,126-pair dataset, starting from the frozen SFT checkpoint | [DPO stage](dpo/), [trainer](dpo/scripts/train_dpo.py), [launcher](dpo/scripts/run_train_dpo_zero3.sh), [data](https://huggingface.co/datasets/muradil211/AetherSearch_DPO), [model output](https://huggingface.co/muradil211/AetherSearch_DPO) |
 | RL | search-augmented rollout and policy optimization | [src/agentic_rl/](src/agentic_rl/), [scripts/](scripts/), [recipes/rl/](recipes/rl/) |
 
-The SFT launcher fixes the canonical 2,000-record identity and effective global
+The SFT launcher fixes the canonical 2,600-record identity and effective global
 batch while discovering the visible local worker topology at launch time. It
 does not embed GPU IDs, node addresses, or server-local paths.
 
@@ -923,11 +923,11 @@ stability, throughput, or production qualification.
 
 ## Repository Layout
 
-- `sft/`: SFT-2000 data metadata, strict full-trajectory trainer, ZeRO-3
+- `sft/`: SFT-2600 data metadata, strict full-trajectory trainer, ZeRO-3
   launcher/configuration, and dependency pins.
   The full JSONL payload is hosted on
   [Hugging Face Datasets](https://huggingface.co/datasets/muradil211/AetherSearch_SFT).
-  The SFT-2000 checkpoint release repository is
+  The SFT-2600 checkpoint release repository is
   [muradil211/AetherSearch_SFT](https://huggingface.co/muradil211/AetherSearch_SFT).
 - `dpo/`: canonical preference-data metadata, strict prompt/information mask
   construction, DPO objective, BF16 ZeRO-3 launcher/configuration, dependency
@@ -952,10 +952,9 @@ stability, throughput, or production qualification.
 
 📦 The public repository covers SFT and DPO data metadata, their strict
 training implementations, and the complete Agentic RL training layer. The SFT
-checkpoint was trained once on the frozen 2,000-record dataset. The DPO
-checkpoint was then trained once from that SFT checkpoint on all 2,126 public
-preference pairs using the code under `dpo/`. Both training runs were performed
-on separate servers; the linked Hugging Face repositories contain the released
+reproduction path is pinned to the frozen 2,600-record dataset. The DPO stage
+starts from the SFT checkpoint and uses all 2,126 public preference pairs with
+the code under `dpo/`. The linked Hugging Face repositories contain the released
 model and dataset artifacts.
 
 Large model weights, optimizer-state checkpoints, eval result bundles, report

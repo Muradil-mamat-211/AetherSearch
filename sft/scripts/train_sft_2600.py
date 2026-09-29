@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Strict full-trajectory trainer for the canonical AetherSearch SFT-2000 data."""
+"""Strict full-trajectory trainer for the canonical AetherSearch SFT-2600 data."""
 
 import argparse
 import collections
@@ -38,7 +38,7 @@ PUBLIC_FIELD_ORDER = (
 )
 PUBLIC_FIELDS = set(PUBLIC_FIELD_ORDER)
 CANONICAL_DATA_SHA256 = (
-    "fec609652d3832c7a6c0ee2861c6f946b6cf7c3d3d40fc5d9be9b75df6325dcb"
+    "5619896ccc30bfb9d39c2676ec058cb59a0295c31082645153318102da0a7ec8"
 )
 
 INFORMATION_RE = re.compile(r"<information>.*?</information>", flags=re.S)
@@ -191,12 +191,17 @@ def validate_public_record(
         raise ValueError(f"line {line_number}: id must be a six-digit string, got {sample_id!r}")
     if not isinstance(question, str) or not question.strip():
         raise ValueError(f"line {line_number}: question must be a non-empty string")
-    if trajectory_type not in {"single_search", "multi_search"}:
+    if trajectory_type not in {"direct_answer", "single_search", "multi_search"}:
         raise ValueError(
             f"line {line_number}: unsupported trajectory_type={trajectory_type!r}"
         )
-    if not isinstance(expected_search_count, int) or expected_search_count < 1:
+    if not isinstance(expected_search_count, int) or expected_search_count < 0:
         raise ValueError(f"line {line_number}: invalid search_count={expected_search_count!r}")
+    if trajectory_type == "direct_answer" and expected_search_count != 0:
+        raise ValueError(
+            f"line {line_number}: direct_answer must have search_count=0, "
+            f"got {expected_search_count}"
+        )
     if trajectory_type == "single_search" and expected_search_count != 1:
         raise ValueError(
             f"line {line_number}: single_search must have search_count=1, "
@@ -387,14 +392,14 @@ def build_mask_segments(
     return segments
 
 
-class SearchSFT2000Dataset(Dataset):
+class SearchSFT2600Dataset(Dataset):
     def __init__(
         self,
         train_file: str,
         tokenizer,
         max_seq_len: int = 4096,
         long_sample_policy: str = "error",
-        expected_num_samples: int = 2000,
+        expected_num_samples: int = 2600,
         expected_sha256: Optional[str] = None,
         strict_public_schema: bool = True,
         tokenization_batch_size: int = 64,
@@ -629,7 +634,7 @@ class SearchSFT2000Dataset(Dataset):
 
     def _print_audit(self) -> None:
         audit = self.audit
-        rank0_print("========== SEARCH SFT 2000 DATASET AUDIT ==========")
+        rank0_print("========== SEARCH SFT 2600 DATASET AUDIT ==========")
         rank0_print("[DATA] source:", audit.source_file)
         rank0_print("[DATA] sha256:", audit.source_sha256)
         rank0_print("[DATA] input/kept/filtered:", audit.input_records, audit.kept_records, audit.filtered_overlength_records)
@@ -652,7 +657,7 @@ class SearchSFT2000Dataset(Dataset):
 
 
 @dataclass
-class SearchSFT2000Collator:
+class SearchSFT2600Collator:
     tokenizer: Any
     pad_to_multiple_of: Optional[int] = 8
 
@@ -690,12 +695,12 @@ class SearchSFT2000Collator:
         }
 
 
-def validate_collator(dataset: SearchSFT2000Dataset, tokenizer) -> None:
+def validate_collator(dataset: SearchSFT2600Dataset, tokenizer) -> None:
     lengths = [len(sample["input_ids"]) for sample in dataset.samples]
     short_index = min(range(len(lengths)), key=lengths.__getitem__)
     long_index = max(range(len(lengths)), key=lengths.__getitem__)
     features = [dataset[short_index], dataset[long_index]]
-    batch = SearchSFT2000Collator(tokenizer=tokenizer)(features)
+    batch = SearchSFT2600Collator(tokenizer=tokenizer)(features)
     expected_length = ((max(lengths) + 7) // 8) * 8
 
     if tuple(batch["input_ids"].shape) != (2, expected_length):
@@ -725,7 +730,7 @@ def validate_collator(dataset: SearchSFT2000Dataset, tokenizer) -> None:
             if not torch.all(batch["labels"][row, sample_length:] == IGNORE_INDEX):
                 raise ValueError(f"collator supervises padding in smoke row {row}")
     rank0_print(
-        "SFT_2000_COLLATOR_CHECK_OK",
+        "SFT_2600_COLLATOR_CHECK_OK",
         f"min_tokens={min(lengths)}",
         f"max_tokens={max(lengths)}",
         f"padded_batch_tokens={expected_length}",
@@ -734,7 +739,7 @@ def validate_collator(dataset: SearchSFT2000Dataset, tokenizer) -> None:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Full-trajectory SFT trainer for the public Search-SFT 2000 dataset."
+        description="Full-trajectory SFT trainer for the public Search-SFT 2600 dataset."
     )
     parser.add_argument("--model_name_or_path", required=True)
     parser.add_argument(
@@ -753,11 +758,11 @@ def parse_args() -> argparse.Namespace:
 
     parser.add_argument("--max_seq_len", type=int, default=4096)
     parser.add_argument("--long_sample_policy", choices=["error", "filter"], default="error")
-    parser.add_argument("--expected_num_samples", type=int, default=2000)
+    parser.add_argument("--expected_num_samples", type=int, default=2600)
     parser.add_argument(
         "--expected_sha256",
         default=CANONICAL_DATA_SHA256,
-        help="Expected training-file SHA-256 (defaults to canonical SFT-2000 data).",
+        help="Expected training-file SHA-256 (defaults to canonical SFT-2600 data).",
     )
     parser.add_argument("--allow_extra_fields", action="store_true")
     parser.add_argument("--tokenization_batch_size", type=int, default=64)
@@ -822,7 +827,7 @@ def main() -> None:
         tokenizer.pad_token = tokenizer.eos_token
 
     rank0_print("[INFO] Auditing and tokenizing dataset:", args.train_file)
-    train_dataset = SearchSFT2000Dataset(
+    train_dataset = SearchSFT2600Dataset(
         train_file=args.train_file,
         tokenizer=tokenizer,
         max_seq_len=args.max_seq_len,
@@ -839,7 +844,7 @@ def main() -> None:
         rank0_print("[INFO] Wrote data audit:", args.audit_report_path)
     if args.check_data_only:
         validate_collator(train_dataset, tokenizer)
-        rank0_print(f"SFT_2000_DATA_CHECK_OK samples={len(train_dataset)}")
+        rank0_print(f"SFT_2600_DATA_CHECK_OK samples={len(train_dataset)}")
         return
 
     final_model_dir = os.path.join(args.output_dir, "final_model")
@@ -918,11 +923,11 @@ def main() -> None:
         model=model,
         args=training_args,
         train_dataset=train_dataset,
-        data_collator=SearchSFT2000Collator(tokenizer=tokenizer),
+        data_collator=SearchSFT2600Collator(tokenizer=tokenizer),
         processing_class=tokenizer,
     )
 
-    rank0_print("[INFO] Starting Search-SFT 2000 training")
+    rank0_print("[INFO] Starting Search-SFT 2600 training")
     train_result = trainer.train(resume_from_checkpoint=args.resume_from_checkpoint)
     trainer.log_metrics("train", train_result.metrics)
     trainer.save_metrics("train", train_result.metrics)
@@ -949,7 +954,7 @@ def main() -> None:
             "train_metrics": train_result.metrics,
             "final_model_dir": os.path.abspath(final_model_dir),
         }
-        write_json(os.path.join(args.output_dir, "sft_2000_run_manifest.json"), run_manifest)
+        write_json(os.path.join(args.output_dir, "sft_2600_run_manifest.json"), run_manifest)
         os.replace(incomplete_model_dir, final_model_dir)
     trainer.accelerator.wait_for_everyone()
     rank0_print("[INFO] Done")

@@ -1,56 +1,51 @@
-# AetherSearch SFT
+# AetherSearch SFT-2600
 
 [![SFT Model](https://img.shields.io/badge/%F0%9F%A4%97%20Model-AetherSearch__SFT-yellow)](https://huggingface.co/muradil211/AetherSearch_SFT)
 [![SFT Data](https://img.shields.io/badge/%F0%9F%A4%97%20Dataset-AetherSearch__SFT-yellow)](https://huggingface.co/datasets/muradil211/AetherSearch_SFT)
 [![Checksums](https://img.shields.io/badge/checksums-sha256-blue)](checksums.sha256)
 
-> **Complete dataset:** [AetherSearch SFT on Hugging Face](https://huggingface.co/datasets/muradil211/AetherSearch_SFT)
->
-> This directory is the public boundary for the SFT stage: release
-> metadata, the strict SFT-2000 trainer, DeepSeek-distillation data
-> construction code, DeepSpeed
-> configuration, and dependency pins. The frozen JSONL payloads remain on
-> Hugging Face Datasets. Model files are managed
-> separately by the maintainer through the linked Hugging Face model repository.
+This directory is the public SFT boundary: SFT-2600 metadata, complete data
+construction code, the strict full-trajectory trainer, the BF16 ZeRO-3 launcher,
+configuration, tests, and dependency pins. The full JSONL and provenance
+payloads are hosted in
+[`muradil211/AetherSearch_SFT`](https://huggingface.co/datasets/muradil211/AetherSearch_SFT).
 
-## Release at a glance
+## Release
 
-| Item | Details |
+| Item | Value |
 |---|---|
-| Complete data | [muradil211/AetherSearch_SFT](https://huggingface.co/datasets/muradil211/AetherSearch_SFT) |
-| SFT-2000 model output repository | [muradil211/AetherSearch_SFT](https://huggingface.co/muradil211/AetherSearch_SFT) |
-| Reproduction entrypoint | [`scripts/run_train_sft_2000_zero3.sh`](scripts/run_train_sft_2000_zero3.sh) |
-| Records | 2,000 validated trajectories |
+| Records | 2,600 validated trajectories |
 | Training unit | Full trajectory |
+| Data file | `final_sft_2600.jsonl` |
+| Data SHA-256 | `5619896ccc30bfb9d39c2676ec058cb59a0295c31082645153318102da0a7ec8` |
+| Trainer | [`scripts/train_sft_2600.py`](scripts/train_sft_2600.py) |
+| Launcher | [`scripts/run_train_sft_2600_zero3.sh`](scripts/run_train_sft_2600_zero3.sh) |
+| Model repository | [`muradil211/AetherSearch_SFT`](https://huggingface.co/muradil211/AetherSearch_SFT) |
 | License metadata | `unknown` |
-| GitHub contents | Data metadata, generation/training code, configuration, and tests |
-
-## Dataset Overview
-
-This release contains 2,000 validated full agent trajectories for Qwen2.5-3B
-Agentic Search format cold start. Every trajectory ends with the Qwen assistant
-termination token `<|im_end|>`.
 
 ## Composition
 
 | Trajectory type | Records | Share |
 |---|---:|---:|
-| single_search | 1,025 | 51.25% |
-| multi_search | 975 | 48.75% |
-| Total | 2,000 | 100.00% |
+| `direct_answer` | 600 | 23.08% |
+| `single_search` | 1,025 | 39.42% |
+| `multi_search` | 975 | 37.50% |
+| **Total** | **2,600** | **100.00%** |
 
-Search-depth distribution:
-
-| Search depth | Records | Share |
+| Search count | Records | Share |
 |---:|---:|---:|
-| 1 | 1,025 | 51.25% |
-| 2 | 667 | 33.35% |
-| 3 | 265 | 13.25% |
-| 4 | 43 | 2.15% |
+| 0 | 600 | 23.08% |
+| 1 | 1,025 | 39.42% |
+| 2 | 667 | 25.65% |
+| 3 | 265 | 10.19% |
+| 4 | 43 | 1.65% |
+
+All records were globally shuffled with deterministic seed 42 and assigned IDs
+`000001` through `002600` in the shuffled order.
 
 ## Public Schema
 
-Every public training record contains exactly these five fields, in this order:
+Each JSONL record contains exactly five fields, in this order:
 
 1. `id`
 2. `question`
@@ -58,115 +53,50 @@ Every public training record contains exactly these five fields, in this order:
 4. `search_count`
 5. `full_trajectory_text`
 
-The `full_trajectory_text` field is the only training text. The frozen record
-order has been globally shuffled with a deterministic seed of 42, then IDs
-were assigned in that shuffled order from `000001` through `002000`.
+`full_trajectory_text` is the training unit. Every trajectory contains one
+system message, one user message, and one assistant trajectory, and ends exactly
+with `</answer><|im_end|>`.
 
-## Assistant Termination
+The loss contract is:
 
-Each complete Qwen assistant trajectory ends exactly as:
+- mask system, user, and question tokens;
+- mask every complete `<information>...</information>` observation;
+- supervise assistant `<think>`, `<search>`, and `<answer>` actions;
+- supervise the final assistant `<|im_end|>` token;
+- never truncate a full trajectory in the canonical recipe.
 
-```text
-</answer><|im_end|>
-```
+For `direct_answer`, `search_count=0` and no `<search>` or `<information>` span
+is present. `single_search` has exactly one search/information turn.
+`multi_search` retains every sequential search/information turn.
 
-The final `<|im_end|>` is the assistant EOT/EOS token and is included in the
-assistant supervision target. It is not duplicated and no endoftext token is
-added.
+## Data Construction
 
-## Training Semantics
+The code under
+[`data_generation/search_sft_teacher/`](data_generation/search_sft_teacher/)
+constructs the complete SFT-2600 trajectory set by distilling visible DeepSeek
+actions into the public AetherSearch format. Private provider
+`reasoning_content` is not a training target.
 
-The dataset semantic contract is:
+The source question set is exactly the question set published in
+[`muradil211/AetherSearch_SFT`](https://huggingface.co/datasets/muradil211/AetherSearch_SFT).
 
-- system/user/question text is not supervised;
-- the complete `<information>...</information>` span is not supervised;
-- assistant `<think>...</think>` is supervised;
-- assistant `<search>...</search>` is supervised;
-- assistant `<answer>...</answer>` is supervised;
-- the final assistant `<|im_end|>` is supervised as assistant EOT/EOS.
+### Retrieval trajectories
 
-The public JSONL does not contain token-level masks. A downstream trainer must
-construct token-level masking from this contract. No token-level mask is stored
-in this dataset artifact.
+[`deepseek_rollout.py`](data_generation/search_sft_teacher/deepseek_rollout.py)
+runs adaptive multi-turn teacher trajectories. DeepSeek decides whether another
+search is needed and emits each visible search or final-answer action. The
+controller executes search actions against the local Hybrid-RAG service and
+inserts only real retrieved passages as `<information>` observations.
 
-## Full-Trajectory Unit
+The retrieval policy is wiki18 BM25 top-20 plus E5-base-v2 FAISS `IndexFlatIP`
+top-20, fused with RRF (`k=60`) to top-3. There is no synthetic evidence and no
+silent dense-only fallback. Up to `--concurrency` trajectories run in parallel;
+the async gateway batches dense requests without changing per-trajectory turn
+ordering.
 
-The training unit is `training_unit = full_trajectory`.
-
-Single-search trajectories preserve one search/information turn through the
-final answer. Multi-search trajectories preserve every sequential
-search/information turn through the final answer.
-
-## Provenance and Audit
-
-`provenance_manifest.jsonl` is audit-only. Each new public ID maps to the
-pre-shuffle public id, legacy source identifiers, source hashes, the pre-EOT
-full-trajectory hash, the post-EOT full-trajectory hash, and the deterministic
-shuffle key.
-
-## Build Search-SFT Data by Distilling DeepSeek
-
-This is the data-construction method used to build AetherSearch Search-SFT
-trajectories. DeepSeek acts as the teacher model and rolls out the visible
-agent actions: it decides when retrieval is needed, writes each
-`<think>...</think><search>...</search>` action, reads the returned evidence,
-continues across multiple search turns when necessary, and finally produces
-`<think>...</think><answer>...</answer>`. The controller records those actions
-as student training targets. In this sense, the resulting Search-SFT data
-distills DeepSeek's search behavior into the AetherSearch trajectory format;
-it does not copy DeepSeek weights or expose its private `reasoning_content`.
-The Search-SFT dataset used by this project is produced from trajectories
-constructed by this method and then rendered into the five-field public schema
-described above.
-
-The source questions are exactly the same questions published in
-[`muradil211/AetherSearch_SFT`](https://huggingface.co/datasets/muradil211/AetherSearch_SFT);
-this pipeline regenerates the complete trajectories for those questions using
-the DeepSeek teacher and real local retrieval.
-
-The [DeepSeek teacher controller](data_generation/search_sft_teacher/deepseek_rollout.py)
-implements the complete construction pipeline used for this data. The
-[detailed generation guide](data_generation/search_sft_teacher/README.md)
-documents the API protocol, multi-turn continuation, student-token budgets,
-checkpoint/retry semantics, review and export. Keep the
-[data provenance note](data_generation/search_sft_teacher/DATASET_PROVENANCE.md)
-with generated releases.
-
-The rollout is grounded in real retrieval. DeepSeek never invents the
-`<information>` block: the controller executes the model's query against the
-local retriever and inserts the returned passages into the next turn. The
-reference answer is retained by the controller for acceptance checks and is
-not supplied to DeepSeek as retrieval evidence. Search-turn rationales,
-queries and final answers are distilled from DeepSeek; the controller
-standardizes only the final training `<think>` sentence and applies the
-information loss mask. The resulting trajectory is:
-
-```text
-verified QA question
-  -> DeepSeek search action
-  -> real local <information> observation
-  -> optional additional DeepSeek search actions and observations
-  -> DeepSeek final answer action
-  -> controller validation, semantic review and SFT export
-```
-
-The teacher offers one local retrieval tool: wiki18 BM25 top-20 plus
-E5-base-v2/FAISS `IndexFlatIP` top-20, fused by RRF (`k=60`) to top-3. It
-uses the AetherSearch RL `e5_Flat.index` **asset**, but not the RL hybrid
-server's weighted fusion. The Search-R1 dense-only server is a separate
-long-running process; the controller owns BM25, RRF and corpus-identity checks.
-With `--concurrency 8`, independent trajectories run concurrently and up to
-eight dense queries share one HTTP batch. There is no synthetic evidence or
-silent dense-only fallback.
-
-Run from the repository root, with `AETHERSEARCH_SFT_WORKSPACE` pointing at
-the directory containing the external corpus, BM25 SQLite index, FlatIP
-index, E5 model, student tokenizer and retriever environment. These assets,
-the DeepSeek key, raw API receipts, logs and checkpoints are **not** in Git.
-The input must be a locally prepared, verified QA JSONL containing `id`,
-`question`, `golden_answers`, `data_source` and `split=train`. The frozen
-five-field SFT release is **not** accepted directly as this input: it has no
-`golden_answers` field, and its old `<information>` is never reused.
+Run from the repository root after configuring the external assets and a
+verified QA JSONL containing `id`, `question`, `golden_answers`, `data_source`,
+and `split=train`:
 
 ```bash
 export AETHERSEARCH_SFT_WORKSPACE=/absolute/path/to/runtime-assets
@@ -174,122 +104,118 @@ export QUESTIONS_FILE=/absolute/path/to/verified_train_qa.jsonl
 bash sft/data_generation/run_teacher_rollout.sh
 ```
 
-The [launcher](data_generation/run_teacher_rollout.sh) defaults to 10 candidate
-questions, five searches per question, eight concurrent trajectories and a
-100-attempt API budget. `MAX_EXAMPLES`, `MAX_API_REQUESTS`, `DB_FILE`,
-`TEACHER_MODEL`, `TEACHER_THINKING` and `REASONING_EFFORT` are optional
-environment overrides. It checks `--doctor` for `ready=true` before paid API
-calls. This command
-creates distilled candidates in a resumable SQLite checkpoint. Run the
-independent validator, inspect the review packet and approve
-individual supported trajectories before `--export-approved` writes the
-five-field public format. Zero-search answers are excluded from that export.
-The standalone [teacher validator](data_generation/search_sft_teacher/validate_teacher_rollout.py)
-also verifies approved exports against their checkpoint. The approved export
-is the Search-SFT training data; starting the teacher performs its data
-construction, while the launcher below performs model training over that data.
+The controller persists API receipts, retrieval traces, candidate status, retry
+history, and review state in SQLite. Only explicitly approved, structurally
+valid trajectories can be exported.
 
-## Reproduce SFT-2000
+### Direct-answer trajectories
 
-The public trainer implements the loss contract above directly from
-`full_trajectory_text`. It validates every record before model loading and
-never truncates a full trajectory in the supported recipe.
+[`generate_direct_answer_sft.py`](data_generation/search_sft_teacher/generate_direct_answer_sft.py)
+constructs `search_count=0` trajectories. It registers no tools, runs DeepSeek
+with thinking disabled, requires an exact
+`<think>...</think><answer>...</answer>` response, validates the normalized
+minimal answer against isolated aliases, enforces the student action budget,
+and writes separate public and audit artifacts. The public trajectory contains
+no golden-answer field or API receipt.
 
-Install a CUDA-compatible PyTorch build for the target host, then install the
-SFT dependencies:
+```bash
+AETHERSEARCH_SFT_WORKSPACE=/absolute/path/to/runtime-assets \
+python sft/data_generation/search_sft_teacher/generate_direct_answer_sft.py \
+  --workspace /absolute/path/to/runtime-assets \
+  --retrieval-input /absolute/path/to/retrieval_trajectories.jsonl \
+  --dpo-input /absolute/path/to/aethersearch_dpo_2126.jsonl \
+  --rl-train /absolute/path/to/nq_hotpotqa_train.parquet \
+  --concurrency 16 \
+  --max-attempts 2200 \
+  --seed 42
+```
+
+Validate this branch with
+[`validate_direct_answer_sft.py`](data_generation/search_sft_teacher/validate_direct_answer_sft.py).
+
+### Final release
+
+[`build_sft_2600_release.py`](data_generation/search_sft_teacher/build_sft_2600_release.py)
+checks fixed input identities, validates all public rows and direct-answer audit
+pairings, verifies question uniqueness, performs the deterministic global
+shuffle, reassigns contiguous IDs, and writes:
+
+- `final_sft_2600.jsonl`;
+- `provenance_manifest.jsonl`;
+- `dataset_manifest.json`.
+
+The detailed construction guide documents the API protocol, continuation
+history, token budgets, retrieval service, checkpoint behavior, review gates,
+and release validation:
+[`data_generation/search_sft_teacher/README.md`](data_generation/search_sft_teacher/README.md).
+
+## Reproduce Training
+
+Install a CUDA-compatible PyTorch build and the SFT dependencies:
 
 ```bash
 python -m pip install -r sft/requirements.txt
 ```
 
-Download the frozen data into the default location and verify it:
+Download and verify the frozen release:
 
 ```bash
 hf download muradil211/AetherSearch_SFT \
-  final_sft_2000.jsonl provenance_manifest.jsonl \
+  final_sft_2600.jsonl provenance_manifest.jsonl \
   --repo-type dataset \
   --local-dir sft
 sha256sum -c sft/checksums.sha256
 ```
 
-Run the strict data and loss-mask preflight without starting training:
+Run the strict structure, tokenizer, and loss-mask preflight:
 
 ```bash
-python sft/scripts/train_sft_2000.py \
+python sft/scripts/train_sft_2600.py \
   --model_name_or_path Qwen/Qwen2.5-3B-Instruct \
   --model_revision aa8e72537993ba99e69dfaafa59ed015b17504d1 \
-  --train_file sft/final_sft_2000.jsonl \
-  --output_dir outputs/sft/sft_2000_preflight \
-  --expected_num_samples 2000 \
-  --expected_sha256 fec609652d3832c7a6c0ee2861c6f946b6cf7c3d3d40fc5d9be9b75df6325dcb \
+  --train_file sft/final_sft_2600.jsonl \
+  --output_dir outputs/sft/sft_2600_preflight \
+  --expected_num_samples 2600 \
+  --expected_sha256 5619896ccc30bfb9d39c2676ec058cb59a0295c31082645153318102da0a7ec8 \
   --check_data_only \
-  --audit_report_path outputs/sft/sft_2000_preflight/data_audit.json
+  --audit_report_path outputs/sft/sft_2600_preflight/data_audit.json
 ```
 
-The canonical preflight result is 2,000 accepted records, 2,119,664 segmented
-input tokens, a maximum length of 2,901 tokens, 326,451 prompt-masked tokens,
-1,625,435 information-masked tokens, and 167,778 supervised tokens. All 2,000
-segmented sequences decode back to the tokenizer-normalized source.
-
-Start the BF16 ZeRO-3 recipe. By default, the launcher uses every GPU already
-visible to the process; it never selects physical GPU IDs itself:
+Start the canonical BF16 ZeRO-3 recipe:
 
 ```bash
-bash sft/scripts/run_train_sft_2000_zero3.sh
+bash sft/scripts/run_train_sft_2600_zero3.sh
 ```
 
-The launcher defaults to the immutable Qwen base revision above, one epoch,
-sequence length 4,096, learning rate `2e-6`, per-device batch size 1, gradient
-accumulation derived to preserve an effective global batch size of 24, cosine
-scheduling, BF16, TF32, gradient checkpointing,
-length-grouped dynamic padding, and no intermediate checkpoint. It runs the
-full preflight first, refuses to overwrite existing output, validates BF16
-support, optionally enforces a configured free-disk floor, and exports
-`final_model/` through an atomic directory rename. Paths and hyperparameters
-are configurable through the environment variables declared at the top of the
-launcher.
+The launcher pins the data count and SHA, Qwen base revision, one epoch,
+sequence length 4096, learning rate `2e-6`, effective global batch size 24,
+cosine scheduling, BF16, TF32, gradient checkpointing, grouped dynamic padding,
+and strict no-truncation behavior. It discovers the visible local GPUs, derives
+gradient accumulation from the worker count, runs preflight before model
+allocation, refuses to overwrite an existing final model, and exports
+`final_model/` atomically.
 
-The reference three-worker topology therefore resolves to micro-batch 1 and
-gradient accumulation 8. On one, two, four, or eight workers, accumulation is
-derived as 24, 12, 6, or 3 so optimizer batch semantics remain unchanged. Set
-`CUDA_VISIBLE_DEVICES` outside the script to choose devices, or set
-`NPROC_PER_NODE` to use a subset of already visible devices on that host. The
-launcher deliberately owns only a single-node `torchrun` boundary, avoiding
-assumptions about cluster schedulers or shared filesystems. It rejects a local
-worker topology that cannot divide global batch 24 exactly;
-`GLOBAL_BATCH_SIZE` is explicit if a deliberately different training recipe
-is required.
+Machine-local paths and topology are supplied through `PYTHON_BIN`,
+`DATA_FILE`, `OUTPUT_DIR`, `DEEPSPEED_CONFIG`, `CUDA_VISIBLE_DEVICES`, and the
+other environment variables declared by the launcher. The launcher contains no
+server-specific absolute path or physical GPU assignment.
 
-Machine-local controls such as `PYTHON_BIN`, `DATA_FILE`, `OUTPUT_DIR`,
-`DEEPSPEED_CONFIG`, `DATALOADER_NUM_WORKERS`, and `MINIMUM_FREE_KB` remain
-environment inputs. The script does not set GPU IDs, NCCL fabric policy, CUDA
-allocator tuning, or server-specific absolute paths. `DATA_FILE` may point to
-any local copy, but its contents must still match the canonical 2,000-record
-count and SHA-256.
+## Audit and Provenance
 
-The trainer has passed the complete CPU-side data/mask/collator preflight and
-source tests.
+[`dataset_manifest.json`](dataset_manifest.json) records the release schema,
+composition, shuffle policy, fixed input identities, and integrity checks.
+`provenance_manifest.jsonl` is hosted with the dataset and maps every public ID
+to source identifiers and content hashes. [`ATTRIBUTION.md`](ATTRIBUTION.md)
+records source and redistribution status.
 
-## SFT-2000 checkpoint
-
-The [AetherSearch SFT checkpoint](https://huggingface.co/muradil211/AetherSearch_SFT)
-was produced in one supervised fine-tuning stage from the pinned Qwen base
-model over the frozen 2,000-record `final_sft_2000.jsonl`. Training ran on a
-separate server; the public release contains the final model artifacts and the
-reproduction recipe, not server-local training logs.
+The trainer validates schema, IDs, normalized-question uniqueness, trajectory
+structure, search/information adjacency, tokenization round trips, EOT
+supervision, loss-mask accounting, length limits, row count, and the canonical
+data SHA before training.
 
 ## Limitations
 
-The 2,000-record release defines the full-trajectory data contract; the public
-trainer constructs its token-level masks. A model release must record the exact
-dataset checksum and training configuration used to produce its weights.
-
-## Checksums
-
-Download `final_sft_2000.jsonl` and `provenance_manifest.jsonl` from the
-Hugging Face dataset linked above into this directory, then verify the complete
-release with:
-
-```bash
-sha256sum -c checksums.sha256
-```
+The dataset defines the full-trajectory training contract; it does not by itself
+establish downstream model quality. Any model release must record the exact
+dataset checksum and training configuration used for its weights. Redistribution
+rights remain unresolved as documented in `ATTRIBUTION.md`.

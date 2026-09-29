@@ -124,8 +124,9 @@ def canonical_answer(value: Any) -> str:
     answer = canonicalize_answer(value)
     letters = [ch for ch in str(value) if ch.isalpha()]
     if letters and all(ch.isupper() for ch in letters):
-        acronyms = {"US", "USA", "UK", "EU", "UN", "NASA", "NATO", "FBI", "CIA", "BBC", "NYC", "WWI", "WWII",
-                    "SQL", "HTML", "CSS", "API", "CPU", "GPU", "IBM", "USB", "NFL", "NBA", "NHL", "MLB", "FIFA", "UEFA"}
+        acronyms = {"US", "USA", "UK", "EU", "UN", "NASA", "NATO", "FBI", "CIA", "BBC", "ABC", "CBS", "CNN",
+                    "NBC", "PBS", "HBO", "ESPN", "NYC", "BP", "BC", "BCE", "AD", "CE", "WWI", "WWII", "SQL",
+                    "HTML", "CSS", "API", "CPU", "GPU", "IBM", "USB", "NFL", "NBA", "NHL", "MLB", "FIFA", "UEFA"}
         answer = re.sub(r"[A-Za-z]+", lambda m: m[0] if m[0] in acronyms else m[0].capitalize(), answer)
     return answer
 

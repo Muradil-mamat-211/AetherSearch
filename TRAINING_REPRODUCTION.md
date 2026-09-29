@@ -1,26 +1,26 @@
 # Training Reproduction
 
-## SFT-2000
+## SFT-2600
 
 The strict SFT implementation is documented in [`sft/`](sft/). Download the
-frozen 2,000-record dataset from
+frozen 2,600-record dataset from
 [muradil211/AetherSearch_SFT](https://huggingface.co/datasets/muradil211/AetherSearch_SFT),
 install `sft/requirements.txt`, run the data-only preflight, and then launch the
 single-node BF16 ZeRO-3 recipe:
 
 ```bash
-bash sft/scripts/run_train_sft_2000_zero3.sh
+bash sft/scripts/run_train_sft_2600_zero3.sh
 ```
 
 This is one public SFT stage: the pinned Qwen base model is supervised on the
-frozen 2,000-record full-trajectory dataset and exported to `final_model/`.
+frozen 2,600-record full-trajectory dataset and exported to `final_model/`.
 The [AetherSearch SFT repository](https://huggingface.co/muradil211/AetherSearch_SFT)
-releases the checkpoint produced by this procedure.
+hosts the released SFT model artifacts.
 
 The launcher discovers the number of visible GPUs and derives gradient
 accumulation to preserve global batch 24. It does not assign GPU IDs or embed
 machine-local paths. Topology and paths are supplied through environment
-variables; the 2,000-record count and dataset SHA-256 remain fixed.
+variables; the 2,600-record count and dataset SHA-256 remain fixed.
 
 ## DPO
 

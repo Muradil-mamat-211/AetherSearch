@@ -36,7 +36,7 @@ configs/local/
 
 # Hugging Face-hosted SFT payloads (metadata and code remain in Git).
 /provenance_manifest.jsonl
-/sft/final_sft_2000.jsonl
+/sft/final_sft_2600.jsonl
 /sft/provenance_manifest.jsonl
 
 # Hugging Face-hosted DPO payload (metadata and code remain in Git).

@@ -7,10 +7,9 @@ local locations in `environment/env.local.sh`.
 
 - Final AetherSearch model:
   [muradil211/AetherSearch](https://huggingface.co/muradil211/AetherSearch).
-- SFT-2000 model output repository:
+- SFT-2600 model output repository:
   [muradil211/AetherSearch_SFT](https://huggingface.co/muradil211/AetherSearch_SFT).
-  The checkpoint was trained in one stage on the frozen 2,000-record dataset
-  using the public SFT-2000 trainer.
+  The repository contains the released SFT model artifacts.
 - DPO model output repository:
   [muradil211/AetherSearch_DPO](https://huggingface.co/muradil211/AetherSearch_DPO).
   The checkpoint was trained in one stage from AetherSearch SFT on the complete
@@ -25,10 +24,10 @@ local locations in `environment/env.local.sh`.
 
 ## Training And Validation Data
 
-- SFT-2000 data:
+- SFT-2600 data:
   [muradil211/AetherSearch_SFT](https://huggingface.co/datasets/muradil211/AetherSearch_SFT),
-  file `final_sft_2000.jsonl`, 2,000 records, SHA-256
-  `fec609652d3832c7a6c0ee2861c6f946b6cf7c3d3d40fc5d9be9b75df6325dcb`.
+  file `final_sft_2600.jsonl`, 2,600 records, SHA-256
+  `5619896ccc30bfb9d39c2676ec058cb59a0295c31082645153318102da0a7ec8`.
 - DPO data:
   [muradil211/AetherSearch_DPO](https://huggingface.co/datasets/muradil211/AetherSearch_DPO),
   file `train.jsonl`, 2,126 preference pairs, SHA-256

@@ -42,7 +42,7 @@ for test_file in \
 done
 
 PYTHONPATH="${PROJECT_ROOT}/src" "${RL_PYTHON}" -m pytest -q \
-  "${PROJECT_ROOT}/tests/test_sft_2000_trainer.py"
+  "${PROJECT_ROOT}/tests/test_sft_2600_trainer.py"
 PYTHONPATH="${PROJECT_ROOT}/src" "${RL_PYTHON}" -m pytest -q \
   "${PROJECT_ROOT}/tests/test_dpo_trainer.py"
 

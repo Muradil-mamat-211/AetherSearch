@@ -1,18 +1,59 @@
 {
-  "dataset_name": "search_sft_2000",
-  "total_records": 2000,
-  "trajectory_types": {
+  "assistant_eot": "<|im_end|>",
+  "assistant_eot_supervised": true,
+  "dataset_name": "search_sft_2600",
+  "direct_answer_candidate_pool_overlap_counts": {
+    "nq": {
+      "dpo": 0,
+      "retrieval_trajectories": 0,
+      "rl_train": 60298
+    },
+    "web_questions": {
+      "dpo": 46,
+      "retrieval_trajectories": 29,
+      "rl_train": 13
+    }
+  },
+  "direct_answer_sources": {
+    "nq": 300,
+    "web_questions": 300
+  },
+  "direct_answer_teacher": {
+    "export_policy_version": "direct_answer_export_v2_preserve_acronyms",
+    "generator_version": "deepseek_direct_answer_gold_validated_v1",
+    "model": "deepseek-flash",
+    "overlap_policy_version": "sft_dpo_rl_exact_question_exclusion_v1",
+    "prompt_version": "direct_answer_teacher_v1",
+    "thinking": "disabled",
+    "tools_registered": []
+  },
+  "input_artifacts": {
+    "direct_answer_600_sha256": "388eb26ae87563cb07a00844ae3e96fb1a98f2775ae7453eceabde84b66d5b70",
+    "direct_answer_audit_600_sha256": "a2795d87c357925214a100396da6a786e2bf2bf2626e941c58431ebd8117fd3e",
+    "retrieval_trajectories_sha256": "fec609652d3832c7a6c0ee2861c6f946b6cf7c3d3d40fc5d9be9b75df6325dcb"
+  },
+  "integrity_audit": {
+    "depth_0": 600,
+    "depth_1": 1025,
+    "depth_2": 667,
+    "depth_3": 265,
+    "depth_4": 43,
+    "deterministic_shuffle_reproducible": true,
+    "direct_answer": 600,
+    "direct_answer_without_search_or_information": 600,
+    "every_trajectory_ends_with_im_end": 2600,
+    "ids_exactly_000001_to_002600": true,
+    "multi_search": 975,
+    "provenance_mapping_complete": 2600,
+    "public_jsonl_fields_exactly_5": true,
+    "records_moved_by_global_shuffle": 2600,
     "single_search": 1025,
-    "multi_search": 975
+    "total_records": 2600,
+    "unique_id": 2600,
+    "unique_normalized_questions": 2600
   },
-  "search_depth": {
-    "1": 1025,
-    "2": 667,
-    "3": 265,
-    "4": 43
-  },
-  "training_unit": "full_trajectory",
   "loss_mask_policy": "assistant_generated_except_information",
+  "ordering": "deterministic_global_shuffle",
   "public_schema": [
     "id",
     "question",
@@ -20,34 +61,32 @@
     "search_count",
     "full_trajectory_text"
   ],
-  "ordering": "deterministic_global_shuffle",
-  "shuffle_seed": 42,
+  "release_files": {
+    "provenance": "provenance_manifest.jsonl",
+    "provenance_sha256": "17cebaa6862c22c0b44a525c6011310dd1438e12e3b5c4048dcc09d666bf47c6",
+    "training_data": "final_sft_2600.jsonl",
+    "training_data_sha256": "5619896ccc30bfb9d39c2676ec058cb59a0295c31082645153318102da0a7ec8"
+  },
+  "release_version": "aethersearch_sft_2600_v1",
+  "search_depth": {
+    "0": 600,
+    "1": 1025,
+    "2": 667,
+    "3": 265,
+    "4": 43
+  },
+  "selected_direct_answer_overlap_counts": {
+    "dpo": 0,
+    "retrieval_trajectories": 0,
+    "rl_train": 0
+  },
   "shuffle_key": "SHA256(\"42|\" + old_public_id + \"|\" + SHA256(full_trajectory_text_after_eot))",
-  "assistant_eot": "<|im_end|>",
-  "assistant_eot_supervised": true,
-  "integrity_audit": {
-    "total_records": 2000,
-    "unique_id": 2000,
-    "ids_exactly_000001_to_002000": true,
-    "single_search": 1025,
+  "shuffle_seed": 42,
+  "total_records": 2600,
+  "training_unit": "full_trajectory",
+  "trajectory_types": {
+    "direct_answer": 600,
     "multi_search": 975,
-    "depth_1": 1025,
-    "depth_2": 667,
-    "depth_3": 265,
-    "depth_4": 43,
-    "public_jsonl_fields_exactly_5": true,
-    "every_trajectory_ends_with_im_end": 2000,
-    "duplicate_final_im_end": 0,
-    "final_answer_count_not_one": 0,
-    "search_information_pair_invalid": 0,
-    "empty_search": 0,
-    "empty_information": 0,
-    "empty_answer": 0,
-    "malformed_trajectory": 0,
-    "question_changed": 0,
-    "content_changed_except_final_im_end": 0,
-    "deterministic_shuffle_reproducible": true,
-    "old_block_order_removed": true,
-    "provenance_mapping_complete": 2000
+    "single_search": 1025
   }
 }

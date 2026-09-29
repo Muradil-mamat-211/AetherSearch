@@ -3,13 +3,13 @@ set -euo pipefail
 
 sft_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 project_root="$(cd "${sft_root}/.." && pwd)"
-trainer="${sft_root}/scripts/train_sft_2000.py"
+trainer="${sft_root}/scripts/train_sft_2600.py"
 
-# Data/model/training defaults define the reproducible SFT-2000 recipe.
+# Data/model/training defaults define the reproducible SFT-2600 recipe.
 # Hardware topology and machine-local paths are supplied only through the
 # environment; this launcher never assigns physical device IDs.
 python_bin="${PYTHON_BIN:-python}"
-data_file="${DATA_FILE:-${sft_root}/final_sft_2000.jsonl}"
+data_file="${DATA_FILE:-${sft_root}/final_sft_2600.jsonl}"
 default_model="Qwen/Qwen2.5-3B-Instruct"
 default_model_revision="aa8e72537993ba99e69dfaafa59ed015b17504d1"
 model_name_or_path="${MODEL_NAME_OR_PATH:-${default_model}}"
@@ -17,10 +17,10 @@ model_revision="${MODEL_REVISION:-}"
 if [[ -z "${model_revision}" && "${model_name_or_path}" == "${default_model}" ]]; then
   model_revision="${default_model_revision}"
 fi
-output_dir="${OUTPUT_DIR:-${project_root}/outputs/sft/qwen2p5_3b_instruct_sft_2000}"
+output_dir="${OUTPUT_DIR:-${project_root}/outputs/sft/qwen2p5_3b_instruct_sft_2600}"
 deepspeed_config="${DEEPSPEED_CONFIG:-${sft_root}/configs/ds_zero3_bf16.json}"
-canonical_data_sha256="fec609652d3832c7a6c0ee2861c6f946b6cf7c3d3d40fc5d9be9b75df6325dcb"
-canonical_num_samples=2000
+canonical_data_sha256="5619896ccc30bfb9d39c2676ec058cb59a0295c31082645153318102da0a7ec8"
+canonical_num_samples=2600
 max_seq_len="${MAX_SEQ_LEN:-4096}"
 tokenization_batch_size="${TOKENIZATION_BATCH_SIZE:-64}"
 per_device_batch="${PER_DEVICE_TRAIN_BATCH_SIZE:-1}"
@@ -167,7 +167,7 @@ fi
 "${python_bin}" "${trainer}" \
   "${common_args[@]}" \
   --check_data_only \
-  --audit_report_path "${output_dir}/sft_2000_data_audit.json" \
+  --audit_report_path "${output_dir}/sft_2600_data_audit.json" \
   2>&1 | tee "${tee_args[@]}" "${output_dir}/preflight.log"
 
 effective_global_batch=$((world_size * per_device_batch * gradient_accumulation))

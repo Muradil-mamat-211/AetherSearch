@@ -4,22 +4,22 @@ This inventory covers every non-ignored file in the AetherSearch GitHub
 release. Model weights, optimizer checkpoints, eval result bundles, report
 archives, and runtime snapshots are not included.
 
-Generated UTC: `2026-08-31T10:57:10Z`
+Generated UTC: `2026-09-29T12:30:59Z`
 
 ## Summary
 
 - `assets`: `3` files, `8100` bytes
 - `configs`: `24` files, `45613` bytes
-- `documentation`: `4` files, `47481` bytes
+- `documentation`: `4` files, `47282` bytes
 - `dpo`: `8` files, `74020` bytes
 - `environment`: `6` files, `15222` bytes
 - `recipes`: `2` files, `5412` bytes
 - `repo_root`: `3` files, `1683` bytes
 - `runtime_assets`: `3` files, `29691` bytes
 - `scripts`: `18` files, `75616` bytes
-- `sft`: `8` files, `64235` bytes
+- `sft`: `46` files, `648091` bytes
 - `src`: `89` files, `1280776` bytes
-- `tests`: `55` files, `486670` bytes
+- `tests`: `55` files, `487760` bytes
 - `third_party`: `5` files, `126026` bytes
 
 ## Files
@@ -65,10 +65,10 @@ Generated UTC: `2026-08-31T10:57:10Z`
 
 | path | bytes | sha256 |
 |---|---:|---|
-| `EXTERNAL_ASSETS.md` | 7755 | `ff3b6d9f0a30fff3dd74e76701e74f279702669d621b50567531d6d902bd9851` |
-| `README.md` | 30785 | `bc3a2c176fb1eb7766ae902b2a0263840ff578b885fd648c28152c5f5011af36` |
+| `EXTERNAL_ASSETS.md` | 7701 | `59793ef9918d341a353c1b7d5e4999dcbae3f4564dbaa6ef7e8a3b5241860c58` |
+| `README.md` | 30652 | `17617cb5f3c5c2b23e4e7272aba4df5d9e2fb47e5ba31d4aa4c1e08ca267b878` |
 | `THIRD_PARTY_NOTICES.md` | 6098 | `f5eb49726de47e3ad7b3897840482d5aee7c854fc1921465e77cf8ff03dae682` |
-| `TRAINING_REPRODUCTION.md` | 2843 | `6d86436ce3efc4b9bfc30e45a41d3ef333c8aa62267c2b1f5e368e756e58d374` |
+| `TRAINING_REPRODUCTION.md` | 2831 | `4221de81e3e1723071cd6f65d30084dca486f559b1a63477bdbc374a38df8b01` |
 
 ### dpo
 
@@ -106,7 +106,7 @@ Generated UTC: `2026-08-31T10:57:10Z`
 | path | bytes | sha256 |
 |---|---:|---|
 | `.gitattributes` | 220 | `3a62a151b7887ee92f18a8813b4dd7257ae8864d820910233fce1d6b799b6a88` |
-| `.gitignore` | 764 | `79397da0a43bad9426b0f72cba44080946c2f887f4ba4f9f9be83e966fbaf08b` |
+| `.gitignore` | 764 | `23f24c773b78c7ccefb93423edc7f8374d23748292bf984ad16cfaeffe70e499` |
 | `pyproject.toml` | 699 | `9d56ccd76f2c5b6ec4ea56022340c87fe070e3ed9ba02801ed2ec9df48efb9cd` |
 
 ### runtime_assets
@@ -137,21 +137,59 @@ Generated UTC: `2026-08-31T10:57:10Z`
 | `scripts/train_rl.sh` | 2473 | `0ac0c8e3a75ee49b66ee16e017d067c0b9808b1663d06e86d43ad41ce47ac397` |
 | `scripts/validate_48cpu_resource_profile.py` | 4712 | `73d6f24edab2f69498106642a8658e7f8c781b9eb360e205fc36598aa3369f59` |
 | `scripts/validate_readme.py` | 7746 | `5c07bbfd9e4bcbe38017dc0660b121133d3e571e93b5da1416b1370e8539bf1f` |
-| `scripts/validate_static.sh` | 1587 | `47a638b14f79d8d762604d5fc070946032ad2bff2670152577396c7456637a0d` |
+| `scripts/validate_static.sh` | 1587 | `4e4957917bd285aa4e140649d93cc35ecd9483170e2b2f46a8c78176e3b81c53` |
 | `scripts/verify_checkpoint_readonly.py` | 2659 | `c8af6683b6f6e09e96fa91c16cf679706b4673d947e5437428239d542e6ad9d2` |
 
 ### sft
 
 | path | bytes | sha256 |
 |---|---:|---|
-| `sft/ATTRIBUTION.md` | 2762 | `7f1e16de50767976fc723a8fd74d343581f07d183358ddf3da220e2a0f43e688` |
-| `sft/README.md` | 8175 | `5030c2c6d8472ab3ed5ac368aad7f3e7e7fffd699280a92228842491d95f305f` |
-| `sft/checksums.sha256` | 419 | `4f4cbafee9c7dfcf24eca0ebd829b03944b7924f4afa433c074f3d0233cd4d51` |
+| `sft/ATTRIBUTION.md` | 3643 | `1f690b238f77cc3ff112a8bb8404a5fe5806d20128d9214d40743857299fc038` |
+| `sft/README.md` | 8931 | `33083f74905dd945056d6e6104a01c2862112f46bb25009d502df574a1ff7eb6` |
+| `sft/checksums.sha256` | 424 | `e43f5214e1d869f79d8bed9077dc70326e7f2efd1b9814efb78176046af4277e` |
 | `sft/configs/ds_zero3_bf16.json` | 569 | `41e04c1a169b122eb058f1018edba49648f8c1ebd8f732751c279e10d0d981f9` |
-| `sft/dataset_manifest.json` | 1444 | `3b6ca2879d1d680d3226ed96c326e1ee1ff566d4eabe73ed005619096e02de8e` |
+| `sft/data_generation/run_teacher_rollout.sh` | 1906 | `0b4af6b685ed6ddcd0df4196f0d40d68742f8fac8b37822d7cd35c06eee7af54` |
+| `sft/data_generation/search_sft_hybrid_v1/build_bm25_index.py` | 9938 | `789a3a8df399c73e8d85346f7fc683c8a154301323684f8bd6a56bad6482f17f` |
+| `sft/data_generation/search_sft_hybrid_v1/hybrid_retriever_v1.py` | 18419 | `a5ebc811807bae6a697688454ce37f63796c6477e4fa635598ea71fcc0c6c775` |
+| `sft/data_generation/search_sft_teacher/DATASET_PROVENANCE.md` | 4087 | `d1cdebd6e45a10c020dd94cf4b3b5a2c64d75fa497a4af19e6df109b78cbb6a7` |
+| `sft/data_generation/search_sft_teacher/README.md` | 69154 | `54910950013848bf81385697d1a297a47ea87fbf501b0a2a53238109ed268678` |
+| `sft/data_generation/search_sft_teacher/answer_utils.py` | 4716 | `fd025c137fc60ba8567af789ef614d57ed51b0cd1e5b58c5b0a54b0bfb70302a` |
+| `sft/data_generation/search_sft_teacher/batched_retriever.py` | 3725 | `d726dd5772a13357731f4b1e4edb4aa6d5fabbe08e65d2ed079d48ecddb5fc1c` |
+| `sft/data_generation/search_sft_teacher/build_sft_2600_release.py` | 16660 | `2d3d677a8eee67941bfe097ad07cd5394a9fbb657bb9791b016b64ce95748db6` |
+| `sft/data_generation/search_sft_teacher/controlled_rollout.py` | 30502 | `b38bf83b7dbd99a94688abe29e0c4d91cdd70fed53845cd6c2704661f49bb109` |
+| `sft/data_generation/search_sft_teacher/deepseek_client.py` | 26111 | `ff68456926c18ec0cbbd51cd0ee7645dbdf5c947df7a3b1fc1c1eac2e9946598` |
+| `sft/data_generation/search_sft_teacher/deepseek_key.py` | 10183 | `91bd6add471f016647cb79f13fe706232196d637757817a511cabfd3c36f3a71` |
+| `sft/data_generation/search_sft_teacher/deepseek_rollout.py` | 43761 | `7e42ad999a2064c0f660b68fecb7c25c8ba78d768848623a6c8e223bf9e916a0` |
+| `sft/data_generation/search_sft_teacher/generate_direct_answer_sft.py` | 32881 | `23fde5796a6a874128c239dc1cd39459df6da820b5d43a31ef4907f9932c8d49` |
+| `sft/data_generation/search_sft_teacher/probe_chat_continuation.py` | 5555 | `b7564604eec4ded56bb3f9a7d30289e9de3b4766c3d10c159c9f13391bbf9d3c` |
+| `sft/data_generation/search_sft_teacher/published_sft_format.py` | 4457 | `71475b3d6c918ddab35210f9a0370f1044d82e32ce3de483013db1a9be42f95d` |
+| `sft/data_generation/search_sft_teacher/replay_api_responses.py` | 7402 | `198559df30674a571fbb3894c43ffe2482916767c642c593e43649111d529bf1` |
+| `sft/data_generation/search_sft_teacher/requirements_direct_answer.txt` | 48 | `0d9e4b5be3f09851fe111343e3daea45e7fec9ce0723a8084a8457a4b71a7b6d` |
+| `sft/data_generation/search_sft_teacher/test_api_20_questions.py` | 15586 | `e84a7690243296e44805b8a8acb56903b8113631425c0da257371e44ac3e5120` |
+| `sft/data_generation/search_sft_teacher/test_api_question_selection.py` | 4566 | `e8adfb04aac2dbe2e88e3ce43390eaba680facfa837ab1e8468a3ecdbcec3d90` |
+| `sft/data_generation/search_sft_teacher/test_batched_retriever.py` | 4751 | `c52e0a42ed8e93ed7d35d9942798461bf8b044ac20f6f96df82c107a33b5d37d` |
+| `sft/data_generation/search_sft_teacher/test_chat_continuation.py` | 11692 | `63f96c89e5eb3334876a193e2e1f5ac6451c9d7b5dcf0a6c7639b856f05e75c3` |
+| `sft/data_generation/search_sft_teacher/test_controlled_rollout.py` | 5941 | `5ec6fb3410fd57c7f0ca27c8710a2552e900d6d1fe04ab75f37d9687800b1b18` |
+| `sft/data_generation/search_sft_teacher/test_deepseek_key.py` | 7192 | `d053101f7c93b50fd520d43930366bbdf7e1eb9b572996b6eb361e223f7956fc` |
+| `sft/data_generation/search_sft_teacher/test_deepseek_rollout.py` | 56328 | `56cd72623789dbece9cf4c31dcd27e2613d94dd62031e13f6c2d9fc3a127de82` |
+| `sft/data_generation/search_sft_teacher/test_direct_answer_generation.py` | 3229 | `aa87af9383c18fbf936b9d4091c77dc3b1af34629d66feb1026588579186c3c6` |
+| `sft/data_generation/search_sft_teacher/test_final_protocol.py` | 8886 | `6e2e83bd6a5e0ef759e0d015aab53baf7e334aed69346cdf8cc5eb299433cc35` |
+| `sft/data_generation/search_sft_teacher/test_max_thinking.py` | 2188 | `ad948ca000cc6b0cb8e7b84b570715d518585ad5ef4492c787ed9e874bfd0e61` |
+| `sft/data_generation/search_sft_teacher/test_multiturn_context_api.py` | 33250 | `25842bb9991838f235eda81c26f7e4322236e4e7133ca64ee73604f35df939d1` |
+| `sft/data_generation/search_sft_teacher/test_multiturn_context_selection.py` | 12669 | `2a4f663e76c8fd2424a7e77899f3ee0c367576aa73259bb8fbc30d0d83488e9e` |
+| `sft/data_generation/search_sft_teacher/test_published_sft_format.py` | 10416 | `fd1b8ec4472b7088def0a8abe703c6bff5a18ad2413bd3d8831b99ab0f6c7d28` |
+| `sft/data_generation/search_sft_teacher/test_search_extraction.py` | 13082 | `1426bfe541272073674da037eb842ddd5a2ef140758a4a9dbc25548edee4645d` |
+| `sft/data_generation/search_sft_teacher/test_search_protocol.py` | 29725 | `7d17c5f6547794374373387abc41cac01ddbc640c030f9922fbb53e0a6d214a2` |
+| `sft/data_generation/search_sft_teacher/test_short_answers.py` | 9317 | `3709e9d4e646f2147b708713e056f808c5c70e529cc62cc174cf53559fa38418` |
+| `sft/data_generation/search_sft_teacher/test_token_budget.py` | 6633 | `94712f8f708797a63864095921b4e713206d2c7ef3104126e33769cba3297650` |
+| `sft/data_generation/search_sft_teacher/test_tool_boundaries.py` | 16097 | `aa61e54296fde43b10c7941f9f6805bf145b554cfceac36eb9160705709cfa9a` |
+| `sft/data_generation/search_sft_teacher/token_budget.py` | 5385 | `5fc01417e49211133c9d8980f6a7486a9a5e84f80d49ae189f34a5c5cf572396` |
+| `sft/data_generation/search_sft_teacher/validate_direct_answer_sft.py` | 4434 | `4a777cf1c2db4ccdd5e66664b174921c0c041f8a50ccf027c78e4267351e5407` |
+| `sft/data_generation/search_sft_teacher/validate_teacher_rollout.py` | 29675 | `8989d62dfccce851259f20d7e3ba56d0b70696bd3aa99e00c9874297ccab041f` |
+| `sft/dataset_manifest.json` | 2865 | `f76d0ada754bbd4056a67c196adebbf34fd46b9d2cc4f45ee1df1bd64d6d438b` |
 | `sft/requirements.txt` | 152 | `f4192c805bbefd20f901cdf4fc6861486b54d158fd2123551f60d7078a4c6c32` |
-| `sft/scripts/run_train_sft_2000_zero3.sh` | 8303 | `0bb0bc4b49514dbf0f5d62db3407d212b7e13d355c0d9587f8d5a74813f12537` |
-| `sft/scripts/train_sft_2000.py` | 42411 | `84f1bdd8ad9ee6a064e1096d027a57c2a4a08833b3325017054981ed86f07fb1` |
+| `sft/scripts/run_train_sft_2600_zero3.sh` | 8303 | `848a117ec64302ee427462f2299bb4ba336bcce24bb20e3c4c96a1c1634135a9` |
+| `sft/scripts/train_sft_2600.py` | 42657 | `96872540c064128a6fa67076e17dda9692a3dd1f23f402862b14bffd9d7e7cc8` |
 
 ### src
 
@@ -296,7 +334,7 @@ Generated UTC: `2026-08-31T10:57:10Z`
 | `tests/test_scale_update_stages.py` | 7459 | `c62032232800cdc6c6ec98b7b9c21ebb93a147facc73e5d3d1e629fb37ec8da6` |
 | `tests/test_selection_boundaries.py` | 3891 | `dcb74be9d0c099e3d0591d0b36cc9958dffd4a81b8df278da46224a9e1289098` |
 | `tests/test_selection_math.py` | 6788 | `6d0423fe27153d11388c746bb19b04bb121b8016d38e8223796163ffa53bd1b0` |
-| `tests/test_sft_2000_trainer.py` | 7704 | `c63efacf46a2a8233f79daf01f3034d328c2927b6cad3c834b474b3774903dcb` |
+| `tests/test_sft_2600_trainer.py` | 8794 | `8177f86e6b3d9fc8853dc9f0c93e6324ef0c944432bb1e650e2ea0d738da704a` |
 | `tests/test_snapshot_checkpoint_contract.py` | 3789 | `c9cd0a265ef1abc6e7b56fbecf10533f3f416babedad426f2806d55861bc2143` |
 | `tests/test_stop_branching.py` | 22763 | `6aeb327d4ba8e543f3043b851fefd752c7d48204cde357dbd88bbc16dcda8745` |
 | `tests/test_stop_continue_advantage.py` | 13167 | `d01f9bc5e075dc558c4aeeaee6adec516ec438d652d4e5614f68c0627c8f071e` |

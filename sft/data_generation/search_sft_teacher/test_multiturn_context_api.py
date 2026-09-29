@@ -31,7 +31,7 @@ from token_budget import BudgetError, INFO_PATTERN, MAX_SEARCH_TURNS, student_bu
 
 REPOSITORY = "muradil211/AetherSearch_SFT"
 REVISION = "969de77a3ac5a7a40382e0cdae3d534b6fdbb8d8"
-DATA_FILE = "final_sft_2000.jsonl"
+DATA_FILE = "final_sft_2600.jsonl"
 TEST_VERSION = "published_sft_prefix_next_action_v3_neutral_queries"
 PAIR = re.compile(r"(?P<action><think>[^<>]+</think><search>[^<>\r\n]{1,300}</search>)"
                   r"(?P<information><information>.*?</information>)", re.S)

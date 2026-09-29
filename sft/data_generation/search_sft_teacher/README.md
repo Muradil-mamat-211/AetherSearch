@@ -886,10 +886,10 @@ conda run --no-capture-output -p "${AETHERSEARCH_SFT_WORKSPACE}/envs/retriever" 
 the same command does not secretly add another batch. To extend the window,
 explicitly increase that limit while keeping the same input file.
 
-Public IDs are assigned by input position, so extending the window leaves
+Public IDs are assigned by input position, so increasing the window leaves
 existing IDs unchanged. `--public-id-start` is bound to the checkpoint; use
-a distinct six-digit range if separately generated files will be merged.
-The default range begins at `500001`, outside the released 2,000-row range.
+a distinct six-digit range for independently generated files.
+The default range begins at `500001` to avoid release-ID collisions.
 The internal checkpoint/review ID remains `source:split:source_id`.
 
 API budget counts HTTP attempts, including failures/retries. Authentication, balance and
@@ -971,8 +971,9 @@ SQLite, including partial evidence for rejected/error candidates.
 Checkpoint and candidate-review output retain `id`, `data_source`, `split`, `trajectory_type`, `question`,
 `golden_answers`, `prompt`, `messages`, `response`, `events`, `metadata`.
 Trajectory type is `teacher_hybrid_v1_real_rollout`, distinguished by adaptive
-policy/prompt/generator metadata. Zero-search answers are parseable for audit
-but rejected from production generation with `zero_search_not_training_eligible`.
+policy/prompt/generator metadata. In this retrieval branch, zero-search answers
+are parseable for audit but rejected with `zero_search_not_training_eligible`;
+the direct-answer branch below owns zero-search construction.
 Each search is followed by
 an environment event, then another model action. Assistant tokens are trained;
 environment tokens are masked. Actual training code must honor these masks.
@@ -1000,17 +1001,14 @@ The current public-format policy is `aethersearch_full_trajectory_v2_numeric_ids
 The full text uses the published Qwen system/user prompt exactly, followed by
 one assistant message containing every model search, every real masked
 `<information>` observation and the final answer. It ends with exactly one
-assistant `<|im_end|>` token. The published 2000-row snapshot's chat prefix
-matches this renderer for every row. Production exports contain only
-`search_count>=1` and the published `single_search` / `multi_search` types.
-Direct answers are recorded as source-level skips and cannot be approved or
-exported. Public IDs are six-digit strings such as `500001`, stored as
+assistant `<|im_end|>` token. The published 2600-row release uses this renderer.
+Retrieval-branch exports contain only `search_count>=1` and the published
+`single_search` / `multi_search` types. Public IDs are six-digit strings such as
+`500001`, stored as
 `metadata.public_id` in the detailed checkpoint and unique-indexed there.
 The source-based internal `teacher_` ID is retained only for review/audit.
-The released SFT-2000 trainer's fixed row-count and SHA-256 defaults still
-target the frozen 2,000-row snapshot. Supply the actual new row count and
-file SHA-256 to that trainer, then run its `--check_data_only` before training;
-an ID-format fix alone does not constitute a passed trainer integration test.
+The released SFT-2600 trainer is pinned to the complete 2600-row release count
+and SHA-256. Run its `--check_data_only` before training.
 For retrieved answers, the final think in this new export is normalized by the
 controller to the published dataset's common sentence. Both raw teacher finals and API receipts
 stay in the checkpoint, not in this five-field file.
@@ -1019,16 +1017,61 @@ The public artifact has no token-level mask field, matching the published
 schema. The trainer must mask `<information>` and system/user text while
 supervising assistant action text and its final `<|im_end|>`. The detailed
 checkpoint retains event masks and retrieval provenance for audit. Each full
-trajectory must fit 4096 actual student tokenizer tokens; all 2000 published
-reference rows fit (maximum 2893). Overlong new candidates are rejected before
+trajectory must fit 4096 actual student tokenizer tokens; all 2600 published
+rows satisfy this limit. Overlong new candidates are rejected before
 approval/export, never silently clipped. The standalone public validator checks
 the historical five-field chat/action layout, not the new teacher's stricter
 per-observation 500-token, top-3, or raw Doc-citation audit rules: historical
 records can contain markup from corpus passages and uncited final summaries.
 For **new** records, `--db --require-approved` additionally reconstructs the
 exact public text from the approved detailed record and verifies those stricter
-budget, optional raw-citation, retrieval-provenance and semantic-review requirements. The
-published dataset does not carry the detailed receipts needed for that audit.
+budget, optional raw-citation, retrieval-provenance and semantic-review
+requirements. The published dataset does not carry the detailed receipts
+needed for that audit.
+
+### Gold-validated direct-answer branch
+
+`generate_direct_answer_sft.py` is the zero-search construction branch.
+It sends only NQ and WebQuestions training questions to DeepSeek, registers no
+tools, sets `thinking.type=disabled`, and accepts only an exact
+`<think>...</think><answer>...</answer>` action whose normalized answer equals
+one of the hidden golden aliases. The controller replaces the final training
+think with `Reliable prior knowledge is sufficient to answer.` and preserves
+recognized acronyms while canonicalizing answer punctuation and casing.
+
+Before any API request, the generator excludes normalized questions present in
+the retrieval-trajectory input, AetherSearch DPO, or the frozen 60,298-row NQ
+component of the RL logical training view. Those inputs are checksum-pinned,
+and the RL sample is reconstructed with its published seed. SQLite checkpoints
+are append-only per candidate: reruns reuse accepted rows and request only
+unseen candidates.
+
+The release output uses the same five public fields as AetherSearch SFT, with
+`trajectory_type=direct_answer` and `search_count=0`. It contains no `<search>`
+or `<information>` span. The companion audit JSONL retains source labels,
+golden aliases, raw teacher actions and API receipt hashes; it is not training
+input.
+
+```bash
+python -m pip install -r \
+  sft/data_generation/search_sft_teacher/requirements_direct_answer.txt
+
+AETHERSEARCH_SFT_WORKSPACE=/path/to/workspace \
+python sft/data_generation/search_sft_teacher/generate_direct_answer_sft.py \
+  --workspace /path/to/workspace \
+  --retrieval-input /path/to/retrieval_trajectories.jsonl \
+  --dpo-input /path/to/aethersearch_dpo_2126.jsonl \
+  --rl-train /path/to/nq_hotpotqa_train.parquet \
+  --concurrency 16 \
+  --max-attempts 2200 \
+  --seed 42
+```
+
+Run the independent validator with the generated public/audit files and the
+same checksum-pinned retrieval, DPO and RL inputs. Then run
+`build_sft_2600_release.py` to validate both trajectory branches, globally
+shuffle all 2600 records, assign IDs `000001` through `002600`, and write the
+final release artifacts. The SFT-2600 trainer is pinned to that output.
 
 ```bash
 python3 -B sft/data_generation/search_sft_teacher/deepseek_rollout.py --export-candidates \

@@ -12,8 +12,8 @@ import torch
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-TRAINER_PATH = PROJECT_ROOT / "sft" / "scripts" / "train_sft_2000.py"
-SPEC = importlib.util.spec_from_file_location("aethersearch_sft_2000_trainer", TRAINER_PATH)
+TRAINER_PATH = PROJECT_ROOT / "sft" / "scripts" / "train_sft_2600.py"
+SPEC = importlib.util.spec_from_file_location("aethersearch_sft_2600_trainer", TRAINER_PATH)
 assert SPEC is not None and SPEC.loader is not None
 TRAINER = importlib.util.module_from_spec(SPEC)
 sys.modules[SPEC.name] = TRAINER
@@ -78,6 +78,24 @@ def canonical_record() -> dict:
     }
 
 
+def direct_record() -> dict:
+    question = "Who wrote the example?"
+    text = (
+        f"{TRAINER.SYSTEM_MARKER}System instructions.{TRAINER.IM_END}\n"
+        f"{TRAINER.USER_MARKER}Answer directly. Question: {question}"
+        f"{TRAINER.IM_END}\n{TRAINER.ASSISTANT_MARKER}"
+        "<think>Reliable prior knowledge is sufficient to answer.</think>"
+        f"<answer>Ada</answer>{TRAINER.IM_END}"
+    )
+    return {
+        "id": "000001",
+        "question": question,
+        "trajectory_type": "direct_answer",
+        "search_count": 0,
+        "full_trajectory_text": text,
+    }
+
+
 def test_record_layout_and_exact_mask_segments() -> None:
     record = canonical_record()
     text = record["full_trajectory_text"]
@@ -95,6 +113,16 @@ def test_record_layout_and_exact_mask_segments() -> None:
     assert segments[-1][0].endswith(f"</answer>{TRAINER.IM_END}")
 
 
+def test_direct_answer_layout_has_no_information_mask() -> None:
+    record = direct_record()
+    layout = TRAINER.validate_public_record(record, line_number=1, strict_public_schema=True)
+    segments = TRAINER.build_mask_segments(record["full_trajectory_text"], layout, line_number=1)
+    assert layout.search_count == 0
+    assert layout.information_spans == []
+    assert [kind for _, kind in segments] == ["prompt", "supervised"]
+    assert "<search>" not in record["full_trajectory_text"]
+
+
 def test_dataset_masks_prompt_information_padding_and_supervises_eot(
     tmp_path: Path,
 ) -> None:
@@ -102,7 +130,7 @@ def test_dataset_masks_prompt_information_padding_and_supervises_eot(
     train_file = tmp_path / "train.jsonl"
     train_file.write_text(json.dumps(record, ensure_ascii=False) + "\n", encoding="utf-8")
     tokenizer = CharacterTokenizer()
-    dataset = TRAINER.SearchSFT2000Dataset(
+    dataset = TRAINER.SearchSFT2600Dataset(
         train_file=str(train_file),
         tokenizer=tokenizer,
         max_seq_len=4096,
@@ -129,7 +157,7 @@ def test_dataset_masks_prompt_information_padding_and_supervises_eot(
     assert dataset.audit.information_masked_tokens["sum"] > 0
     assert dataset.audit.supervised_tokens["sum"] > 0
 
-    batch = TRAINER.SearchSFT2000Collator(tokenizer)(
+    batch = TRAINER.SearchSFT2600Collator(tokenizer)(
         [sample, {"input_ids": [11, 12], "labels": [11, 12]}]
     )
     assert batch["input_ids"].shape[0] == 2
@@ -153,7 +181,7 @@ def test_cli_validation_rejects_unsafe_values(tmp_path: Path) -> None:
         train_file=str(train_file),
         deepspeed=None,
         max_seq_len=0,
-        expected_num_samples=2000,
+        expected_num_samples=2600,
         expected_sha256=None,
         tokenization_batch_size=64,
         per_device_train_batch_size=1,
@@ -172,7 +200,7 @@ def test_cli_validation_rejects_unsafe_values(tmp_path: Path) -> None:
         TRAINER.validate_cli_args(args)
 
 
-def test_public_cli_defaults_lock_canonical_sft_2000_data(
+def test_public_cli_defaults_lock_canonical_sft_2600_data(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.setattr(
@@ -183,13 +211,13 @@ def test_public_cli_defaults_lock_canonical_sft_2000_data(
             "--model_name_or_path",
             "Qwen/Qwen2.5-3B-Instruct",
             "--train_file",
-            "final_sft_2000.jsonl",
+            "final_sft_2600.jsonl",
             "--output_dir",
             "outputs/sft",
         ],
     )
     args = TRAINER.parse_args()
-    assert args.expected_num_samples == 2000
+    assert args.expected_num_samples == 2600
     assert args.expected_sha256 == TRAINER.CANONICAL_DATA_SHA256
     assert args.long_sample_policy == "error"
     assert args.allow_extra_fields is False
@@ -197,10 +225,10 @@ def test_public_cli_defaults_lock_canonical_sft_2000_data(
 
 def test_launcher_separates_training_semantics_from_hardware_topology() -> None:
     launcher = (
-        PROJECT_ROOT / "sft" / "scripts" / "run_train_sft_2000_zero3.sh"
+        PROJECT_ROOT / "sft" / "scripts" / "run_train_sft_2600_zero3.sh"
     ).read_text(encoding="utf-8")
 
-    assert 'canonical_num_samples=2000' in launcher
+    assert 'canonical_num_samples=2600' in launcher
     assert f'canonical_data_sha256="{TRAINER.CANONICAL_DATA_SHA256}"' in launcher
     assert "EXPECTED_NUM_SAMPLES" not in launcher
     assert "EXPECTED_SHA256" not in launcher
