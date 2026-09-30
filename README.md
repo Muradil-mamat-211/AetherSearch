@@ -366,15 +366,24 @@ canonical answer. The canonical answer is the first ground-truth alias:
 canonical_answer = aliases[0]
 ```
 
-The fixed teacher-forced target is:
+The teacher-forced target follows the prefix's retrieval state, matching the
+two fixed final-answer schemas taught in [SFT](sft/README.md#final-answer-schema-and-rl-alignment):
+
+Before any retrieval (prefix zero, also the sole prefix for direct answers):
+
+```text
+<think>Reliable prior knowledge is sufficient to answer.</think><answer>{canonical_answer}</answer>
+```
+
+After a retrieved observation (prefix indices one and above):
 
 ```text
 <think>The retrieved evidence now supports the answer.</think><answer>{canonical_answer}</answer>
 ```
 
-The entire rendered target is tokenized once with special-token insertion
+Each state's entire rendered target is tokenized once with special-token insertion
 disabled and offset mapping enabled. Character offsets identify the
-answer-covering token span $B_p$:
+answer-covering token span $B_{p,s(h)}$, where $s(h)$ is the retrieval state:
 
 - the scaffold and the `<think>`, `<answer>`, and `</answer>` tags are
   teacher-forced context;
@@ -387,12 +396,12 @@ For a trajectory prefix $h$, define the mean answer-body log-probability:
 ```math
 \Phi_p(h)
 =
-\frac{1}{|B_p|}
-\sum_{j\in B_p}
+\frac{1}{|B_{p,s(h)}|}
+\sum_{j\in B_{p,s(h)}}
 \log
 \pi_{\theta_{\mathrm{snap}}}
 \left(
-y_{p,j}\mid h,y_{p,1:j-1}
+y_{p,s(h),j}\mid h,y_{p,s(h),1:j-1}
 \right),
 ```
 
@@ -408,6 +417,21 @@ r^{IG}_{p,i,t}
 \Phi_p\left(h^-_{p,i,t}\right).
 }
 ```
+
+The first difference includes both the new evidence and the switch from the
+prior-knowledge scaffold to the retrieved-evidence scaffold. It is not a
+fixed-scaffold estimate of evidence gain alone. Subsequent retrieval increments
+keep the retrieved-evidence scaffold. A zero-search trajectory has only its
+prior-knowledge baseline and no retrieval IG increment.
+
+The mean-log-probability difference follows [IGPO Section 3.2](https://arxiv.org/html/2510.14967v2#S3.SS2).
+Selecting the scaffold by retrieval state is an AetherSearch extension that
+aligns scoring with its SFT answer formats.
+
+This reward definition is versioned as
+`exact_ig_state_conditioned_fp32_no_anchor_v5`. Old checkpoint reward state and
+v4 audit artifacts cannot qualify this version: regenerate the structural and
+FP32 numerical audit on the target runtime before production training.
 
 The score is a difference of mean log-probabilities:
 

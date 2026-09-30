@@ -13,6 +13,8 @@ from .precision_policy import (
 )
 from .target_schema import (
     EncodedExactIGTarget,
+    DEFAULT_TARGET_TEMPLATE,
+    PRIOR_TARGET_TEMPLATE,
     encode_exact_ig_target,
     select_canonical_answer,
 )
@@ -71,6 +73,7 @@ def sequential_teacher_forced_oracle(
     precision_policy: ExactIGPrecisionPolicy,
     original_position_ids: Sequence[int] | None = None,
     encoded_target: EncodedExactIGTarget | None = None,
+    encoded_prior_target: EncodedExactIGTarget | None = None,
 ) -> SequentialOracleResult:
     """Independent one-prefix standard causal teacher-forcing reference."""
 
@@ -97,17 +100,23 @@ def sequential_teacher_forced_oracle(
         raise ValueError("Oracle position IDs must align with trajectory input")
 
     answer = select_canonical_answer(canonical_answer)
-    target = encoded_target or encode_exact_ig_target(tokenizer, answer)
-    if target.canonical_answer != answer:
-        raise RuntimeError(
-            "Sequential Oracle target does not match the fixed canonical answer"
-        )
-    target_ids = np.asarray(target.token_ids, dtype=np.int64)
-    answer_local_positions = np.flatnonzero(
-        np.asarray(target.score_mask, dtype=np.bool_)
-    ).astype(np.int64)
-    if answer_local_positions.size != target.answer_token_count:
-        raise RuntimeError("Oracle answer score mask does not match target encoding")
+    # A legacy single target denotes the retrieved schema, never prefix zero.
+    retrieved_target = encoded_target or encode_exact_ig_target(tokenizer, answer)
+    prior_target = encoded_prior_target or encode_exact_ig_target(
+        tokenizer, answer, target_template=PRIOR_TARGET_TEMPLATE,
+    )
+    for target, template in (
+        (prior_target, PRIOR_TARGET_TEMPLATE),
+        (retrieved_target, DEFAULT_TARGET_TEMPLATE),
+    ):
+        if (
+            target.canonical_answer != answer
+            or target.rendered_text != template.format(answer=answer)
+        ):
+            raise RuntimeError(
+                "Sequential Oracle target differs from its retrieval-state schema"
+            )
+    targets = (prior_target,) + (retrieved_target,) * (len(endpoints) - 1)
 
     scores: list[float] = []
     token_details: list[OracleTokenScore] = []
@@ -124,6 +133,15 @@ def sequential_teacher_forced_oracle(
             precision_policy,
         ):
             for prefix_index, prefix_end in enumerate(endpoints):
+                target = targets[prefix_index]
+                target_ids = np.asarray(target.token_ids, dtype=np.int64)
+                answer_local_positions = np.flatnonzero(
+                    np.asarray(target.score_mask, dtype=np.bool_)
+                ).astype(np.int64)
+                if answer_local_positions.size != target.answer_token_count:
+                    raise RuntimeError(
+                        "Oracle answer score mask does not match target encoding"
+                    )
                 combined_ids = np.concatenate(
                     (original[:prefix_end], target_ids)
                 )
@@ -255,11 +273,14 @@ def sequential_teacher_forced_oracle(
         if model_was_training:
             model.train()
 
-    expected_answer_tokens = len(endpoints) * target.answer_token_count
+    expected_answer_tokens = sum(target.answer_token_count for target in targets)
     if len(token_details) != expected_answer_tokens:
         raise RuntimeError("Oracle did not score every answer token exactly once")
     score_tuple = tuple(scores)
     immediate = immediate_ig_from_prefix_scores(score_tuple)
+    # Legacy scalar fields describe the retrieved template; per-prefix arrays
+    # below are authoritative for state-dependent token ranges and counts.
+    target = retrieved_target
     return SequentialOracleResult(
         score_by_prefix=score_tuple,
         immediate_ig=immediate,
@@ -279,6 +300,16 @@ def sequential_teacher_forced_oracle(
         token_scores=tuple(token_details),
         telescoping_error=telescoping_error(score_tuple, immediate),
         runtime_metadata={
+            "score_span_hash_by_prefix": [item.score_span_hash for item in targets],
+            "answer_token_count_by_prefix": [
+                item.answer_token_count for item in targets
+            ],
+            "target_token_ids_hash_by_prefix": [
+                item.token_ids_hash for item in targets
+            ],
+            "answer_token_range_by_prefix": [
+                [item.answer_token_start, item.answer_token_end] for item in targets
+            ],
             "actual_model_parameter_dtype": str(
                 next(model.parameters()).dtype
             ).removeprefix("torch."),

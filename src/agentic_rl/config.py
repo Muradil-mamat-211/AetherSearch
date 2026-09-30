@@ -17,6 +17,8 @@ from agentic_rl.exact_ig.target_schema import (
     ANSWER_SCAFFOLD_TEXT,
     CANONICAL_ALIAS_POLICY,
     DEFAULT_TARGET_TEMPLATE,
+    PRIOR_TARGET_TEMPLATE,
+    TARGET_STATE_POLICY,
     EXACT_IG_VERSION,
     FAST_PATH_STRUCTURE,
     INFO_GAIN_TYPE,
@@ -709,9 +711,9 @@ def validate_algorithm_contract(config: Mapping[str, Any]) -> None:
         "exact_ig.target_tokenization_policy",
     )
     _require_equal(
-        exact_ig["encode_complete_target_once_per_prompt"],
+        exact_ig["encode_complete_target_once_per_state"],
         True,
-        "exact_ig.encode_complete_target_once_per_prompt",
+        "exact_ig.encode_complete_target_once_per_state",
     )
     _require_equal(
         exact_ig["answer_span_resolution"],
@@ -896,6 +898,16 @@ def validate_algorithm_contract(config: Mapping[str, Any]) -> None:
         exact_ig["target_template"],
         DEFAULT_TARGET_TEMPLATE,
         "exact_ig.target_template",
+    )
+    _require_equal(
+        exact_ig.get("prior_target_template"),
+        PRIOR_TARGET_TEMPLATE,
+        "exact_ig.prior_target_template",
+    )
+    _require_equal(
+        exact_ig.get("target_state_policy"),
+        TARGET_STATE_POLICY,
+        "exact_ig.target_state_policy",
     )
     _require_equal(
         exact_ig["scaffold_text"],

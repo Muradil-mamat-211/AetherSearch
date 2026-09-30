@@ -2,8 +2,15 @@
 
 from pathlib import Path
 
+import yaml
+
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def load_exact_ig_contract():
+    """Load reward semantics without requiring unrelated GPU/retriever assets."""
+    return yaml.safe_load((ROOT / "configs" / "exact_ig.yaml").read_text())
 
 # configs/base.yaml is deliberately abstract and has no implicit machine
 # profile. Tests that need a fully resolved legacy-shaped config must opt into

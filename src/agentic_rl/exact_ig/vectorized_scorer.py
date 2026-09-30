@@ -643,10 +643,9 @@ class VectorizedExactIGScorer:
                                 dim=-1,
                                 index=full_targets.unsqueeze(-1),
                             ).squeeze(-1)
-                            answer_start = (
-                                task.canonical_target.answer_token_start
-                            )
-                            answer_end = task.canonical_target.answer_token_end
+                            target = task.targets_by_prefix[span.prefix_index]
+                            answer_start = target.answer_token_start
+                            answer_end = target.answer_token_end
                             token_log_probs = full_target_log_probs[
                                 answer_start:answer_end
                             ]
@@ -800,6 +799,7 @@ class VectorizedExactIGScorer:
                             / (batch_size * maximum_length)
                         ),
                         "prefix_count": int(task.prefix_count),
+                        **task.target_metadata(),
                         "answer_token_count": int(
                             task.canonical_target.answer_token_count
                         ),
@@ -907,9 +907,11 @@ class VectorizedExactIGScorer:
         max_selected_logits_bytes: int | None,
     ) -> tuple[str, ...]:
         reasons: set[str] = set()
-        target_length = len(task.canonical_target.token_ids)
-        answer_count = task.canonical_target.answer_token_count
-        for prefix_end in task.prefix_end_positions:
+        for prefix_end, target in zip(
+            task.prefix_end_positions, task.targets_by_prefix, strict=True
+        ):
+            target_length = len(target.token_ids)
+            answer_count = target.answer_token_count
             length = int(prefix_end) + target_length
             if length > task.maximum_extended_sequence_length:
                 reasons.add("maximum_extended_sequence_length")
@@ -966,6 +968,7 @@ class VectorizedExactIGScorer:
             prefix_end_positions=task.prefix_end_positions,
             canonical_answer=task.canonical_answer,
             encoded_target=task.canonical_target,
+            encoded_prior_target=task.prior_target,
             device=device,
             precision_policy=self.precision_policy,
         )
@@ -986,6 +989,7 @@ class VectorizedExactIGScorer:
             scoring_logits_mode=OFFICIAL_FULL_LOGITS,
             runtime_metadata={
                 **dict(oracle.runtime_metadata),
+                **task.target_metadata(),
                 "fallback_reason": "single_fast_task_budget_exceeded",
             },
         )
@@ -1096,8 +1100,10 @@ class VectorizedExactIGScorer:
             result = self._score_sequential_fallback(model, task, device)
             by_trajectory[task.trajectory_id] = result
             sequence_lengths = tuple(
-                int(prefix_end) + len(task.canonical_target.token_ids)
-                for prefix_end in task.prefix_end_positions
+                int(prefix_end) + len(target.token_ids)
+                for prefix_end, target in zip(
+                    task.prefix_end_positions, task.targets_by_prefix, strict=True
+                )
             )
             maximum = max(sequence_lengths)
             profiles.append(
@@ -1115,11 +1121,14 @@ class VectorizedExactIGScorer:
                     padding_ratio=0.0,
                     gt_copy_count=task.prefix_count,
                     answer_score_position_count=(
-                        task.prefix_count
-                        * task.canonical_target.answer_token_count
+                        sum(
+                            target.answer_token_count for target in task.targets_by_prefix
+                        )
                     ),
                     selected_position_union_count=(
-                        task.canonical_target.answer_token_count
+                        max(
+                            target.answer_token_count for target in task.targets_by_prefix
+                        )
                     ),
                     full_logits_estimated_bytes=(
                         maximum
@@ -1127,7 +1136,9 @@ class VectorizedExactIGScorer:
                         * logits_element_size
                     ),
                     selected_logits_estimated_bytes=(
-                        task.canonical_target.answer_token_count
+                        max(
+                            target.answer_token_count for target in task.targets_by_prefix
+                        )
                         * vocabulary_size
                         * logits_element_size
                     ),

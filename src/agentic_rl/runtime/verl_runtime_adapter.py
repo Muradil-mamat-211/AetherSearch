@@ -1646,6 +1646,13 @@ class VerlAttemptRuntimeAdapter:
         for key in (
             "exact_ig_version",
             "scaffold_sha256",
+            "target_state_policy",
+            "target_bundle_hash",
+            "target_schema_by_prefix",
+            "target_token_ids_hash_by_prefix",
+            "score_span_hash_by_prefix",
+            "answer_token_count_by_prefix",
+            "answer_token_range_by_prefix",
             "canonical_alias_policy",
             "canonical_answer_sha256",
             "target_token_ids_hash",

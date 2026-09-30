@@ -99,7 +99,7 @@ def test_independent_auditor_does_not_call_production_builders() -> None:
 def test_independent_contract_matches_production_task_exhaustively() -> None:
     tokenizer, task = _task()
     result = audit_task_contract(task)
-    assert tokenizer.calls == 1
+    assert tokenizer.calls == 2
     assert result["packed_structure_pass"] is True
     assert result["attention_mask_exhaustive_pass"] is True
     assert result["position_ids_pass"] is True
@@ -185,11 +185,13 @@ def test_independent_positions_match_each_sequential_prefix() -> None:
 
 def test_independent_score_rows_use_p_minus_one_and_answer_only() -> None:
     _, task = _task()
-    answer_positions, logit_positions = independent_score_positions(
-        segment_starts=task.segment_starts,
-        answer_token_start=task.canonical_target.answer_token_start,
-        answer_token_end=task.canonical_target.answer_token_end,
-    )
+    per_prefix = [independent_score_positions(
+        segment_starts=(start,),
+        answer_token_start=target.answer_token_start,
+        answer_token_end=target.answer_token_end,
+    ) for start, target in zip(task.segment_starts, task.targets_by_prefix, strict=True)]
+    answer_positions = tuple(value for positions, _ in per_prefix for value in positions)
+    logit_positions = tuple(value for _, positions in per_prefix for value in positions)
     actual_answer_positions = tuple(
         position
         for span in task.score_spans
@@ -206,7 +208,7 @@ def test_independent_score_rows_use_p_minus_one_and_answer_only() -> None:
         answer_positions, logit_positions, strict=True
     ))
     assert int(task.answer_score_mask.sum()) == (
-        task.prefix_count * task.canonical_target.answer_token_count
+        sum(target.answer_token_count for target in task.targets_by_prefix)
     )
 
 

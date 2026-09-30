@@ -250,13 +250,12 @@ def test_canonical_answer_is_scalar_or_first_alias_without_fallback() -> None:
     assert task.canonical_answer == "first"
 
 
-def test_no_anchor_extended_sequence_has_one_identical_copy_per_prefix() -> None:
+def test_no_anchor_extended_sequence_has_one_state_matched_copy_per_prefix() -> None:
     task = _task(canonical_answer="Paris")
-    target = task.canonical_target.token_ids
     assert task.fast_path_structure == "official_no_anchor"
-    assert task.input_ids.size == task.original_token_count + 2 * len(target)
-    for start in task.segment_starts:
-        assert tuple(task.input_ids[start : start + len(target)]) == target
+    assert task.input_ids.size == task.original_token_count + sum(len(target.token_ids) for target in task.targets_by_prefix)
+    for start, target in zip(task.segment_starts, task.targets_by_prefix, strict=True):
+        assert tuple(task.input_ids[start : start + len(target.token_ids)]) == target.token_ids
     for span in task.score_spans:
         assert span.logit_positions == tuple(
             position - 1 for position in span.answer_token_positions
@@ -305,10 +304,10 @@ def test_logical_position_ids_match_independent_prefix_teacher_forcing() -> None
         prefix_end_positions=[4, 5],
         canonical_answer="AB",
     )
-    target_length = len(task.canonical_target.token_ids)
-    for prefix_end, segment_start in zip(
+    for prefix_end, segment_start, target_length in zip(
         task.prefix_end_positions,
         task.segment_starts,
+        task.segment_lengths,
         strict=True,
     ):
         expected = np.arange(
@@ -434,10 +433,9 @@ def test_log_prob_diff_telescopes_without_probability_transform() -> None:
 
 
 def test_old_exact_ig_checkpoint_schema_is_rejected() -> None:
-    from agentic_rl.config import load_config
-    from config_support import TEST_CONFIG
+    from config_support import load_exact_ig_contract
 
-    current = load_config(TEST_CONFIG)
+    current = load_exact_ig_contract()
     old = {"exact_ig": dict(current["exact_ig"])}
     old["exact_ig"]["exact_ig_version"] = "legacy_anchor_multi_alias"
     with pytest.raises(RuntimeError, match="incompatible"):

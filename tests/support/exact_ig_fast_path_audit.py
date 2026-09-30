@@ -50,7 +50,7 @@ from agentic_rl.selection.prompt_variance import (
 from agentic_rl.selection.top_p import stable_mass_top_p
 
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_MODEL = Path(
     os.environ.get("AETHERSEARCH_ACTOR_MODEL", "")
 )
@@ -252,7 +252,7 @@ def audit_task_contract(task: VectorizedExactIGTask) -> dict[str, Any]:
             task.input_ids[: task.original_token_count],
             *(
                 np.asarray(target.token_ids, dtype=np.int64)
-                for _ in task.prefix_end_positions
+                for target in task.targets_by_prefix
             ),
         )
     )
@@ -269,13 +269,16 @@ def audit_task_contract(task: VectorizedExactIGTask) -> dict[str, Any]:
         segment_starts=task.segment_starts,
         segment_lengths=task.segment_lengths,
     )
-    expected_answer_positions, expected_logit_positions = (
+    per_prefix_positions = [
         independent_score_positions(
-            segment_starts=task.segment_starts,
+            segment_starts=(start,),
             answer_token_start=target.answer_token_start,
             answer_token_end=target.answer_token_end,
         )
-    )
+        for start, target in zip(task.segment_starts, task.targets_by_prefix, strict=True)
+    ]
+    expected_answer_positions = tuple(value for positions, _ in per_prefix_positions for value in positions)
+    expected_logit_positions = tuple(value for _, positions in per_prefix_positions for value in positions)
     actual_answer_positions = tuple(
         position
         for span in task.score_spans
@@ -679,46 +682,32 @@ def run_static_audit(
                 ),
             }
         )
-        target = task.canonical_target
-        expected_range = independent_answer_range(
-            target.offset_mapping,
-            len(ANSWER_SCAFFOLD_TEXT),
-            len(ANSWER_SCAFFOLD_TEXT) + len(target.canonical_answer),
-        )
-        target_rows.append(
-            {
+        for state, target in (("prior_knowledge", task.prior_target), ("retrieved_evidence", task.canonical_target)):
+            char_start = target.rendered_text.index("<answer>") + len("<answer>")
+            expected_range = independent_answer_range(
+                target.offset_mapping, char_start, char_start + len(target.canonical_answer),
+            )
+            target_rows.append({
                 "trajectory_id": row["trajectory_id"],
                 "prompt_global_id": row["prompt_global_id"],
+                "target_state": state,
                 "canonical_answer": target.canonical_answer,
                 "rendered_target": target.rendered_text,
                 "target_token_ids_hash": target.token_ids_hash,
                 "answer_token_ids_hash": token_ids_hash(target.answer_token_ids),
-                "answer_char_span": [
-                    target.answer_char_start,
-                    target.answer_char_end,
-                ],
-                "answer_token_span": [
-                    target.answer_token_start,
-                    target.answer_token_end,
-                ],
+                "answer_char_span": [target.answer_char_start, target.answer_char_end],
+                "answer_token_span": [target.answer_token_start, target.answer_token_end],
                 "independent_answer_token_span": list(expected_range),
                 "one_shot_tokenization_contract": True,
-                "answer_span_pass": expected_range
-                == (target.answer_token_start, target.answer_token_end),
-                "decode_match": tokenizer.decode(
-                    target.token_ids,
-                    skip_special_tokens=False,
-                    clean_up_tokenization_spaces=False,
-                )
-                == target.rendered_text,
+                "answer_span_pass": expected_range == (target.answer_token_start, target.answer_token_end),
+                "decode_match": tokenizer.decode(target.token_ids, skip_special_tokens=False, clean_up_tokenization_spaces=False) == target.rendered_text,
                 "boundary_crossing_any": target.boundary_crossing_any,
-            }
-        )
+            })
         canonical_by_prompt[row["prompt_global_id"]].add(
             target.canonical_answer
         )
         target_hash_by_prompt[row["prompt_global_id"]].add(
-            target.token_ids_hash
+            task.target_bundle_hash
         )
 
     target_schema_source_path = (
@@ -910,6 +899,7 @@ def run_gpu_shard(
             prefix_end_positions=task.prefix_end_positions,
             canonical_answer=task.canonical_answer,
             encoded_target=task.canonical_target,
+            encoded_prior_target=task.prior_target,
             device=device,
             precision_policy=policy,
         )
@@ -1560,7 +1550,7 @@ def run_future_leakage(
                 local_candidates = [
                     local
                     for local, scored in enumerate(
-                        task.canonical_target.score_mask
+                        task.targets_by_prefix[other_index].score_mask
                     )
                     if not scored
                 ]
@@ -1671,15 +1661,11 @@ def run_failure_decomposition(
     model.eval()
     case = _load_failure_case(failure_path)
     task = _build_task(_builder(tokenizer), case)
-    target_ids = list(task.canonical_target.token_ids)
-    answer_local = list(
-        range(
-            task.canonical_target.answer_token_start,
-            task.canonical_target.answer_token_end,
-        )
-    )
     path_results: dict[str, list[dict[str, Any]]] = defaultdict(list)
     for prefix_index, prefix_end in enumerate(task.prefix_end_positions):
+        target = task.targets_by_prefix[prefix_index]
+        target_ids = list(target.token_ids)
+        answer_local = list(range(target.answer_token_start, target.answer_token_end))
         sequential_ids = [
             *case["input_ids"][:prefix_end],
             *target_ids,
@@ -1709,7 +1695,7 @@ def run_failure_decomposition(
                 attention_mask=mask_2d,
                 position_ids=positions_a,
                 answer_positions=answer_positions_a,
-                answer_token_ids=task.canonical_target.answer_token_ids,
+                answer_token_ids=target.answer_token_ids,
             )
         )
         length_a = len(sequential_ids)
@@ -1728,7 +1714,7 @@ def run_failure_decomposition(
                 attention_mask=mask_4d,
                 position_ids=positions_a,
                 answer_positions=answer_positions_a,
-                answer_token_ids=task.canonical_target.answer_token_ids,
+                answer_token_ids=target.answer_token_ids,
             )
         )
 
@@ -1771,7 +1757,7 @@ def run_failure_decomposition(
                 answer_positions=[
                     original_count + local for local in answer_local
                 ],
-                answer_token_ids=task.canonical_target.answer_token_ids,
+                answer_token_ids=target.answer_token_ids,
             )
         )
 
@@ -1797,7 +1783,7 @@ def run_failure_decomposition(
                 answer_positions=task.score_spans[
                     prefix_index
                 ].answer_token_positions,
-                answer_token_ids=task.canonical_target.answer_token_ids,
+                answer_token_ids=target.answer_token_ids,
             )
         )
 
@@ -1828,7 +1814,7 @@ def run_failure_decomposition(
                 answer_positions=task.score_spans[
                     prefix_index
                 ].answer_token_positions,
-                answer_token_ids=task.canonical_target.answer_token_ids,
+                answer_token_ids=target.answer_token_ids,
             )
         )
 

@@ -55,7 +55,7 @@ selection:
   alpha_outcome: 0.5
 
 exact_ig:
-  exact_ig_version: exact_ig_official_offset_fp32_no_anchor_v4
+  exact_ig_version: exact_ig_state_conditioned_fp32_no_anchor_v5
   production_precision_mode: fp32_exact_ig
   numerical_gate_status: PASS
   numerical_gate_reason: structural_and_semantic_audit_pass_numeric_drift_is_telemetry

@@ -4,22 +4,22 @@ This inventory covers every non-ignored file in the AetherSearch GitHub
 release. Model weights, optimizer checkpoints, eval result bundles, report
 archives, and runtime snapshots are not included.
 
-Generated UTC: `2026-09-29T14:24:12Z`
+Generated UTC: `2026-09-30T11:00:11Z`
 
 ## Summary
 
 - `assets`: `3` files, `8100` bytes
-- `configs`: `24` files, `45613` bytes
-- `documentation`: `4` files, `47096` bytes
+- `configs`: `24` files, `45808` bytes
+- `documentation`: `4` files, `48428` bytes
 - `dpo`: `8` files, `74020` bytes
 - `environment`: `6` files, `15222` bytes
 - `recipes`: `2` files, `5412` bytes
 - `repo_root`: `3` files, `1683` bytes
 - `runtime_assets`: `3` files, `29691` bytes
 - `scripts`: `18` files, `75616` bytes
-- `sft`: `46` files, `652144` bytes
-- `src`: `89` files, `1280776` bytes
-- `tests`: `55` files, `487760` bytes
+- `sft`: `46` files, `653429` bytes
+- `src`: `89` files, `1288260` bytes
+- `tests`: `56` files, `497656` bytes
 - `third_party`: `5` files, `126026` bytes
 
 ## Files
@@ -39,7 +39,7 @@ Generated UTC: `2026-09-29T14:24:12Z`
 | `configs/README.md` | 5229 | `546c827178ec53274daf2044b004e60f58586bf0bb29fae7d17bfc3159465b03` |
 | `configs/assets/aethersearch_release_v1.yaml` | 3857 | `94ebdfe31c239ead4d79821d23428fd480191c901fc4d649c710c2cff14878a7` |
 | `configs/base.yaml` | 6335 | `4c725cfa92a048e1d772cb0db04771b91d0f7076190fefeea93c3ad22a47c2be` |
-| `configs/exact_ig.yaml` | 4081 | `f62726defbd24e1a1fca8c8083c85da7481f08a312ed49e26480d6b6d6195ab0` |
+| `configs/exact_ig.yaml` | 4274 | `8c8c7df092024d772afc4684c98158b54cd1ef2639236c1a2a284afcd50d8351` |
 | `configs/exact_ig_fast_path_audit_status.json` | 1107 | `de7b1386e33e9743f930cb398c39e6445055fda1a95cddc761e3d9bc184ff8c8` |
 | `configs/forced_refill_96_test.yaml` | 84 | `41da07ebaf0143c99c123cc4f63dcba01fbbda5d1969402c6b0ab985f4b97427` |
 | `configs/formal_resume_u20_3rank.yaml` | 436 | `a86e58cef9cf5f890753ec6c5208ec95246c01d49010f023c21d6ba0e3ed3445` |
@@ -53,7 +53,7 @@ Generated UTC: `2026-09-29T14:24:12Z`
 | `configs/hardware/4x48gb_3rl.yaml` | 748 | `11aa3ae1437984407608f63d4bfe51c7c987580504313cd0fcaa9bf0b2c73983` |
 | `configs/hardware_5x48gb.yaml` | 2300 | `61dfd6ebaeaceb016bf6186e652b26b7d295d5d7adbe00408d8140965305b154` |
 | `configs/logging.yaml` | 1389 | `59e27ba62355340a12bc0cb5fce372b5cb42f8722aa9d6a339c6b28f8e6d26a5` |
-| `configs/pilot_20_final.yaml` | 4244 | `936b5205b84a6fb68d8630070b2c0f033d45f45798f2608a5ecfaacbf8c0c2db` |
+| `configs/pilot_20_final.yaml` | 4246 | `99a2aae1327185afb142efc5a006913c0288ddf69a82b02c9b0a6b092ee991a5` |
 | `configs/qualification/official_4x48gb_v1.yaml` | 458 | `95d79ca7261bc8aa3d2759824313c33a217451b07d677cf2e6df0b1d9524ded6` |
 | `configs/retriever_external.yaml` | 607 | `9217abc9742aaac305af59b3818818ac8d74c2df3261fa7b505cf8f0ae5be87d` |
 | `configs/runtime/verl_fsdp2_vllm_4x48_reference.yaml` | 2441 | `8414251c0f3460522213fe4fac5366c7996dfa889a06b08d3c59dba5b171c490` |
@@ -66,7 +66,7 @@ Generated UTC: `2026-09-29T14:24:12Z`
 | path | bytes | sha256 |
 |---|---:|---|
 | `EXTERNAL_ASSETS.md` | 7701 | `59793ef9918d341a353c1b7d5e4999dcbae3f4564dbaa6ef7e8a3b5241860c58` |
-| `README.md` | 30466 | `a27f0d80ec2a1fd141095461fedd82ff1b11c2a34ae941e7bfe1cc529db8570d` |
+| `README.md` | 31798 | `17fa966bb99be4af7579b484945781f7d7c78576b139c32c023596e9299c44f8` |
 | `THIRD_PARTY_NOTICES.md` | 6098 | `f5eb49726de47e3ad7b3897840482d5aee7c854fc1921465e77cf8ff03dae682` |
 | `TRAINING_REPRODUCTION.md` | 2831 | `4221de81e3e1723071cd6f65d30084dca486f559b1a63477bdbc374a38df8b01` |
 
@@ -145,8 +145,8 @@ Generated UTC: `2026-09-29T14:24:12Z`
 | path | bytes | sha256 |
 |---|---:|---|
 | `sft/ATTRIBUTION.md` | 3643 | `1f690b238f77cc3ff112a8bb8404a5fe5806d20128d9214d40743857299fc038` |
-| `sft/README.md` | 12526 | `e1b4006fd7681e4240e5dbe2e4d16723c7d9e90483e10508053adca92ddee736` |
-| `sft/checksums.sha256` | 424 | `d42e06b92ca7e2444374a538112892e71be27a93acb262ba4de7f4adfe554c15` |
+| `sft/README.md` | 13811 | `d89e56085e20fc1fca93e7c614c7a21cf3db27348cc0a8b759aca4b923f8f728` |
+| `sft/checksums.sha256` | 424 | `ccfbe288434ecc36c9f14ce0990940b56df07d5b4ed9de93b55b5551edf9fd55` |
 | `sft/configs/ds_zero3_bf16.json` | 569 | `41e04c1a169b122eb058f1018edba49648f8c1ebd8f732751c279e10d0d981f9` |
 | `sft/data_generation/run_teacher_rollout.sh` | 1906 | `0b4af6b685ed6ddcd0df4196f0d40d68742f8fac8b37822d7cd35c06eee7af54` |
 | `sft/data_generation/search_sft_hybrid_v1/build_bm25_index.py` | 9938 | `789a3a8df399c73e8d85346f7fc683c8a154301323684f8bd6a56bad6482f17f` |
@@ -207,7 +207,7 @@ Generated UTC: `2026-09-29T14:24:12Z`
 | `src/agentic_rl/checkpoint/atomic_commit.py` | 8441 | `68e487e5f7a0ec53f74f26a052d3bfc480755ea38872a06d73d9f8cde582f466` |
 | `src/agentic_rl/checkpoint/fsdp2_dcp.py` | 2494 | `48cd9009ab11f3a6a202c3bcd16a9aa128650f577af3a3174cf6a8a0bd4fb5a7` |
 | `src/agentic_rl/checkpoint/state_schema.py` | 2307 | `8d0660762daf08cdb1ea14a7077215d86abb1456f335ac2396bb6ea2b47a2303` |
-| `src/agentic_rl/config.py` | 55663 | `20f0dff3d9ea224691ec0a8ee0dcad5cf7ac3dbf2695255fef423a9e87972510` |
+| `src/agentic_rl/config.py` | 55999 | `10f5c51a8ed9e6e98ea4019c68d597d7221b29e86966273f95aadb68761f9360` |
 | `src/agentic_rl/controller/__init__.py` | 360 | `e90831d047994fb4bf3b7231d1451b92576b71da06b0bc82cb534cc3655485d6` |
 | `src/agentic_rl/controller/attempt_state.py` | 2233 | `1da533ef6c2eb4c62a1a40dc971d66060d30db0a7a39ac1f1d0580ee51db6da7` |
 | `src/agentic_rl/controller/dataset_view.py` | 7776 | `cb127681e3f3e53274c10bbfc199cde7818d2568bb15d5f34955b1401e6225d4` |
@@ -221,10 +221,10 @@ Generated UTC: `2026-09-29T14:24:12Z`
 | `src/agentic_rl/exact_ig/masks.py` | 2323 | `2253e0818c5f0e808d0d9aaedd75b6ba1fa23e1f14e942fbdf32826c8e474660` |
 | `src/agentic_rl/exact_ig/position_ids.py` | 1839 | `d10286645870a3991340e93826380cf52a7d54b3a374fb510396e77aceccb0ad` |
 | `src/agentic_rl/exact_ig/precision_policy.py` | 8506 | `8ca382c11930527915d51fb3c6bfe3b5b01f7928b6d71b80bec3bbdff8b453f9` |
-| `src/agentic_rl/exact_ig/sequential_oracle.py` | 12562 | `0bf3fe214c946b9704c90a34131b692a4a82967ae5236eaef8af869051ce4df1` |
-| `src/agentic_rl/exact_ig/target_schema.py` | 14631 | `307b18bda63a4c3d51070a5d9d69526f1a32444a26cb13d1a202623d67ddf457` |
-| `src/agentic_rl/exact_ig/task_builder.py` | 21031 | `8af56f9f02918417421b249b5d290f76b1652182c423a9f446f6db3da8d956ef` |
-| `src/agentic_rl/exact_ig/vectorized_scorer.py` | 46073 | `f990917302c2857d61b37966a24844310f736b3fafd7f93c57145a9c164f6be0` |
+| `src/agentic_rl/exact_ig/sequential_oracle.py` | 14057 | `77e870b5f85d3ac9f4a20d51018f1e534b97ee79a65b8d257406acf456c07b29` |
+| `src/agentic_rl/exact_ig/target_schema.py` | 15883 | `3ccc60b9ec7c120279dd4f828a66bf67de808c23bd82e466d6c59b04c032255f` |
+| `src/agentic_rl/exact_ig/task_builder.py` | 24189 | `45d75f6fe2034170c1ac2cb160285a3787d207c819e78fb72bf3cddc3df17341` |
+| `src/agentic_rl/exact_ig/vectorized_scorer.py` | 46524 | `1954d11b8e997702f2eac6f197cf4f9ee44d035c66dd902876d453d199d379de` |
 | `src/agentic_rl/metrics/__init__.py` | 230 | `cac923cb267bb414453b20ebd5c7a894d045043b6ded27dbf7a55af1710d2473` |
 | `src/agentic_rl/metrics/reasoning_collapse.py` | 1974 | `2d99606ff578c90c7e61a1dacda9581beec1ff11b4696bcfdd3557d5d1aab31f` |
 | `src/agentic_rl/metrics/runtime_records.py` | 37508 | `4396f610a358de9f4bb9475f961c5270e1c72e6a6f96ba2e0177cc7a1b8b78c3` |
@@ -259,7 +259,7 @@ Generated UTC: `2026-09-29T14:24:12Z`
 | `src/agentic_rl/runtime/environment.py` | 3411 | `0d2fe6945210566e6518261f5d2aa2934796e464fd37f2545ffbf35d3e681d15` |
 | `src/agentic_rl/runtime/fixed_eval.py` | 6321 | `bdae94ea5243746f826c75930637eb01353df75a127ddb281f5886a6f95b308c` |
 | `src/agentic_rl/runtime/formal_state.py` | 6516 | `0b3ed21fff94fa9274074eb3097ebfe80116213b518d049533d32728f7368c37` |
-| `src/agentic_rl/runtime/fsdp_worker.py` | 121900 | `8eef5c08809b080c0c727b6fef8876f5e11f87dc2b5043d24ebe110558595b7d` |
+| `src/agentic_rl/runtime/fsdp_worker.py` | 122408 | `25f7e1a47762ac022e66caffe7122a80487d124169a1e9b0a14a15b7a1ad83c2` |
 | `src/agentic_rl/runtime/learner_batch.py` | 22565 | `6f03c822e9c9f6253cebe03d44131aca014c4304be39102a9f29456da4cb333a` |
 | `src/agentic_rl/runtime/postprocess.py` | 11336 | `d7eaece236a674e227290fe93967968ab041fa532d64543bf46f4e8338d888b8` |
 | `src/agentic_rl/runtime/pretrain_controls.py` | 3292 | `4e61e6cf5478035e32891b57304350ec8cb16ba54f1dec20bfb9bca33e56c17b` |
@@ -270,7 +270,7 @@ Generated UTC: `2026-09-29T14:24:12Z`
 | `src/agentic_rl/runtime/search_agent_loop.py` | 31982 | `231fce4e80cea00686587e53dff2695f9979d3adb159faa3827a61f38478aa47` |
 | `src/agentic_rl/runtime/stop_branching.py` | 57123 | `dbc79ac154d6882b2328001a4f02d50182f56ca1f676776712331b0bc889591b` |
 | `src/agentic_rl/runtime/verl_config.py` | 15882 | `fa94360f9f004d21ecdfbcd3931dd52f4c64b1e2e3da05398ef92d7f4c4f70af` |
-| `src/agentic_rl/runtime/verl_runtime_adapter.py` | 310478 | `1eb5ab0c9bc1ceec493ee561987e62d94dcbdde6f175a17c9974b485d0e94af2` |
+| `src/agentic_rl/runtime/verl_runtime_adapter.py` | 310762 | `e7ea9f4d6c4bebcb790cd97da1351b6315e1b4c6280f93baa23f6313e1a02ef4` |
 | `src/agentic_rl/selection/__init__.py` | 931 | `bdb9c618bd263a4ffc39a2da3f8f176ccb422c0319731cbd375caafed94165c9` |
 | `src/agentic_rl/selection/candidate_pool.py` | 15734 | `c88b723b6c14fa538989017d613961231ef9d9d75d214fd6674211c3b2aab192` |
 | `src/agentic_rl/selection/channel_scale.py` | 6344 | `b869bc5b269be447465e9c8a12532593bdfee45280b77d5a091dc58d450a2991` |
@@ -290,7 +290,7 @@ Generated UTC: `2026-09-29T14:24:12Z`
 | path | bytes | sha256 |
 |---|---:|---|
 | `tests/README.md` | 988 | `0542e9d452605486497eb6255397b11b532450bf9470557441b0d03effb3750d` |
-| `tests/config_support.py` | 882 | `c0260abe9c5e2c925b3a42950460c9207f91f643dd656b867575023d6d323aca` |
+| `tests/config_support.py` | 1085 | `3c6bd1ca35c18be6d305fb79a429d8883f107c41e74bb3a7370a3c0c80764464` |
 | `tests/fixtures/base_5x48gb.yaml` | 1180 | `1c4bd3ac03dfaa434bab9f677e00bca4ec0a8b71b57c27b8d1f50ed1906f0648` |
 | `tests/fixtures/formal_resume_u20_3rank_4x48gb.yaml` | 236 | `1c77111b8ceaf5d4a1c21fec749153c89e355ed816b4abb9f562ccd889c0e8bc` |
 | `tests/fixtures/formal_resume_u20_to_u500_5x48gb.yaml` | 262 | `d86babc55847a53a3a72eb8275ade30b623490e241f679c8b52a03f151ad04d5` |
@@ -299,9 +299,9 @@ Generated UTC: `2026-09-29T14:24:12Z`
 | `tests/fixtures/formal_train_mica_4x48gb.yaml` | 310 | `0245b4e653608f9c8a705f74273d8b806ec5e9871cef415e950cff319ac65255` |
 | `tests/fixtures/formal_train_paper_mica_4x48gb.yaml` | 257 | `76340ccd88fe1c512a15ed6c33465ed0dc44c7f9975d9eb50aa430f136ca0910` |
 | `tests/fixtures/pilot_20_5x48gb.yaml` | 236 | `9612e025af31616e6a6f54e8fa54d63b7621a006326e3c9ba5400cd4e224ffa0` |
-| `tests/fixtures/reference_4x48gb_resolved.yaml` | 17210 | `45f7cbd1d7b92a8a3d3540a79fa5b1edbb5c02f1e15be3416baef41064e0b52e` |
+| `tests/fixtures/reference_4x48gb_resolved.yaml` | 17401 | `ea085bb57866201867d7f86721e94e3f60ffba35a0ccc7471d2c85f0cc4efb4c` |
 | `tests/gpu_test_guard.py` | 381 | `89e7b1d626f48868ef99e49382835c797cb2ddc3125b8daa3b7e2fa4ea85d700` |
-| `tests/support/exact_ig_fast_path_audit.py` | 81143 | `0f44ddd15b035487a594715bf51673bda3753546baec974321ea11c51e894519` |
+| `tests/support/exact_ig_fast_path_audit.py` | 81283 | `f9954f9b143274cc2eb7c2b8dda891227ae3628db5da5be33b51ae21f4ede419` |
 | `tests/test_48cpu_resource_profile.py` | 2770 | `8d0a14001ecd72fbc8842c713e929d8ff872282d6eedee6ef371d42376f52fc4` |
 | `tests/test_a2tgpo_advantage.py` | 9401 | `67a2451d0c70e53ebf75c740506ace0649f96dca19ff5c266991a50347ec149f` |
 | `tests/test_answer_only_ragen2_mica_integration.py` | 16416 | `d0bee5fa1b0a01a6fda21c216e2202f18d2cd48d1faba45fedfca61e8bd81dcb` |
@@ -309,9 +309,10 @@ Generated UTC: `2026-09-29T14:24:12Z`
 | `tests/test_config_schema.py` | 8095 | `bc07855bf0e8298bdd7a68b139e015e700d01737d1204d6485e6fbfa6aeff359` |
 | `tests/test_dataset_view.py` | 1600 | `66a57c987800e61425d5eb30452b0baaa118f42a7925b55eeb0430d434051d54` |
 | `tests/test_dpo_trainer.py` | 11512 | `f27b754a7a7fdc1678e0205f9402a900b640f6e9954bba3d7f9ba54dec14184e` |
-| `tests/test_exact_ig_fast_path_independent_contract.py` | 9699 | `1da5f0ab5455644978be2a6c34f75c02de770746c4abdd75b1147f12675c2873` |
-| `tests/test_exact_ig_precision.py` | 7749 | `20532ce55af4cb40859bef1c5b17da735f158a7cbfc9f0f015ce7d8241051269` |
-| `tests/test_exact_ig_structure.py` | 17018 | `476e8775f9da17163110e337bbaad22900773d117e3adbf8972c1be4b5f3609e` |
+| `tests/test_exact_ig_fast_path_independent_contract.py` | 9906 | `436a8011119e49cad3257185519975de4cfd93d66996611eef05e8fdd9fc40e8` |
+| `tests/test_exact_ig_precision.py` | 7748 | `7fdda12f1cbf3e4eeef38a4f0434ecf7552beb7f5e217a51097cb7b7a89fbc34` |
+| `tests/test_exact_ig_state_targets.py` | 9126 | `77c302748bdf62f70b25d3aa5906cd50fa9ac2a961cd3b4a1224b06e328ff845` |
+| `tests/test_exact_ig_structure.py` | 17048 | `08d6dc513dac4d433bc4263a6ecc41809c99a0b13763a79edc643e35d048bda5` |
 | `tests/test_exact_ig_v4_fp32.py` | 10101 | `031a22082c511526f83a9a3e23a8c4963d6c3c8f23906b37f674981b3301cff6` |
 | `tests/test_final_asearch_production_contract.py` | 9241 | `9c4cffb34e550e89542d87789cd81f2eac19d567e4cd7b0afe6a6b70844d2fd2` |
 | `tests/test_final_pretrain_controls.py` | 3716 | `1ce7002fb5cc07eb91e3c3ccb1f38dd45b9ab5cf85f82304c7e8e330ce465414` |

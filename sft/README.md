@@ -94,6 +94,32 @@ For `direct_answer`, `search_count=0` and no `<search>` or `<information>` span
 is present. `single_search` has exactly one search/information turn.
 `multi_search` retains every sequential search/information turn.
 
+### Final-Answer Schema and RL Alignment
+
+Final answer turns use fixed, retrieval-state-dependent summaries:
+
+```text
+direct_answer:
+<think>Reliable prior knowledge is sufficient to answer.</think><answer>{answer}</answer>
+
+single_search / multi_search:
+<think>The retrieved evidence now supports the answer.</think><answer>{answer}</answer>
+```
+
+These are the same scaffolds used by RL Exact-IG teacher-forced scoring.
+The no-retrieval baseline (including a direct-answer trajectory and the prefix
+before the first search) uses the prior-knowledge scaffold. Prefixes after a
+retrieved observation use the retrieved-evidence scaffold. SFT teaches this
+consistent output format so scoring context and learned answer format align;
+it does not guarantee exact formatting on every generated answer.
+
+RL scores only the canonical-answer covering token span, not the fixed think
+text itself. With these state-dependent scaffolds, the first IG difference
+includes both the evidence change and the scaffold change; it is not a
+fixed-scaffold estimate of evidence gain alone. Later retrieval increments use
+the same retrieved-evidence scaffold. Zero-search trajectories have a baseline
+score but no retrieval IG increment. See [RL information gain](../README.md#3-retrieval-information-gain).
+
 ## Reproduce Training
 
 This workflow uses the published `final_sft_2600.jsonl` directly. Data generation

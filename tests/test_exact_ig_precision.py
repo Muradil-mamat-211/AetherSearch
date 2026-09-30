@@ -7,9 +7,7 @@ from types import SimpleNamespace
 
 import torch
 
-from agentic_rl.config import load_config
 
-from config_support import TEST_CONFIG
 from agentic_rl.exact_ig.precision_policy import (
     ExactIGPrecisionPolicy,
     exact_ig_precision_context,
@@ -19,6 +17,7 @@ from agentic_rl.exact_ig.sequential_oracle import (
     sequential_teacher_forced_oracle,
 )
 from agentic_rl.exact_ig.target_schema import (
+    PRIOR_SCAFFOLD_TEXT,
     ANSWER_SCAFFOLD_TEXT,
     TARGET_SCHEMA_SUFFIX,
     encode_exact_ig_target,
@@ -108,7 +107,7 @@ def test_sequential_oracle_scores_answer_body_and_uses_p_minus_one() -> None:
     )
     first = result.token_scores[0]
     assert first.physical_token_index == (
-        2 + len(ANSWER_SCAFFOLD_TEXT)
+        2 + len(PRIOR_SCAFFOLD_TEXT)
     )
     assert first.predicting_logit_index == first.physical_token_index - 1
     assert first.token_id == ord("A")
@@ -170,11 +169,13 @@ def test_fp32_policy_disables_reduced_precision_and_preserves_model_dtype() -> N
 
 
 def test_corrected_exact_ig_config_contract() -> None:
-    config = load_config(TEST_CONFIG)
+    from config_support import load_exact_ig_contract
+
+    config = load_exact_ig_contract()
     exact = config["exact_ig"]
     assert exact["production_precision_mode"] == "fp32_exact_ig"
     assert exact["exact_ig_version"] == (
-        "exact_ig_official_offset_fp32_no_anchor_v4"
+        "exact_ig_state_conditioned_fp32_no_anchor_v5"
     )
     assert exact["canonical_alias_policy"] == "first"
     assert exact["score_mask_policy"] == "igpo_official_answer_covering_span"
@@ -194,7 +195,7 @@ def test_corrected_exact_ig_config_contract() -> None:
     assert exact["temperature"] == 1.0
     assert exact["scoring_logits_mode"] == "official_full_logits"
     assert exact["selected_positions_enabled"] is False
-    assert exact["encode_complete_target_once_per_prompt"] is True
+    assert exact["encode_complete_target_once_per_state"] is True
     assert (
         exact["target_tokenization_policy"]
         == "official_full_string_single_tokenization"

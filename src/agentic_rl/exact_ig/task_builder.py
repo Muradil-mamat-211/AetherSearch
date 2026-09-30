@@ -10,6 +10,8 @@ from .masks import build_structural_attention_mask
 from .position_ids import build_logical_position_ids
 from .target_schema import (
     DEFAULT_TARGET_TEMPLATE,
+    PRIOR_TARGET_TEMPLATE,
+    TARGET_STATE_POLICY,
     FAST_PATH_STRUCTURE,
     MASK_BUILDER_VERSION,
     POSITION_BUILDER_VERSION,
@@ -29,8 +31,70 @@ class PrefixScoreSpan:
     answer_token_ids: tuple[int, ...]
 
 
+class StateConditionedTargets:
+    """Prefix zero precedes retrieval; later endpoints follow observations."""
+
+    prior_target: EncodedExactIGTarget
+    # Retained legacy name: this is the retrieved-state target, not every prefix.
+    canonical_target: EncodedExactIGTarget
+    prefix_count: int
+
+    def validate_target_states(self) -> None:
+        if self.prefix_count < 1:
+            raise ValueError("At least the no-retrieval baseline is required")
+        answer = self.canonical_target.canonical_answer
+        for target, template in (
+            (self.prior_target, PRIOR_TARGET_TEMPLATE),
+            (self.canonical_target, DEFAULT_TARGET_TEMPLATE),
+        ):
+            if (
+                target.canonical_answer != answer
+                or target.rendered_text != template.format(answer=answer)
+            ):
+                raise ValueError("Target does not match its retrieval-state schema")
+
+    @property
+    def targets_by_prefix(self) -> tuple[EncodedExactIGTarget, ...]:
+        return (self.prior_target,) + (self.canonical_target,) * (self.prefix_count - 1)
+
+    @property
+    def target_bundle_hash(self) -> str:
+        digest = hashlib.sha256(TARGET_STATE_POLICY.encode("ascii"))
+        for target in (self.prior_target, self.canonical_target):
+            for value in (
+                target.canonical_answer_sha256,
+                target.token_ids_hash,
+                target.score_span_hash,
+            ):
+                digest.update(value.encode("ascii"))
+                digest.update(b"\n")
+        return digest.hexdigest()
+
+    def target_metadata(self) -> dict[str, Any]:
+        return {
+            "target_state_policy": TARGET_STATE_POLICY,
+            "target_bundle_hash": self.target_bundle_hash,
+            "target_schema_by_prefix": (
+                ["prior_knowledge"] + ["retrieved_evidence"] * (self.prefix_count - 1)
+            ),
+            "target_token_ids_hash_by_prefix": [
+                target.token_ids_hash for target in self.targets_by_prefix
+            ],
+            "score_span_hash_by_prefix": [
+                target.score_span_hash for target in self.targets_by_prefix
+            ],
+            "answer_token_count_by_prefix": [
+                target.answer_token_count for target in self.targets_by_prefix
+            ],
+            "answer_token_range_by_prefix": [
+                [target.answer_token_start, target.answer_token_end]
+                for target in self.targets_by_prefix
+            ],
+        }
+
+
 @dataclass(frozen=True)
-class VectorizedExactIGTask:
+class VectorizedExactIGTask(StateConditionedTargets):
     prompt_global_id: str
     trajectory_id: str
     input_ids: np.ndarray
@@ -38,6 +102,7 @@ class VectorizedExactIGTask:
     position_ids: np.ndarray
     answer_score_mask: np.ndarray
     canonical_target: EncodedExactIGTarget
+    prior_target: EncodedExactIGTarget
     score_spans: tuple[PrefixScoreSpan, ...]
     prefix_count: int
     original_token_count: int
@@ -67,7 +132,7 @@ class VectorizedExactIGTask:
     @property
     def score_span_hash(self) -> str:
         digest = hashlib.sha256()
-        digest.update(self.canonical_target.score_span_hash.encode("ascii"))
+        digest.update(self.target_bundle_hash.encode("ascii"))
         for span in self.score_spans:
             digest.update(str(span.prefix_index).encode("ascii"))
             digest.update(b":")
@@ -79,19 +144,8 @@ class VectorizedExactIGTask:
             digest.update(b"\n")
         return digest.hexdigest()
 
-    @property
-    def target_bundle_hash(self) -> str:
-        digest = hashlib.sha256()
-        for value in (
-            self.canonical_answer_hash,
-            self.target_token_ids_hash,
-            self.canonical_target.score_span_hash,
-        ):
-            digest.update(value.encode("ascii"))
-            digest.update(b"\n")
-        return digest.hexdigest()
-
     def validate(self) -> None:
+        self.validate_target_states()
         if self.input_ids.ndim != 1:
             raise ValueError("input_ids must be rank 1")
         if self.attention_mask.shape != (self.input_ids.size, self.input_ids.size):
@@ -118,20 +172,26 @@ class VectorizedExactIGTask:
             raise ValueError("Original trajectory tokens cannot enter the answer score mask")
 
         scored_positions: set[int] = set()
-        target_length = len(self.canonical_target.token_ids)
-        answer_count = self.canonical_target.answer_token_count
-        for span, segment_start, segment_length in zip(
+        for prefix_index, (target, span, segment_start, segment_length) in enumerate(zip(
+            self.targets_by_prefix,
             self.score_spans,
             self.segment_starts,
             self.segment_lengths,
             strict=True,
-        ):
+        )):
+            target_length = len(target.token_ids)
+            answer_count = target.answer_token_count
+            if (
+                span.prefix_index != prefix_index
+                or span.prefix_end_position != self.prefix_end_positions[prefix_index]
+            ):
+                raise ValueError("GT score span does not match its prefix state")
             if span.segment_start != segment_start:
                 raise ValueError("GT segment metadata does not align")
             if span.segment_end != segment_start + segment_length:
                 raise ValueError("GT segment end does not align")
             if segment_length != target_length:
-                raise ValueError("Every prefix must append an identical GT copy")
+                raise ValueError("GT length must match its retrieval-state target")
             if len(span.answer_token_positions) != answer_count:
                 raise ValueError("Answer score span has the wrong token count")
             if len(span.logit_positions) != answer_count:
@@ -146,7 +206,7 @@ class VectorizedExactIGTask:
                 )
             expected_answer_positions = tuple(
                 segment_start + index
-                for index, include in enumerate(self.canonical_target.score_mask)
+                for index, include in enumerate(target.score_mask)
                 if include
             )
             if span.answer_token_positions != expected_answer_positions:
@@ -157,7 +217,7 @@ class VectorizedExactIGTask:
             )
             if observed != span.answer_token_ids:
                 raise ValueError("Answer score positions do not align with answer IDs")
-            if observed != self.canonical_target.answer_token_ids:
+            if observed != target.answer_token_ids:
                 raise ValueError("A GT copy changed the canonical answer tokens")
             if scored_positions.intersection(span.answer_token_positions):
                 raise ValueError("A physical answer token is scored more than once")
@@ -166,10 +226,10 @@ class VectorizedExactIGTask:
                 raise ValueError("A scored answer token is missing from score mask")
             scaffold_positions = range(
                 segment_start,
-                segment_start + self.canonical_target.answer_token_start,
+                segment_start + target.answer_token_start,
             )
             suffix_positions = range(
-                segment_start + self.canonical_target.answer_token_end,
+                segment_start + target.answer_token_end,
                 span.segment_end,
             )
             if any(self.answer_score_mask[position] for position in scaffold_positions):
@@ -177,7 +237,9 @@ class VectorizedExactIGTask:
             if any(self.answer_score_mask[position] for position in suffix_positions):
                 raise ValueError("Closing tag token entered the Exact-IG score mask")
 
-        expected_score_count = self.prefix_count * answer_count
+        expected_score_count = sum(
+            target.answer_token_count for target in self.targets_by_prefix
+        )
         if int(self.answer_score_mask.sum()) != expected_score_count:
             raise ValueError("Answer-only score mask has an unexpected cardinality")
         if len(scored_positions) != expected_score_count:
@@ -191,13 +253,14 @@ class VectorizedExactIGTask:
 
 
 @dataclass(frozen=True)
-class SequentialExactIGTask:
+class SequentialExactIGTask(StateConditionedTargets):
     """A fail-closed task whose packed Fast representation exceeds a hard limit."""
 
     prompt_global_id: str
     trajectory_id: str
     input_ids: np.ndarray
     canonical_target: EncodedExactIGTarget
+    prior_target: EncodedExactIGTarget
     prefix_count: int
     original_token_count: int
     original_attention_mask: np.ndarray
@@ -226,24 +289,13 @@ class SequentialExactIGTask:
     @property
     def score_span_hash(self) -> str:
         digest = hashlib.sha256()
-        digest.update(self.canonical_target.score_span_hash.encode("ascii"))
+        digest.update(self.target_bundle_hash.encode("ascii"))
         for prefix_index in range(self.prefix_count):
             digest.update(f"{prefix_index}:sequential\n".encode("ascii"))
         return digest.hexdigest()
 
-    @property
-    def target_bundle_hash(self) -> str:
-        digest = hashlib.sha256()
-        for value in (
-            self.canonical_answer_hash,
-            self.target_token_ids_hash,
-            self.canonical_target.score_span_hash,
-        ):
-            digest.update(value.encode("ascii"))
-            digest.update(b"\n")
-        return digest.hexdigest()
-
     def validate(self) -> None:
+        self.validate_target_states()
         if self.input_ids.ndim != 1 or self.input_ids.size == 0:
             raise ValueError("Sequential original input_ids must be non-empty rank 1")
         if self.input_ids.size != self.original_token_count:
@@ -254,8 +306,15 @@ class SequentialExactIGTask:
             raise ValueError("Sequential original position IDs shape mismatch")
         if len(self.prefix_end_positions) != self.prefix_count:
             raise ValueError("Sequential prefix count mismatch")
-        target_length = len(self.canonical_target.token_ids)
-        for prefix_end in self.prefix_end_positions:
+        expected_packed_length = self.original_token_count + sum(
+            len(target.token_ids) for target in self.targets_by_prefix
+        )
+        if self.projected_fast_packed_length != expected_packed_length:
+            raise ValueError("Sequential projected Fast length differs from state targets")
+        for prefix_end, target in zip(
+            self.prefix_end_positions, self.targets_by_prefix, strict=True
+        ):
+            target_length = len(target.token_ids)
             if prefix_end <= 0 or prefix_end > self.original_token_count:
                 raise ValueError("Sequential prefix endpoint is outside the trajectory")
             sequential_length = int(prefix_end) + target_length
@@ -308,7 +367,7 @@ class ExactIGTaskBuilder:
         maximum_position_id_exclusive: int | None = None,
     ) -> None:
         if target_template != DEFAULT_TARGET_TEMPLATE:
-            raise ValueError("Corrected Exact-IG locks one target scaffold")
+            raise ValueError("Exact-IG locks the retrieved-state target scaffold")
         if maximum_extended_sequence_length <= 0:
             raise ValueError("maximum_extended_sequence_length must be positive")
         self.tokenizer = tokenizer
@@ -369,11 +428,14 @@ class ExactIGTaskBuilder:
         if original_positions.shape != original.shape:
             raise ValueError("original_position_ids must align with the trajectory")
 
-        target = self.tokenize_canonical_answer(canonical_answer)
-        target_ids = np.asarray(target.token_ids, dtype=np.int64)
-        target_length = int(target_ids.size)
-        extended_length = int(original.size) + len(endpoints) * target_length
-        for prefix_end in endpoints:
+        retrieved_target = self.tokenize_canonical_answer(canonical_answer)
+        prior_target = encode_exact_ig_target(
+            self.tokenizer, canonical_answer, target_template=PRIOR_TARGET_TEMPLATE,
+        )
+        targets = (prior_target,) + (retrieved_target,) * (len(endpoints) - 1)
+        extended_length = int(original.size) + sum(len(target.token_ids) for target in targets)
+        for prefix_end, target in zip(endpoints, targets, strict=True):
+            target_length = len(target.token_ids)
             sequential_length = int(prefix_end) + target_length
             if sequential_length > self.maximum_extended_sequence_length:
                 raise ValueError(
@@ -393,7 +455,8 @@ class ExactIGTaskBuilder:
                 prompt_global_id=str(prompt_global_id),
                 trajectory_id=str(trajectory_id),
                 input_ids=original.copy(),
-                canonical_target=target,
+                canonical_target=retrieved_target,
+                prior_target=prior_target,
                 prefix_count=len(endpoints),
                 original_token_count=int(original.size),
                 original_attention_mask=original_mask.copy(),
@@ -417,6 +480,9 @@ class ExactIGTaskBuilder:
         score_mask = np.zeros(extended_length, dtype=np.bool_)
         cursor = int(original.size)
         for prefix_index, prefix_end in enumerate(endpoints):
+            target = targets[prefix_index]
+            target_ids = np.asarray(target.token_ids, dtype=np.int64)
+            target_length = len(target.token_ids)
             extended_parts.append(target_ids.copy())
             segment_starts.append(cursor)
             segment_lengths.append(target_length)
@@ -460,7 +526,8 @@ class ExactIGTaskBuilder:
                 maximum_position_id_exclusive=self.maximum_position_id_exclusive,
             ),
             answer_score_mask=score_mask,
-            canonical_target=target,
+            canonical_target=retrieved_target,
+            prior_target=prior_target,
             score_spans=tuple(spans),
             prefix_count=len(endpoints),
             original_token_count=int(original.size),

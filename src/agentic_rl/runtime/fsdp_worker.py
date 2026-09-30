@@ -346,7 +346,11 @@ def _write_exact_ig_canary_failure(
     destination = root / f"failure-{identity}.json"
 
     payload = {
-        "schema": "exact_ig_canary_replay_official_offset_fp32_no_anchor_v4",
+        "schema": "exact_ig_canary_replay_state_conditioned_fp32_no_anchor_v5",
+        **task.target_metadata(),
+        "target_token_ids_by_prefix": [
+            list(target.token_ids) for target in task.targets_by_prefix
+        ],
         "exact_ig_version": EXACT_IG_VERSION,
         "prompt_global_id": str(task.prompt_global_id),
         "trajectory_id": str(task.trajectory_id),
@@ -1265,6 +1269,7 @@ class StrictOnPolicyFSDP2Worker(AsyncActorRolloutRefWorker):
                         prefix_end_positions=task.prefix_end_positions,
                         canonical_answer=task.canonical_answer,
                         encoded_target=task.canonical_target,
+                        encoded_prior_target=task.prior_target,
                         device=device,
                         precision_policy=policy,
                     )
@@ -1374,13 +1379,19 @@ class StrictOnPolicyFSDP2Worker(AsyncActorRolloutRefWorker):
                         == oracle.score_token_ids_by_prefix
                         and all(
                             token_ids
-                            == task.canonical_target.answer_token_ids
-                            for token_ids in scored.score_token_ids_by_prefix
+                            == target.answer_token_ids
+                            for token_ids, target in zip(
+                                scored.score_token_ids_by_prefix,
+                                task.targets_by_prefix,
+                                strict=True,
+                            )
                         )
                         and oracle.scored_answer_token_count
                         == (
-                            task.prefix_count
-                            * task.canonical_target.answer_token_count
+                            sum(
+                                target.answer_token_count
+                                for target in task.targets_by_prefix
+                            )
                         )
                         and scored.target_score_span_hash
                         == oracle.score_span_hash
@@ -1716,6 +1727,7 @@ class StrictOnPolicyFSDP2Worker(AsyncActorRolloutRefWorker):
                             scored.position_builder_version
                         ),
                         "scaffold_text": ANSWER_SCAFFOLD_TEXT,
+                        **task.target_metadata(),
                         "tokenizer_name_or_path": self._reward_tokenizer_name,
                         "tokenizer_revision": self._reward_tokenizer_revision,
                         "answer_score_token_count": (

@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from typing import Any, Mapping, Sequence
 
 
-EXACT_IG_VERSION = "exact_ig_official_offset_fp32_no_anchor_v4"
+EXACT_IG_VERSION = "exact_ig_state_conditioned_fp32_no_anchor_v5"
 OFFICIAL_IGPO_COMMIT_SHA = "64165e2741ed8801f977948c8128080ce87b4101"
 ANSWER_SCAFFOLD_TEXT = (
     "<think>The retrieved evidence now supports the answer.</think><answer>"
@@ -13,6 +13,9 @@ ANSWER_SCAFFOLD_TEXT = (
 TARGET_SCHEMA_PREFIX = ANSWER_SCAFFOLD_TEXT
 TARGET_SCHEMA_SUFFIX = "</answer>"
 DEFAULT_TARGET_TEMPLATE = ANSWER_SCAFFOLD_TEXT + "{answer}" + TARGET_SCHEMA_SUFFIX
+PRIOR_SCAFFOLD_TEXT = "<think>Reliable prior knowledge is sufficient to answer.</think><answer>"
+PRIOR_TARGET_TEMPLATE = PRIOR_SCAFFOLD_TEXT + "{answer}" + TARGET_SCHEMA_SUFFIX
+TARGET_STATE_POLICY = "prior_at_prefix_zero_retrieved_after_observation_v1"
 CANONICAL_ALIAS_POLICY = "first"
 SCORE_MASK_POLICY = "igpo_official_answer_covering_span"
 INFO_GAIN_TYPE = "log_prob_diff"
@@ -91,10 +94,10 @@ def render_exact_ig_target(
     *,
     target_template: str = DEFAULT_TARGET_TEMPLATE,
 ) -> str:
-    if target_template != DEFAULT_TARGET_TEMPLATE:
-        raise ValueError("Corrected Exact-IG locks one target scaffold")
+    if target_template not in (DEFAULT_TARGET_TEMPLATE, PRIOR_TARGET_TEMPLATE):
+        raise ValueError("Exact-IG permits only the two retrieval-state scaffolds")
     answer = select_canonical_answer(canonical_answer)
-    return ANSWER_SCAFFOLD_TEXT + answer + TARGET_SCHEMA_SUFFIX
+    return target_template.replace("{answer}", answer)
 
 
 def _as_token_id_list(value: Any) -> list[Any]:
@@ -194,7 +197,7 @@ def encode_exact_ig_target(
         raise ValueError(
             "Exact-IG complete target token IDs do not decode to rendered_target"
         )
-    answer_char_start = len(ANSWER_SCAFFOLD_TEXT)
+    answer_char_start = len(target_template.split("{answer}")[0])
     answer_char_end = answer_char_start + len(answer)
     answer_start, answer_end = _official_answer_token_range(
         offsets,
@@ -255,10 +258,15 @@ def encode_exact_ig_target(
 
 def exact_ig_schema_hash(tokenizer: Any, canonical_answer: str) -> str:
     target = encode_exact_ig_target(tokenizer, canonical_answer)
+    prior = encode_exact_ig_target(
+        tokenizer, canonical_answer, target_template=PRIOR_TARGET_TEMPLATE,
+    )
     digest = hashlib.sha256()
     for value in (
         EXACT_IG_VERSION,
         DEFAULT_TARGET_TEMPLATE,
+        PRIOR_TARGET_TEMPLATE,
+        TARGET_STATE_POLICY,
         CANONICAL_ALIAS_POLICY,
         SCORE_MASK_POLICY,
         INFO_GAIN_TYPE,
@@ -268,6 +276,8 @@ def exact_ig_schema_hash(tokenizer: Any, canonical_answer: str) -> str:
         target.canonical_answer_sha256,
         target.token_ids_hash,
         target.score_span_hash,
+        prior.token_ids_hash,
+        prior.score_span_hash,
     ):
         digest.update(value.encode("utf-8"))
         digest.update(b"\n")
@@ -287,9 +297,19 @@ def exact_ig_tokenizer_identity(tokenizer: Any) -> tuple[str, str]:
 
 def exact_ig_static_metadata(tokenizer: Any, canonical_answer: str) -> dict[str, Any]:
     target = encode_exact_ig_target(tokenizer, canonical_answer)
+    prior = encode_exact_ig_target(
+        tokenizer, canonical_answer, target_template=PRIOR_TARGET_TEMPLATE,
+    )
     tokenizer_name, tokenizer_revision = exact_ig_tokenizer_identity(tokenizer)
     return {
         "exact_ig_version": EXACT_IG_VERSION,
+        "target_state_policy": TARGET_STATE_POLICY,
+        "prior_target_template": PRIOR_TARGET_TEMPLATE,
+        "prior_target_token_ids_hash": prior.token_ids_hash,
+        "prior_score_span_hash": prior.score_span_hash,
+        "prior_answer_token_count": prior.answer_token_count,
+        "prior_answer_token_range": [prior.answer_token_start, prior.answer_token_end],
+        "encode_complete_target_once_per_state": True,
         "scaffold_text": ANSWER_SCAFFOLD_TEXT,
         "scaffold_sha256": SCAFFOLD_SHA256,
         "canonical_alias_policy": CANONICAL_ALIAS_POLICY,
@@ -337,6 +357,9 @@ def assert_exact_ig_checkpoint_compatible(
         raise RuntimeError("Current runtime has no Exact-IG configuration")
     required = {
         "exact_ig_version": EXACT_IG_VERSION,
+        "encode_complete_target_once_per_state": True,
+        "target_state_policy": TARGET_STATE_POLICY,
+        "prior_target_template": PRIOR_TARGET_TEMPLATE,
         "official_igpo_commit_sha": OFFICIAL_IGPO_COMMIT_SHA,
         "scaffold_text": ANSWER_SCAFFOLD_TEXT,
         "scaffold_sha256": SCAFFOLD_SHA256,

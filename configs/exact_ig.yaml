@@ -1,6 +1,6 @@
 exact_ig:
   enabled: true
-  exact_ig_version: exact_ig_official_offset_fp32_no_anchor_v4
+  exact_ig_version: exact_ig_state_conditioned_fp32_no_anchor_v5
   implementation: igpo_official_vectorized_structural_attention
   official_igpo_commit_sha: "64165e2741ed8801f977948c8128080ce87b4101"
   official_fast_path_source: scrl/llm_agent/vectorized_gt_logprob.py
@@ -57,13 +57,15 @@ exact_ig:
   score_mask_policy: igpo_official_answer_covering_span
   fast_path_structure: official_no_anchor
   target_template: "<think>The retrieved evidence now supports the answer.</think><answer>{answer}</answer>"
+  prior_target_template: "<think>Reliable prior knowledge is sufficient to answer.</think><answer>{answer}</answer>"
+  target_state_policy: prior_at_prefix_zero_retrieved_after_observation_v1
   scaffold_text: "<think>The retrieved evidence now supports the answer.</think><answer>"
   scaffold_sha256: "27ce85b1c8197c302e1fe4d754897142ab0257cba57341dc56a7d9478d01d22e"
   target_schema_prefix: "<think>The retrieved evidence now supports the answer.</think><answer>"
   target_schema_suffix: "</answer>"
   include_eos_in_target: false
   tokenizer_add_special_tokens: false
-  encode_complete_target_once_per_prompt: true
+  encode_complete_target_once_per_state: true
   tokenizer_requires_offset_mapping: true
   target_tokenization_policy: official_full_string_single_tokenization
   score_answer_body_tokens_only: true
