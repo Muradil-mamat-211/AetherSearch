@@ -120,6 +120,47 @@ fixed-scaffold estimate of evidence gain alone. Later retrieval increments use
 the same retrieved-evidence scaffold. Zero-search trajectories have a baseline
 score but no retrieval IG increment. See [RL information gain](../README.md#3-retrieval-information-gain).
 
+## SFT Evaluation and Failure Analysis
+
+We use the frozen [AetherSearch Eval-1400](https://huggingface.co/datasets/muradil211/AetherSearch_Eval_1400/tree/frozen-v1)
+benchmark of **1,400 evaluation questions** during SFT training and after
+training completes. The model runs a complete, real Search-Agent trajectory
+for each question, including tool execution and multi-turn interaction.
+We measure **EM, F1, FTFA, and the average number of searches**.
+
+The first priority is to confirm that SFT has fulfilled its main role:
+stabilizing output format, tool calls, and multi-turn interaction. **FTFA is
+the key format metric here.** The project maintainer reports **97.5% FTFA**
+for SFT, representing the rate of calls that follow the required schemas.
+
+Next, we look beyond final answer accuracy: the same incorrect answer can
+result from very different failures. We use **stratified sampling** of the
+rollout trajectories, selecting **20 examples from each of the seven sources**
+(NQ, TriviaQA, PopQA, HotpotQA, 2WikiMultiHopQA, MuSiQue, and Bamboogle),
+for **140 examples in total**. Human review first identifies an initial
+**failure taxonomy**. We then explain those failure modes to Codex using
+concrete examples from the real rollouts, and have Codex review the remaining
+trajectories. Codex can assign existing categories and also **flag new failure
+modes** for review.
+
+This analysis determines which failures to target with **Direct Preference
+Optimization (DPO)** and the corresponding preference-pair types:
+
+| DPO pair type | SFT failure exposed |
+|---|---|
+| `answer_hard_negative` | The final answer sounds plausible but is factually wrong. |
+| `query_hard_negative` | The query follows the required format but searches in an unhelpful direction. |
+| `insufficient_information_continue_search` | The agent fails to continue searching when the available information is insufficient. |
+| `premature_answer_negative` | The agent answers before gathering enough evidence. |
+| `evidence_misread_negative` | The agent obtains the correct evidence but misinterprets it. |
+| `multi_hop_decomposition_negative` | The agent decomposes a multi-hop question in an unsuitable order. |
+| `query_refinement_negative` | The agent fails to refine the second-hop query using information already obtained. |
+| `true_full_trajectory_preference` | Individual steps may not be clearly wrong, but the full trajectory is substantially worse. |
+
+The evaluation analysis informs the failure categories. DPO preference pairs
+use separate training questions that exhibit those failures, so the frozen
+Eval-1400 questions remain held out.
+
 ## Reproduce Training
 
 This workflow uses the published `final_sft_2600.jsonl` directly. Data generation
