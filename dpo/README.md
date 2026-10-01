@@ -61,6 +61,135 @@ Preference composition:
 | `query_refinement_negative` | 18 |
 | **Total** | **2,126** |
 
+## DPO Data Construction Workflow
+
+The workflow described by the project maintainer starts with **5,000 isolated
+candidate questions** and targets approximately **2,126 high-quality preference
+pairs**. It uses the failure taxonomy established through
+[SFT rollout analysis](../sft/README.md#sft-evaluation-and-failure-analysis)
+to identify concrete decision errors and construct preferences at the same
+agent state. The exact published count and source composition are recorded
+in [Dataset overview](#dataset-overview).
+
+### 1. Build the candidate question pool
+
+Sample 5,000 candidate questions by source from datasets such as NQ, TriviaQA,
+PopQA, HotpotQA, 2WikiMultiHopQA, MuSiQue, and Bamboogle, as well as other
+eligible QA sources. Strictly exclude questions that overlap with **SFT
+training data, evaluation data, or RL training data**.
+
+Use the same question normalization as Eval-1400: Unicode NFKC, casefold,
+whitespace collapse, strip, and removal of trailing ASCII/full-width question
+marks. Exclude normalized exact matches and confirmed high-confidence
+near-duplicates before sampling.
+
+Stratify across sources with eligible questions; eligibility determines which
+sources can contribute. In particular, the complete 125-question Bamboogle
+release is already included in
+[frozen Eval-1400](https://huggingface.co/datasets/muradil211/AetherSearch_Eval_1400/tree/frozen-v1),
+so it contributes **zero eligible DPO candidates** under strict evaluation
+isolation. Select the 5,000 candidates from the remaining eligible sources.
+If the eligible pool is too small, stop without relaxing the exclusions.
+
+### 2. Run four real SFT rollouts per question
+
+Use the [SFT model](https://huggingface.co/muradil211/AetherSearch_SFT)
+to sample **$K=4$ complete trajectories per question**: 20,000 initial
+rollouts for a 5,000-question pool. Every `<search>` action must execute the
+real retriever, and the resulting observations become part of the trajectory.
+Retain the actual actions, retrieval results, and interaction history.
+
+### 3. Locate the first actionable failure
+
+Codex reviews all **format-valid trajectories for each question**, using the
+known failure taxonomy. Across those trajectories, identify the **first
+actionable failure**: the earliest genuinely incorrect decision for which a
+correction can be made and verified at the same state.
+
+Record the shared state **$x$ immediately before that decision**, including the
+question, conversation prefix, previous agent actions, and real retrieval
+observations. The target is a decision failure in a valid trajectory.
+
+### 4. Use the real SFT error as rejected
+
+Use the incorrect continuation that SFT actually generated from that state:
+
+$$
+y_l = \text{actual incorrect SFT continuation generated from } x
+$$
+
+Preserve the observed error and its rollout provenance. The rejected side is
+grounded in real SFT behavior at the recorded prefix.
+
+### 5. Find chosen from the same prefix
+
+First, fix **$x$** and resample **four continuations with the SFT model**,
+executing any subsequent searches through the real retriever. If SFT produces
+a correct behavior that passes verification, use:
+
+$$
+y_w = \text{verified good SFT continuation generated from } x
+$$
+
+If none of the four resamples succeeds, ask a stronger teacher or Codex for a
+**minimal correction** from that same prefix. Keep the question, prior actions,
+and existing observations in $x$ unchanged; correct the faulty decision with
+as little change to the continuation as possible.
+
+### 6. Verify that chosen is better
+
+Validate the correction with observable evidence:
+
+- **Answer:** check the answer against the original gold answer or accepted
+  aliases.
+- **Search:** execute the proposed search through the real retriever and
+  inspect whether it obtains more useful new evidence for the question.
+
+An LLM judge saying that a continuation is better is not sufficient for
+acceptance. Keep only corrections supported by answer verification or actual
+retrieval evidence.
+
+### 7. Form the candidate preference pair
+
+The preference unit is:
+
+$$
+\boxed{(x,\ y_w,\ y_l)}
+$$
+
+Map it to the public training fields:
+
+| Preference component | Public field | Meaning |
+|---|---|---|
+| $x$ | `prompt_text` | Exact shared state before the faulty decision |
+| $y_w$ | `chosen` | Verified better continuation from that state |
+| $y_l$ | `rejected` | Actual incorrect SFT continuation from that state |
+
+Attach the question, source, gold aliases, and corresponding `pair_type`.
+Examples include `premature_answer_negative`, `query_hard_negative`, and
+`evidence_misread_negative`, following the
+[SFT failure-to-pair mapping](../sft/README.md#sft-evaluation-and-failure-analysis).
+Both sides share the exact same `prompt_text`; neither continuation duplicates
+the prefix.
+
+### 8. Keep one highest-quality pair per question
+
+Keep **one pair per normalized question**. Prefer the pair whose failure is
+**earliest, clearest, most directly verifiable**, and whose chosen/rejected
+continuations differ by the **smallest correction** needed to fix the decision.
+Discard ambiguous, unverified, or lower-quality alternatives.
+
+### 9. Deduplicate and audit the final release
+
+Check question uniqueness, format validity, data leakage against SFT/Eval/RL,
+shared-prefix consistency, non-empty and distinct chosen/rejected
+continuations, valid trajectory structure, and the evidence supporting each
+preference. Review a human sample of the retained pairs before release.
+
+The target is approximately **2,126 high-quality DPO pairs**; the current
+canonical release contains **exactly 2,126**. Quality and isolation checks
+determine acceptance, and must not be weakened to meet the target count.
+
 ## Public schema
 
 Each canonical JSONL row contains exactly these fields, in this order:
