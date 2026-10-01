@@ -108,19 +108,19 @@ evaluation:
   role: eval
   batch_size: 1
   retry_seconds: 300
-  manifest_path: ${AETHERSEARCH_RUNTIME_ROOT}/full_search_r1_test_manifest.json
+  manifest_path: ${AETHERSEARCH_RUNTIME_ROOT}/aethersearch_eval_1400_manifest.json
   manifest_mode: full_validation
-  expected_validation_sha256: 30aa887b6d47e06e8c0f6f5307c88fe4e13461ac25a20ec0a5433ad7a4fe25dc
-  expected_row_count: 51713
+  expected_validation_sha256: ecd634aac24013213ceca3523dc024d82544c5479546fe205da24d8e8ffea678
+  expected_row_count: 1400
   expected_source_counts:
-    2wikimultihopqa: 12576
+    2wikimultihopqa: 212
     bamboogle: 125
-    hotpotqa: 7405
-    musique: 2417
-    nq: 3610
-    popqa: 14267
-    triviaqa: 11313
-  expected_manifest_sha256: a37096d3cab04dfee994318a7059e1151eef1a0df4eb444d6f8544f57ea65baa
+    hotpotqa: 212
+    musique: 212
+    nq: 213
+    popqa: 213
+    triviaqa: 213
+  expected_manifest_sha256: 7e0ce6c65b056788c049811b2c2a7a525e205be2359184a5be5183ce6db86d74
   batch_prompts: 32
   do_sample: false
   temperature: 0.0

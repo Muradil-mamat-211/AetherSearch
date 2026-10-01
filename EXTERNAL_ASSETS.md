@@ -36,9 +36,11 @@ local locations in `environment/env.local.sh`.
   [`PeterJinGo/nq_hotpotqa_train`](https://huggingface.co/datasets/PeterJinGo/nq_hotpotqa_train),
   file `train.parquet`. The released source identity is 169,615 rows and
   SHA-256 `c3cc21e862a8469105de666101578cbff23cdc77e91a803cef102622c89cc4f6`.
-- Validation data: `AETHERSEARCH_VALIDATION_DATA`; download the complete
-  Search-R1 test parquet from
-  [muradil211/AetherSearch-Eval](https://huggingface.co/datasets/muradil211/AetherSearch-Eval)
+- Training-time validation data: `AETHERSEARCH_VALIDATION_DATA`; download
+  `eval_1400.jsonl` from
+  [muradil211/AetherSearch_Eval_1400](https://huggingface.co/datasets/muradil211/AetherSearch_Eval_1400),
+  revision `db4f3c87a2f1cf1d14117954d69756cb246bc2d2`, 1,400 rows, SHA-256
+  `ecd634aac24013213ceca3523dc024d82544c5479546fe205da24d8e8ffea678`.
 
 ## Retriever Assets
 

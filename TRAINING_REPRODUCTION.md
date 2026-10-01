@@ -59,8 +59,9 @@ formal preflight, and then starts the Retriever, asynchronous full-data eval
 worker, and RL runtime supervisor.
 
 Every 20 successful updates, the runtime exports a model and queues evaluation
-over all 51,713 rows of the configured Search-R1 `test.parquet`. The same full
-manifest is used at every cadence point through update 500.
+over all 1,400 rows of `eval_1400.jsonl` from
+[muradil211/AetherSearch_Eval_1400](https://huggingface.co/datasets/muradil211/AetherSearch_Eval_1400).
+The same frozen manifest is used at every cadence point through update 500.
 
 The internal runtime command is:
 

@@ -20,17 +20,26 @@ the hybrid retriever and asynchronous worker, while three RL roles host the
 three-rank vLLM/FSDP2 runtime. The exact physical mapping is expressed in the
 topology block and enforced only by the official qualification profile.
 
-Every evaluation scheduled at a 20-update checkpoint uses all 51,713 rows of
-the configured Search-R1 `test.parquet`, in original parquet row order. The
-manifest locks the parquet SHA-256, total row count, seven source counts, and
+Every evaluation scheduled at a 20-update checkpoint uses all 1,400 rows of
+[`muradil211/AetherSearch_Eval_1400`](https://huggingface.co/datasets/muradil211/AetherSearch_Eval_1400),
+in original `eval_1400.jsonl` row order. The manifest locks the file SHA-256,
+total row count, seven source counts, and
 all row identities.
 
-Download the exact validation parquet from Hugging Face:
+The evaluator constructs the existing Search-R1 user prompt from `question`
+and keeps `answers` exclusively for scoring. Diagnostic evidence is not loaded.
+
+Download the pinned validation JSONL from Hugging Face:
 
 ```bash
-hf download muradil211/AetherSearch-Eval test.parquet \
-  --repo-type dataset --local-dir /path/to/eval-data
+hf download muradil211/AetherSearch_Eval_1400 eval_1400.jsonl \
+  --repo-type dataset --revision db4f3c87a2f1cf1d14117954d69756cb246bc2d2 \
+  --local-dir /path/to/eval-data
 ```
+
+Set `AETHERSEARCH_VALIDATION_DATA=/path/to/eval-data/eval_1400.jsonl` in the
+local environment file. Training data, the 20-update cadence, greedy decoding,
+and scoring remain unchanged.
 
 Download the upstream Search-R1 training parquet; it is not duplicated in this
 repository:

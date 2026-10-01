@@ -524,5 +524,5 @@ def test_asset_manifest_is_a_separate_checksum_contract() -> None:
     )
     validation = manifest["assets"]["validation"]
     assert validation["manifest_sha256"] == (
-        "a37096d3cab04dfee994318a7059e1151eef1a0df4eb444d6f8544f57ea65baa"
+        "7e0ce6c65b056788c049811b2c2a7a525e205be2359184a5be5183ce6db86d74"
     )

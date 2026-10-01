@@ -34,10 +34,38 @@ def test_public_recipe_is_u0_mica_and_full_eval() -> None:
     assert config["rollout"]["gpu_memory_utilization"] == 0.48
     assert config["formal_schedule"]["learner_micro_batch_size"] == 6
     assert recipe["evaluation"]["expected_manifest_sha256"] == (
-        "a37096d3cab04dfee994318a7059e1151eef1a0df4eb444d6f8544f57ea65baa"
+        "7e0ce6c65b056788c049811b2c2a7a525e205be2359184a5be5183ce6db86d74"
     )
     assert recipe["evaluation"]["manifest_mode"] == "full_validation"
-    assert recipe["evaluation"]["expected_row_count"] == 51713
+    assert recipe["evaluation"]["expected_row_count"] == 1400
+    recipe_evaluation = {
+        key: value
+        for key, value in recipe["evaluation"].items()
+        if key != "manifest_path"
+    }
+    assert recipe_evaluation == {
+        key: config["evaluation"][key] for key in recipe_evaluation
+    }
+    assets = yaml.safe_load(
+        (ROOT / "configs" / "assets" / "aethersearch_release_v1.yaml").read_text()
+    )["assets"]["validation"]
+    assert assets["source"]["repo_id"] == "muradil211/AetherSearch_Eval_1400"
+    assert assets["source"]["file"] == "eval_1400.jsonl"
+    assert assets["sha256"] == config["evaluation"]["expected_validation_sha256"]
+    assert assets["manifest_sha256"] == (
+        config["evaluation"]["expected_manifest_sha256"]
+    )
+    assert assets["expected_row_count"] == (
+        config["evaluation"]["expected_row_count"]
+    )
+    assert assets["expected_source_counts"] == (
+        config["evaluation"]["expected_source_counts"]
+    )
+    assert config["formal_schedule"]["fixed_eval_every_successful_updates"] == 20
+    assert config["formal_schedule"]["checkpoint_every_successful_updates"] == 20
+    assert config["evaluation"]["do_sample"] is False
+    assert config["evaluation"]["temperature"] == 0.0
+    assert config["evaluation"]["sampling_top_p"] == 1.0
 
 
 def test_isolated_formal_entry_is_fresh_and_uses_mica_preflight() -> None:

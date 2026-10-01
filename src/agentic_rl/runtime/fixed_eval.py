@@ -14,6 +14,54 @@ from agentic_rl.controller.dataset_view import (
 )
 
 
+# Keep the prompt used by the existing Search-R1 validation parquet.
+_SEARCH_R1_EVAL_USER_PROMPT = (
+    "Answer the given question. You must conduct reasoning inside <think> and </think> first every time you get new information. "
+    "After reasoning, if you find you lack some knowledge, you can call a search engine by <search> query </search> "
+    "and it will return the top searched results between <information> and </information>. "
+    "You can search as many times as your want. If you find no further external knowledge needed, "
+    "you can directly provide the answer inside <answer> and </answer>, without detailed illustrations. "
+    "For example, <answer> Beijing </answer>. Question: {question}\n"
+)
+
+
+def _read_eval_frame(
+    source: Path, *, columns: Sequence[str] | None = None
+) -> pd.DataFrame:
+    if source.suffix.lower() != ".jsonl":
+        return pd.read_parquet(source, columns=columns).reset_index(drop=True)
+
+    # Eval-1400 contains raw questions and evaluator-only answer aliases.
+    # Build model inputs exclusively from the question, never gold/evidence.
+    records = []
+    with source.open(encoding="utf-8") as handle:
+        for line in handle:
+            if not line.strip():
+                continue
+            raw = json.loads(line)
+            question = raw["question"]
+            if not isinstance(question, str) or not question.strip():
+                raise ValueError("Fixed-eval JSONL requires a non-empty question")
+            records.append(
+                {
+                    "id": raw["id"],
+                    "question": question,
+                    "data_source": str(raw["source_dataset"]).lower(),
+                    "golden_answers": raw["answers"],
+                    "prompt": [
+                        {
+                            "role": "user",
+                            "content": _SEARCH_R1_EVAL_USER_PROMPT.format(
+                                question=question
+                            ),
+                        }
+                    ],
+                }
+            )
+    frame = pd.DataFrame.from_records(records)
+    return frame if columns is None else frame[list(columns)]
+
+
 def _sha256_file(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as handle:
@@ -53,10 +101,9 @@ def create_or_validate_eval_manifest(
         expected_validation_sha256 is not None
         and source_sha256 != str(expected_validation_sha256)
     ):
-        raise RuntimeError("Fixed-eval source parquet SHA-256 changed")
+        raise RuntimeError("Fixed-eval source dataset SHA-256 changed")
 
-    frame = pd.read_parquet(source, columns=["id", "data_source"])
-    frame = frame.reset_index(drop=True)
+    frame = _read_eval_frame(source, columns=["id", "data_source"])
     source_counts = {
         str(key): int(value)
         for key, value in frame["data_source"]
@@ -75,7 +122,7 @@ def create_or_validate_eval_manifest(
         else None
     )
     if expected_row_count is not None and len(frame) != int(expected_row_count):
-        raise RuntimeError("Fixed-eval source parquet row count changed")
+        raise RuntimeError("Fixed-eval source dataset row count changed")
     if (
         normalized_expected_counts is not None
         and source_counts != normalized_expected_counts
@@ -97,7 +144,7 @@ def create_or_validate_eval_manifest(
         if payload["validation_path"] != str(source):
             raise RuntimeError("Fixed-eval validation path changed")
         if payload["validation_sha256"] != source_sha256:
-            raise RuntimeError("Fixed-eval source parquet changed")
+            raise RuntimeError("Fixed-eval source dataset changed")
         if str(payload.get("manifest_mode")) != mode:
             raise RuntimeError("Fixed-eval manifest mode changed")
         if len(payload["rows"]) != len(selected):
@@ -107,7 +154,7 @@ def create_or_validate_eval_manifest(
         if payload["manifest_sha256"] != expected_manifest_sha256:
             raise RuntimeError("Fixed-eval manifest rows changed")
         if payload["rows"] != selected:
-            raise RuntimeError("Fixed-eval manifest does not match source parquet")
+            raise RuntimeError("Fixed-eval manifest does not match source dataset")
         return payload
     payload = {
         "schema_version": 2,
@@ -153,8 +200,8 @@ def load_eval_rows(
 ) -> tuple[dict[str, Any], ...]:
     source = Path(str(manifest["validation_path"])).resolve()
     if _sha256_file(source) != str(manifest["validation_sha256"]):
-        raise RuntimeError("Fixed-eval parquet changed after manifest creation")
-    frame = pd.read_parquet(source)
+        raise RuntimeError("Fixed-eval dataset changed after manifest creation")
+    frame = _read_eval_frame(source)
     rows = []
     for eval_index, entry in enumerate(manifest["rows"]):
         source_index = int(entry["source_index"])

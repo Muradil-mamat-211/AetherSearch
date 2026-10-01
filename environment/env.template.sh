@@ -15,13 +15,13 @@ export AETHERSEARCH_RETRIEVER_PYTHON=${AETHERSEARCH_RETRIEVER_PYTHON:-/path/to/r
 export AETHERSEARCH_ENV_SCRIPT=${AETHERSEARCH_ENV_SCRIPT:-${BASH_SOURCE[0]}}
 
 # Model and Search-R1 data. Download train.parquet from
-# PeterJinGo/nq_hotpotqa_train and the full test.parquet from the AetherSearch
-# eval dataset before launching. Actor and Reference point to the same local
-# copy of the released muradil211/AetherSearch_DPO checkpoint.
+# PeterJinGo/nq_hotpotqa_train and eval_1400.jsonl from
+# muradil211/AetherSearch_Eval_1400 before launching. Actor and Reference point
+# to the same local copy of the released muradil211/AetherSearch_DPO checkpoint.
 export AETHERSEARCH_ACTOR_MODEL=${AETHERSEARCH_ACTOR_MODEL:-/path/to/actor-model}
 export AETHERSEARCH_REFERENCE_MODEL=${AETHERSEARCH_REFERENCE_MODEL:-${AETHERSEARCH_ACTOR_MODEL}}
 export AETHERSEARCH_TRAIN_DATA=${AETHERSEARCH_TRAIN_DATA:-/path/to/train.parquet}
-export AETHERSEARCH_VALIDATION_DATA=${AETHERSEARCH_VALIDATION_DATA:-/path/to/test.parquet}
+export AETHERSEARCH_VALIDATION_DATA=${AETHERSEARCH_VALIDATION_DATA:-/path/to/eval_1400.jsonl}
 export AETHERSEARCH_SEARCH_R1_ROOT=${AETHERSEARCH_SEARCH_R1_ROOT:-/path/to/Search-R1}
 export AETHERSEARCH_RUNTIME_ROOT=${AETHERSEARCH_RUNTIME_ROOT:-${AETHERSEARCH_WORKSPACE}/outputs/rl}
 export AETHERSEARCH_ASSET_MANIFEST=${AETHERSEARCH_ASSET_MANIFEST:-${AETHERSEARCH_PROJECT_ROOT}/configs/assets/aethersearch_release_v1.yaml}

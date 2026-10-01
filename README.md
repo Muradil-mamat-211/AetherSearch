@@ -36,6 +36,7 @@
 | 🤗 DPO data | [muradil211/AetherSearch_DPO](https://huggingface.co/datasets/muradil211/AetherSearch_DPO) | train-only preference pairs, release manifest, attribution, and checksums |
 | 🤗 Search-R1 train data | [PeterJinGo/nq_hotpotqa_train](https://huggingface.co/datasets/PeterJinGo/nq_hotpotqa_train) | upstream `train.parquet`, pinned by checksum in `EXTERNAL_ASSETS.md` |
 | 🤗 Full eval data | [muradil211/AetherSearch-Eval](https://huggingface.co/datasets/muradil211/AetherSearch-Eval) | complete 51,713-row Search-R1 `test.parquet`, provenance, and checksums |
+| 🤗 RL training-time eval data | [muradil211/AetherSearch_Eval_1400](https://huggingface.co/datasets/muradil211/AetherSearch_Eval_1400) | frozen 1,400-question validation set used every 20 successful RL updates |
 | Retriever assets | [`EXTERNAL_ASSETS.md`](EXTERNAL_ASSETS.md#retriever-assets) | pinned upstream corpus, BM25, FAISS, and E5 revisions with checksums and download commands |
 | Code | this repository | strict SFT and DPO trainers and launchers, RL training code, configs, runtime assets, and tests |
 
@@ -143,8 +144,8 @@ bash scripts/train_rl.sh
 
 The included recipe assigns physical GPU 0 to retrieval and asynchronous
 training-time evaluation, and physical GPUs 1-3 to the three-rank vLLM/FSDP2
-runtime. Every 20-update evaluation uses the complete 51,713-row Search-R1
-`test.parquet`. See `recipes/rl/README.md` for the configuration boundary.
+runtime. Every 20-update evaluation uses all 1,400 questions from
+`muradil211/AetherSearch_Eval_1400`. See `recipes/rl/README.md` for the configuration boundary.
 The resolved configuration is materialized inside each new run directory.
 
 ## Training Pipeline
