@@ -435,6 +435,30 @@ an agent that searches less by answering prematurely has not demonstrated
 better search behavior. A lower preference-training loss alone does not
 establish these improvements.
 
+#### Eval-1400 results
+
+The project maintainer reports the following end-to-end results on the
+**same frozen 1,400 questions**:
+
+| Metric | SFT | DPO | Change (DPO − SFT) |
+|---|---:|---:|---:|
+| EM (%) | 25.0 | **31.5** | **+6.5 pp** |
+| F1 (%) | 33.0 | **38.7** | **+5.7 pp** |
+| FTFA (%) | 97.5 | **99.2** | **+1.7 pp** |
+| AvgSearch (searches/question) | 2.5 | **1.5** | **−1.0 searches/question** |
+
+EM, F1, and FTFA are expressed as percentages; **pp** means percentage
+points. AvgSearch is the average number of executed searches per question.
+
+DPO improves both final-answer metrics and format compliance, while
+AvgSearch falls from **2.5 to 1.5**, a **40% reduction** in executed searches
+per question. Taken together, the reported results show better answer
+quality with fewer searches, while preserving and improving the format
+ability established by SFT.
+
+This table reports **End-to-End Eval**. Held-out **Preference Eval** measures
+chosen/rejected ranking separately, using the protocol below.
+
 ### 2. Preference Eval: held-out chosen/rejected ranking
 
 Use a separate held-out preference set with the same failure taxonomy and
@@ -498,10 +522,10 @@ evidence correctly, and whether any pair type regressed.
 > Eval asks whether DPO has learned to rank good behavior ahead of bad behavior.**
 
 The two evaluations together determine whether the learned preferences
-translate into better agent behavior. Report the paired EM, F1, FTFA, and
-AvgSearch comparison alongside overall and per-type PrefAcc. The inequality
-above is an evaluation target; measured results are needed before claiming
-that the released DPO checkpoint satisfies it.
+translate into better agent behavior. Use the Eval-1400 comparison above
+together with overall and per-type PrefAcc to assess the checkpoint.
+The PrefAcc inequality above remains an evaluation target until held-out
+preference results are reported.
 
 <a id="files"></a>
 

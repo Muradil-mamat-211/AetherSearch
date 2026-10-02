@@ -128,12 +128,30 @@ training completes. The model runs a complete, real Search-Agent trajectory
 for each question, including tool execution and multi-turn interaction.
 We measure **EM, F1, FTFA, and the average number of searches**.
 
-The first priority is to confirm that SFT has fulfilled its main role:
-stabilizing output format, tool calls, and multi-turn interaction. **FTFA is
-the key format metric here.** The project maintainer reports **97.5% FTFA**
-for SFT, representing the rate of calls that follow the required schemas.
+### Eval-1400 results
 
-Next, we look beyond final answer accuracy: the same incorrect answer can
+The project maintainer reports the following results for the
+[released SFT checkpoint](https://huggingface.co/muradil211/AetherSearch_SFT)
+on all **1,400 questions**:
+
+| Metric | SFT |
+|---|---:|
+| EM (%) | **25.0** |
+| F1 (%) | **33.0** |
+| FTFA (%) | **97.5** |
+| AvgSearch (searches/question) | **2.5** |
+
+EM, F1, and FTFA are expressed as percentages. AvgSearch is the average
+number of executed searches per question.
+
+The **97.5% FTFA** result reflects SFT's role in stabilizing output format,
+tool calls, and multi-turn interaction: FTFA measures the rate of calls that
+follow the required schemas. These results form the baseline for the
+[DPO end-to-end comparison](../dpo/README.md#eval-1400-results).
+
+### Failure analysis
+
+We also look beyond final answer accuracy: the same incorrect answer can
 result from very different failures. We use **stratified sampling** of the
 rollout trajectories, selecting **20 examples from each of the seven sources**
 (NQ, TriviaQA, PopQA, HotpotQA, 2WikiMultiHopQA, MuSiQue, and Bamboogle),
