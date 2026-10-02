@@ -355,6 +355,124 @@ repository contains the final model artifacts; this GitHub boundary contains
 the corresponding training implementation and does not include server-local
 run logs or optimizer state.
 
+## DPO Evaluation
+
+DPO is evaluated through two complementary parts:
+
+$$
+\boxed{\textbf{DPO Eval} = \text{End-to-End Eval} + \text{Preference Eval}}
+$$
+
+The first measures the deployed Search Agent's behavior; the second measures
+how the model ranks good and bad continuations from the same decision state.
+Both compare the [SFT model](https://huggingface.co/muradil211/AetherSearch_SFT)
+with the [DPO model](https://huggingface.co/muradil211/AetherSearch_DPO):
+
+$$
+\boxed{\text{SFT model} \rightarrow \text{DPO model}}
+$$
+
+### 1. End-to-End Eval: real Search-Agent rollouts on frozen Eval-1400
+
+Use exactly the same frozen
+[Eval-1400](https://huggingface.co/datasets/muradil211/AetherSearch_Eval_1400/tree/frozen-v1)
+as [SFT evaluation](../sft/README.md#sft-evaluation-and-failure-analysis).
+Keep all 1,400 questions unchanged. For each checkpoint, run a complete
+Search-Agent rollout: execute the model's searches against the real
+retriever, feed the returned observations into subsequent turns, and score
+the final answer.
+
+Keep the evaluator, retriever assets, decoding settings, interaction budgets,
+and metric definitions fixed between the SFT and DPO runs. Continue reporting
+the same four metrics:
+
+$$
+\boxed{EM,\quad F1,\quad FTFA,\quad AvgSearch}
+$$
+
+| Metric | What the SFT-to-DPO comparison checks |
+|---|---|
+| EM | Exact-match accuracy of the final answer |
+| F1 | Token-level quality of the final answer |
+| FTFA | Preservation of the format and tool-call schema ability established by SFT |
+| AvgSearch | Average number of executed searches per question, interpreted together with answer quality |
+
+The objective is to verify that DPO improves final answers and search behavior
+while preserving format ability. Interpret search counts alongside EM and F1:
+an agent that searches less by answering prematurely has not demonstrated
+better search behavior. A lower preference-training loss alone does not
+establish these improvements.
+
+### 2. Preference Eval: held-out chosen/rejected ranking
+
+Use a separate held-out preference set with the same failure taxonomy and
+pair types as DPO training. Its questions and preference pairs must never
+participate in DPO training; also exclude overlap with SFT training, RL
+training, and Eval-1400 using the same question-normalization and duplicate
+checks described in [data construction](#dpo-data-construction-workflow).
+The canonical 2,126-pair release remains train-only; the held-out set is a
+separate evaluation artifact.
+
+For each fixed pair $(x,y_w,y_l)$, compute both chosen and rejected sequence
+scores under each checkpoint, using teacher-forced scoring in evaluation mode
+with gradients disabled. For model $\pi$, define:
+
+$$
+S_{\pi}(y\mid x)
+=
+\sum_{t:\,m_t=1}
+\log \pi(y_t\mid x,y_{<t}),
+$$
+
+where $m_t$ selects the scored continuation tokens. Reuse the exact
+[preference-loss token contract](#preference-loss-contract) and
+[sequence scoring implementation](scripts/train_dpo.py): mask the prompt,
+retrieved-information spans, and padding; preserve causal next-token
+alignment, mask-boundary tokenization, and terminal-token handling. Scores
+are sums of token log probabilities, with the same tokenization and masking
+for both checkpoints.
+
+Preference accuracy measures each model's own chosen/rejected ranking:
+
+$$
+\boxed{
+\mathrm{PrefAcc}_{\pi}
+=
+\frac{1}{N}
+\sum_{i=1}^{N}
+\mathbf{1}
+\left[
+S_{\pi}(y_{w,i}\mid x_i)
+>
+S_{\pi}(y_{l,i}\mid x_i)
+\right]
+}
+$$
+
+A tie does not count as a correct preference. Evaluate SFT and DPO on the
+same held-out pairs and test whether:
+
+$$
+\boxed{\mathrm{PrefAcc}_{\mathrm{DPO}} > \mathrm{PrefAcc}_{\mathrm{SFT}}}
+$$
+
+Report **Overall PrefAcc and PrefAcc for every pair type**, including the
+number of evaluated pairs and the SFT-to-DPO change for each type. This shows
+which decision boundaries improved, such as continuing search versus
+answering prematurely, selecting a useful query, or interpreting retrieved
+evidence correctly, and whether any pair type regressed.
+
+### Joint interpretation
+
+> **Eval-1400 asks whether the real Search Agent becomes stronger. Preference
+> Eval asks whether DPO has learned to rank good behavior ahead of bad behavior.**
+
+The two evaluations together determine whether the learned preferences
+translate into better agent behavior. Report the paired EM, F1, FTFA, and
+AvgSearch comparison alongside overall and per-type PrefAcc. The inequality
+above is an evaluation target; measured results are needed before claiming
+that the released DPO checkpoint satisfies it.
+
 ## Files
 
 | File | Purpose |
