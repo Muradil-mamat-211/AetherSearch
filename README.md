@@ -86,13 +86,16 @@ and dataset payloads remain in their linked Hugging Face repositories.
 
 ## Evaluation Results
 
-📊 Exact-match results across the released Search-R1 evaluation suites.
+📊 Evaluation results across the released Search-R1 evaluation suites.
 
-| Model | NQ | TriviaQA | PopQA | HotpotQA | 2WikiMultiHopQA | Musique | Bamboogle | Overall / Avg. EM |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|
-| Search-R1 (Qwen2.5-3B Base, PPO) | **0.406** | 0.587 | **0.435** | 0.284 | 0.273 | 0.049 | 0.088 | 0.303 |
-| Search-R1 (Qwen2.5-3B Instruct, PPO) | 0.341 | 0.545 | 0.378 | 0.324 | 0.319 | 0.103 | **0.264** | 0.325 |
-| AetherSearch | 0.3977 | **0.5877** | 0.4229 | **0.3333** | **0.3985** | **0.1200** | 0.2320 | **0.3560** |
+| Model | NQ | TriviaQA | PopQA | HotpotQA | 2WikiMultiHopQA | Musique | Bamboogle | Overall / Avg. EM | F1 (0–100) | AvgSearch | format_rate |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| Search-R1 (Qwen2.5-3B Base, PPO) | **0.406** | 0.587 | **0.435** | 0.284 | 0.273 | 0.049 | 0.088 | 0.303 | — | — | — |
+| Search-R1 (Qwen2.5-3B Instruct, PPO) | 0.341 | 0.545 | 0.378 | 0.324 | 0.319 | 0.103 | **0.264** | 0.325 | — | — | — |
+| AetherSearch | 0.3977 | **0.5877** | 0.4229 | **0.3333** | **0.3985** | **0.1200** | 0.2320 | **0.3560** | 43.5 | 2.63 | 97.13% |
+
+EM is reported on a 0–1 scale; F1 uses a 0–100 scale. AvgSearch is the
+average number of searches per question. — indicates an unreported metric.
 
 ## Quick Start
 
