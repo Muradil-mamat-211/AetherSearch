@@ -112,7 +112,7 @@ If the eligible pool is too small, stop without relaxing the exclusions.
 ### 2. Run four real SFT rollouts per question
 
 Use the [SFT model](https://huggingface.co/muradil211/AetherSearch_SFT)
-to sample **$K=4$ complete trajectories per question**: 20,000 initial
+to sample **$`K=4`$ complete trajectories per question**: 20,000 initial
 rollouts for a 5,000-question pool. Every `<search>` action must execute the
 real retriever, and the resulting observations become part of the trajectory.
 Retain the actual actions, retrieval results, and interaction history.
@@ -124,7 +124,7 @@ known failure taxonomy. Across those trajectories, identify the **first
 actionable failure**: the earliest genuinely incorrect decision for which a
 correction can be made and verified at the same state.
 
-Record the shared state **$x$ immediately before that decision**, including the
+Record the shared state **$`x`$ immediately before that decision**, including the
 question, conversation prefix, previous agent actions, and real retrieval
 observations. The target is a decision failure in a valid trajectory.
 
@@ -141,7 +141,7 @@ grounded in real SFT behavior at the recorded prefix.
 
 ### 5. Find chosen from the same prefix
 
-First, fix **$x$** and resample **four continuations with the SFT model**,
+First, fix **$`x`$** and resample **four continuations with the SFT model**,
 executing any subsequent searches through the real retriever. If SFT produces
 a correct behavior that passes verification, use:
 
@@ -151,7 +151,7 @@ y_w = \text{verified good SFT continuation generated from } x
 
 If none of the four resamples succeeds, ask a stronger teacher or Codex for a
 **minimal correction** from that same prefix. Keep the question, prior actions,
-and existing observations in $x$ unchanged; correct the faulty decision with
+and existing observations in $`x`$ unchanged; correct the faulty decision with
 as little change to the continuation as possible.
 
 ### 6. Verify that chosen is better
@@ -179,9 +179,9 @@ Map it to the public training fields:
 
 | Preference component | Public field | Meaning |
 |---|---|---|
-| $x$ | `prompt_text` | Exact shared state before the faulty decision |
-| $y_w$ | `chosen` | Verified better continuation from that state |
-| $y_l$ | `rejected` | Actual incorrect SFT continuation from that state |
+| $`x`$ | `prompt_text` | Exact shared state before the faulty decision |
+| $`y_w`$ | `chosen` | Verified better continuation from that state |
+| $`y_l`$ | `rejected` | Actual incorrect SFT continuation from that state |
 
 Attach the question, source, gold aliases, and corresponding `pair_type`.
 Examples include `premature_answer_negative`, `query_hard_negative`, and
@@ -419,7 +419,7 @@ and metric definitions fixed between the SFT and DPO runs. Continue reporting
 the same four metrics:
 
 ```math
-\boxed{EM,\quad F1,\quad FTFA,\quad AvgSearch}
+\boxed{\mathrm{EM},\quad \mathrm{F1},\quad \mathrm{FTFA},\quad \mathrm{AvgSearch}}
 ```
 
 | Metric | What the SFT-to-DPO comparison checks |
@@ -445,18 +445,16 @@ checks described in [data construction](#dpo-data-construction-workflow).
 The canonical 2,126-pair release remains train-only; the held-out set is a
 separate evaluation artifact.
 
-For each fixed pair $(x,y_w,y_l)$, compute both chosen and rejected sequence
+For each fixed pair $`(x,y_w,y_l)`$, compute both chosen and rejected sequence
 scores under each checkpoint, using teacher-forced scoring in evaluation mode
-with gradients disabled. For model $\pi$, define:
+with gradients disabled. For model $`\pi`$, define:
 
 ```math
-S_{\pi}(y\mid x)
-=
-\sum_{t:\,m_t=1}
-\log \pi(y_t\mid x,y_{<t}),
+S_{\pi}(y\mid x) = \sum_{t:\,m_t=1} \log \pi\left(y_t \mid x,y_{\lt t}\right).
 ```
 
-where $m_t$ selects the scored continuation tokens. Reuse the exact
+Here $`y_{\lt t}`$ denotes the continuation tokens before position $`t`$,
+and $`m_t`$ selects the scored continuation tokens. Reuse the exact
 [preference-loss token contract](#preference-loss-contract) and
 [sequence scoring implementation](scripts/train_dpo.py): mask the prompt,
 retrieved-information spans, and padding; preserve causal next-token
@@ -475,7 +473,7 @@ Preference accuracy measures each model's own chosen/rejected ranking:
 \mathbf{1}
 \left[
 S_{\pi}(y_{w,i}\mid x_i)
->
+\gt
 S_{\pi}(y_{l,i}\mid x_i)
 \right]
 }
@@ -485,7 +483,7 @@ A tie does not count as a correct preference. Evaluate SFT and DPO on the
 same held-out pairs and test whether:
 
 ```math
-\boxed{\mathrm{PrefAcc}_{\mathrm{DPO}} > \mathrm{PrefAcc}_{\mathrm{SFT}}}
+\boxed{\mathrm{PrefAcc}_{\mathrm{DPO}} \gt \mathrm{PrefAcc}_{\mathrm{SFT}}}
 ```
 
 Report **Overall PrefAcc and PrefAcc for every pair type**, including the
