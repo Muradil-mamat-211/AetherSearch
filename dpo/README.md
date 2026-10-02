@@ -1,17 +1,31 @@
-# AetherSearch DPO
+<a id="aethersearch-dpo"></a>
+
+# 🎯 AetherSearch DPO
 
 [![DPO Model](https://img.shields.io/badge/%F0%9F%A4%97%20Model-AetherSearch__DPO-yellow)](https://huggingface.co/muradil211/AetherSearch_DPO)
 [![DPO Data](https://img.shields.io/badge/%F0%9F%A4%97%20Dataset-AetherSearch__DPO-yellow)](https://huggingface.co/datasets/muradil211/AetherSearch_DPO)
 [![Checksums](https://img.shields.io/badge/checksums-sha256-blue)](checksums.sha256)
 
-> **Complete dataset:** [AetherSearch DPO on Hugging Face](https://huggingface.co/datasets/muradil211/AetherSearch_DPO)
+> 📚 **Complete dataset:** [AetherSearch DPO on Hugging Face](https://huggingface.co/datasets/muradil211/AetherSearch_DPO)
 >
 > This directory is the complete public boundary for the DPO stage: strict
 > preference-data validation, token-level loss masking, the DPO objective,
 > the hardware-independent launcher, DeepSpeed configuration, dependency
 > pins, release metadata, and source checks.
 
-## Release at a glance
+## 🧭 Quick navigation
+
+- [Dataset overview](#dataset-overview)
+- [Data construction workflow](#dpo-data-construction-workflow)
+- [Preference loss and token masks](#preference-loss-contract)
+- [Training recipe](#training-recipe)
+- [Reproduce the DPO stage](#reproduce-the-dpo-stage)
+- [DPO evaluation](#dpo-evaluation)
+- [Files](#files) · [Checksums](#checksums)
+
+<a id="release-at-a-glance"></a>
+
+## 📦 Release at a glance
 
 | Item | Details |
 |---|---|
@@ -24,7 +38,9 @@
 | License metadata | `unknown` |
 | GitHub contents | Data metadata, training code, configuration, and source checks |
 
-## Dataset overview
+<a id="dataset-overview"></a>
+
+## 🧩 Dataset overview
 
 The stage uses the complete 2,126-pair `train.jsonl` release. Every normalized
 question is unique and every row contains one shared `prompt_text`, one
@@ -61,7 +77,9 @@ Preference composition:
 | `query_refinement_negative` | 18 |
 | **Total** | **2,126** |
 
-## DPO Data Construction Workflow
+<a id="dpo-data-construction-workflow"></a>
+
+## 🛠️ DPO Data Construction Workflow
 
 The workflow described by the project maintainer starts with **5,000 isolated
 candidate questions** and targets approximately **2,126 high-quality preference
@@ -114,9 +132,9 @@ observations. The target is a decision failure in a valid trajectory.
 
 Use the incorrect continuation that SFT actually generated from that state:
 
-$$
+```math
 y_l = \text{actual incorrect SFT continuation generated from } x
-$$
+```
 
 Preserve the observed error and its rollout provenance. The rejected side is
 grounded in real SFT behavior at the recorded prefix.
@@ -127,9 +145,9 @@ First, fix **$x$** and resample **four continuations with the SFT model**,
 executing any subsequent searches through the real retriever. If SFT produces
 a correct behavior that passes verification, use:
 
-$$
+```math
 y_w = \text{verified good SFT continuation generated from } x
-$$
+```
 
 If none of the four resamples succeeds, ask a stronger teacher or Codex for a
 **minimal correction** from that same prefix. Keep the question, prior actions,
@@ -153,9 +171,9 @@ retrieval evidence.
 
 The preference unit is:
 
-$$
+```math
 \boxed{(x,\ y_w,\ y_l)}
-$$
+```
 
 Map it to the public training fields:
 
@@ -190,7 +208,9 @@ The target is approximately **2,126 high-quality DPO pairs**; the current
 canonical release contains **exactly 2,126**. Quality and isolation checks
 determine acceptance, and must not be weakened to meet the target count.
 
-## Public schema
+<a id="public-schema"></a>
+
+## 📋 Public schema
 
 Each canonical JSONL row contains exactly these fields, in this order:
 
@@ -214,13 +234,15 @@ ChatML prompts, malformed trajectory tags, empty continuations, identical
 preference pairs, checksum drift, record-count drift, and unsafe sequence
 truncation before allocating model weights.
 
-## Preference-loss contract
+<a id="preference-loss-contract"></a>
 
-For policy model \(\pi_\theta\), frozen SFT reference \(\pi_{\mathrm{ref}}\),
-chosen continuation \(y_w\), rejected continuation \(y_l\), and shared prompt
-\(x\), the implementation uses the summed-token sigmoid DPO objective:
+## 🧮 Preference-loss contract
 
-\[
+For policy model $`\pi_\theta`$, frozen SFT reference $`\pi_{\mathrm{ref}}`$,
+chosen continuation $`y_w`$, rejected continuation $`y_l`$, and shared prompt
+$`x`$, the implementation uses the summed-token sigmoid DPO objective:
+
+```math
 \mathcal{L}_{\mathrm{DPO}} =
 -\log \sigma\!\left(
 \beta\left[
@@ -229,7 +251,7 @@ chosen continuation \(y_w\), rejected continuation \(y_l\), and shared prompt
 \log \frac{\pi_\theta(y_l\mid x)}{\pi_{\mathrm{ref}}(y_l\mid x)}
 \right]
 \right).
-\]
+```
 
 The token contract is exact:
 
@@ -250,7 +272,9 @@ decodes each reconstructed sequence and requires an exact match with the
 tokenizer-normalized source, preventing a BPE token from crossing between
 masked and scored regions.
 
-## Canonical data preflight
+<a id="canonical-data-preflight"></a>
+
+## ✅ Canonical data preflight
 
 The full tokenizer-level preflight accepts all 2,126 pairs and filters none.
 Across both sides, the longest complete sequence is 2,361 tokens, safely below
@@ -258,7 +282,9 @@ the fixed 4,096-token ceiling. It verifies 4,252 decoded round trips, 447
 chosen-side information blocks, 259 rejected-side information blocks, and no
 all-masked continuation.
 
-## Training recipe
+<a id="training-recipe"></a>
+
+## ⚙️ Training recipe
 
 | Setting | Value |
 |---|---:|
@@ -291,7 +317,9 @@ The reference receives no optimizer and no gradients. Final model export uses
 an incomplete directory followed by an atomic rename, so a failed export is
 never presented as `final_model/`.
 
-## Reproduce the DPO stage
+<a id="reproduce-the-dpo-stage"></a>
+
+## 🚀 Reproduce the DPO stage
 
 Install a CUDA-compatible PyTorch build for the target host, then install the
 stage dependencies:
@@ -345,7 +373,9 @@ launcher does not set physical GPU IDs, node addresses, NCCL fabric policy,
 CUDA allocator tuning, CPU thread counts, or server-specific absolute paths.
 Device visibility and cluster orchestration belong to the surrounding runtime.
 
-## Released checkpoint
+<a id="released-checkpoint"></a>
+
+## 🤗 Released checkpoint
 
 The [AetherSearch DPO checkpoint](https://huggingface.co/muradil211/AetherSearch_DPO)
 was trained in one DPO stage from the pinned AetherSearch SFT checkpoint over
@@ -355,22 +385,24 @@ repository contains the final model artifacts; this GitHub boundary contains
 the corresponding training implementation and does not include server-local
 run logs or optimizer state.
 
-## DPO Evaluation
+<a id="dpo-evaluation"></a>
+
+## 📊 DPO Evaluation
 
 DPO is evaluated through two complementary parts:
 
-$$
+```math
 \boxed{\textbf{DPO Eval} = \text{End-to-End Eval} + \text{Preference Eval}}
-$$
+```
 
 The first measures the deployed Search Agent's behavior; the second measures
 how the model ranks good and bad continuations from the same decision state.
 Both compare the [SFT model](https://huggingface.co/muradil211/AetherSearch_SFT)
 with the [DPO model](https://huggingface.co/muradil211/AetherSearch_DPO):
 
-$$
+```math
 \boxed{\text{SFT model} \rightarrow \text{DPO model}}
-$$
+```
 
 ### 1. End-to-End Eval: real Search-Agent rollouts on frozen Eval-1400
 
@@ -386,9 +418,9 @@ Keep the evaluator, retriever assets, decoding settings, interaction budgets,
 and metric definitions fixed between the SFT and DPO runs. Continue reporting
 the same four metrics:
 
-$$
+```math
 \boxed{EM,\quad F1,\quad FTFA,\quad AvgSearch}
-$$
+```
 
 | Metric | What the SFT-to-DPO comparison checks |
 |---|---|
@@ -417,12 +449,12 @@ For each fixed pair $(x,y_w,y_l)$, compute both chosen and rejected sequence
 scores under each checkpoint, using teacher-forced scoring in evaluation mode
 with gradients disabled. For model $\pi$, define:
 
-$$
+```math
 S_{\pi}(y\mid x)
 =
 \sum_{t:\,m_t=1}
 \log \pi(y_t\mid x,y_{<t}),
-$$
+```
 
 where $m_t$ selects the scored continuation tokens. Reuse the exact
 [preference-loss token contract](#preference-loss-contract) and
@@ -434,7 +466,7 @@ for both checkpoints.
 
 Preference accuracy measures each model's own chosen/rejected ranking:
 
-$$
+```math
 \boxed{
 \mathrm{PrefAcc}_{\pi}
 =
@@ -447,14 +479,14 @@ S_{\pi}(y_{w,i}\mid x_i)
 S_{\pi}(y_{l,i}\mid x_i)
 \right]
 }
-$$
+```
 
 A tie does not count as a correct preference. Evaluate SFT and DPO on the
 same held-out pairs and test whether:
 
-$$
+```math
 \boxed{\mathrm{PrefAcc}_{\mathrm{DPO}} > \mathrm{PrefAcc}_{\mathrm{SFT}}}
-$$
+```
 
 Report **Overall PrefAcc and PrefAcc for every pair type**, including the
 number of evaluated pairs and the SFT-to-DPO change for each type. This shows
@@ -464,7 +496,7 @@ evidence correctly, and whether any pair type regressed.
 
 ### Joint interpretation
 
-> **Eval-1400 asks whether the real Search Agent becomes stronger. Preference
+> 💡 **Eval-1400 asks whether the real Search Agent becomes stronger. Preference
 > Eval asks whether DPO has learned to rank good behavior ahead of bad behavior.**
 
 The two evaluations together determine whether the learned preferences
@@ -473,7 +505,9 @@ AvgSearch comparison alongside overall and per-type PrefAcc. The inequality
 above is an evaluation target; measured results are needed before claiming
 that the released DPO checkpoint satisfies it.
 
-## Files
+<a id="files"></a>
+
+## 🗂️ Files
 
 | File | Purpose |
 |---|---|
@@ -485,7 +519,9 @@ that the released DPO checkpoint satisfies it.
 | `ATTRIBUTION.md` | Source attribution and rights status |
 | `checksums.sha256` | Release integrity checksums |
 
-## Limitations
+<a id="limitations"></a>
+
+## 📝 Limitations
 
 Preference labels include curated hard negatives and trajectory corrections;
 they are not human preference votes for every pair. Retrieved information can
@@ -493,7 +529,9 @@ be incomplete or incorrect. Training code reproduces the released objective
 and data boundary, but users remain responsible for hardware capacity,
 retriever behavior, downstream safety, and applicable source terms.
 
-## Checksums
+<a id="checksums"></a>
+
+## 🔍 Checksums
 
 After downloading `train.jsonl` from the linked dataset repository into this
 directory, verify the complete stage boundary with:
