@@ -49,6 +49,7 @@
 - [Training Pipeline](#training-pipeline)
 - [Method Overview](#method-overview)
 - [Agentic RL Method](#agentic-rl-method)
+- [Over-Search Improvement](#over-search-improvement)
 - [Reproducibility & Configuration](#reproducibility-configuration)
 - [Repository Layout](#repository-layout)
 - [Release Scope](#release-scope)
@@ -930,6 +931,104 @@ estimator, not a runtime failure.
 | credit assignment | `src/agentic_rl/advantage/` |
 | policy optimization | `src/agentic_rl/policy/` |
 | runtime integration | `src/agentic_rl/runtime/` |
+
+## Over-Search Improvement
+
+**Research proposal; not yet implemented or experimentally validated.**
+This AetherSearch improvement adds a correction for redundant searches
+to the existing mixed Search credit. It is motivated by the
+[recorded singleton and terminal-peer cases](docs/search-credit-case-study.md).
+The [full proposal](docs/over-search-improvement.md) specifies the
+judge labels, integration contract, derivations, and evaluation requirements.
+
+### Query-only knowledge probe
+
+For each eligible Search query $q_{i,t}$, an isolated branch uses the same
+frozen rollout policy to generate a closed-book answer $a^{prior}_{i,t}$.
+It receives the query and a fixed instruction, without the retrieved
+observation $I_{i,t}$ or trajectory history. The real rollout retains its
+existing `<think>`, `<search>`, and `<information>` protocol.
+
+An external judge then evaluates $(q_{i,t},I_{i,t},a^{prior}_{i,t})$:
+
+| Label | Query-level interpretation | Correction |
+|---|---|---|
+| `OVER` | The prior answer already covers the key information supplied by credible, query-relevant evidence. | $-\beta_{over}$ |
+| `NECESSARY` | The prior answer lacks a key fact supplied by the evidence. | Zero; no additional bonus |
+| `UNCERTAIN` | Ambiguous query, partial coverage, or insufficient/conflicting evidence. | Mask the correction; retain the base credit |
+
+Probe or judge failure also masks only the correction. This is retrospective
+training supervision: the actual observation is needed for judgment.
+
+### Unified Search-credit rule
+
+Preserve the existing local/return mixture and singleton fallback:
+
+```math
+A^{base}_{i,t}
+=\begin{cases}
+\tfrac12 A^{loc,IG}_{i,t}+\tfrac12 A^{ret,IG}_{i,t},&n_{peer}\ge2,\\[4pt]
+Z^O_i,&n_{peer}=1.
+\end{cases}
+```
+
+For an accepted judgment let
+$o^{over}_{i,t}=m^J_{i,t}\mathbf1[z_{i,t}=\mathrm{OVER}]$, where $m^J$ masks
+uncertain or failed judgments. For existing policy- and IG-eligible Searches:
+
+```math
+\boxed{
+A^{search,new}_{i,t}
+=A^{base}_{i,t}-\beta_{over}o^{over}_{i,t},
+\qquad \beta_{over}\ge0.
+}
+```
+
+The coefficient is in advantage units and is separate from $\beta_{KL}$.
+The penalty is applied to the current Search after base normalization; raw IG,
+its suffix return, and Answer credit retain their existing roles. Invalid IG
+keeps the existing zero-credit behavior. **The combined advantage is not
+recentered:** otherwise an identical penalty for an all-`OVER` peer group
+would cancel. Here “absolute” means uncentered relative to peers, not a
+guaranteed estimate of whether the trajectory should stop.
+
+### How it addresses the two observed boundaries
+
+The numbers below use real U325 base advantages with **hypothetical judge
+labels**. They are calculations, not measured results of the new design;
+the displayed coefficients are illustrative and have not been tuned.
+
+| Recorded case | Base advantage | Assumed label | New advantage at $\beta_{over}=1$ | New advantage at $\beta_{over}=2$ |
+|---|---|---|---|---|
+| Terminal group, trajectory 10, Search 5 | +0.5324 | `OVER` | −0.4676 | −1.4676 |
+| Singleton trajectory 15, Search 4 | +1.5269 | `OVER` | +0.5269 | −0.4731 |
+| Same singleton trajectory, Search 5 | +1.5269 | `NECESSARY` | +1.5269 | +1.5269 |
+
+**Singleton:** the correction supplies a step-specific signal even with one
+peer. Different labels can separate steps that originally inherited the
+same $Z^O$. Identical labels still produce identical corrections.
+
+**All-negative terminal peers:** a Search can receive a penalty despite
+being above a negative peer mean. An `OVER` label makes positive base credit
+negative exactly when $\beta_{over}>A^{base}$. A negative IG alone does not
+imply `OVER`, so the proposal does not automatically reverse every
+negative-IG/positive-advantage case.
+
+![Conditional effect of the over-search correction on recorded base advantages, assuming OVER labels.](assets/figures/over-search-conditional-correction.png)
+
+The proposal adds an independently judged redundancy signal while retaining
+the mixed IG design. It can correct the two boundary cases **when the label
+is appropriate and the penalty is sufficient**. The query-only probe can
+miss facts already available in trajectory history, and knowing an answer
+does not rule out verification or grounding value. Thus this is not a full
+same-state Search-versus-stop counterfactual estimator. Judge calibration,
+penalty sensitivity, answer quality, under-search, and compute cost require
+controlled evaluation.
+
+The [full design](docs/over-search-improvement.md) explains the scoring branch
+and conditions for improvement. The
+[calculation script](docs/scripts/build_over_search_illustration.py) reproduces
+the conditional examples and figure.
 
 ## Reproducibility & Configuration
 

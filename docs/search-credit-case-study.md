@@ -342,6 +342,11 @@ Their effects on answer quality, search cost, and repetition frequency need
 further empirical study. This case study leaves optimization of these
 boundaries to future research.
 
+A subsequent [AetherSearch over-search improvement proposal](over-search-improvement.md)
+examines an uncentered, judge-based correction for these boundaries. Its
+conditional calculations use the base values above; they do not add measured
+judge labels or new training outcomes to this historical case study.
+
 ## 7. Data and figure reproducibility
 
 The public evidence includes:

@@ -1,0 +1,13 @@
+scenario_id,source_peer_group,trajectory_id,search_ordinal,recorded_base_advantage,assumed_label,beta_over,illustrative_correction,illustrative_new_advantage,evidence_kind
+terminal_search_5,negative_tail,nq:train_70310:70310:snapshot-324:trajectory-10,5,0.5323861839916834,OVER,0.5,-0.5,0.03238618399168336,conditional_arithmetic_not_a_judge_or_training_result
+terminal_search_5,negative_tail,nq:train_70310:70310:snapshot-324:trajectory-10,5,0.5323861839916834,OVER,1.0,-1.0,-0.46761381600831664,conditional_arithmetic_not_a_judge_or_training_result
+terminal_search_5,negative_tail,nq:train_70310:70310:snapshot-324:trajectory-10,5,0.5323861839916834,OVER,2.0,-2.0,-1.4676138160083165,conditional_arithmetic_not_a_judge_or_training_result
+singleton_search_4,singleton_search_4,hotpotqa:train_30199:109367:snapshot-324:trajectory-15,4,1.5269161093916115,OVER,0.5,-0.5,1.0269161093916115,conditional_arithmetic_not_a_judge_or_training_result
+singleton_search_4,singleton_search_4,hotpotqa:train_30199:109367:snapshot-324:trajectory-15,4,1.5269161093916115,OVER,1.0,-1.0,0.5269161093916115,conditional_arithmetic_not_a_judge_or_training_result
+singleton_search_4,singleton_search_4,hotpotqa:train_30199:109367:snapshot-324:trajectory-15,4,1.5269161093916115,OVER,2.0,-2.0,-0.4730838906083885,conditional_arithmetic_not_a_judge_or_training_result
+singleton_search_5,singleton_search_5,hotpotqa:train_30199:109367:snapshot-324:trajectory-15,5,1.5269161093916115,NECESSARY,0.5,0.0,1.5269161093916115,conditional_arithmetic_not_a_judge_or_training_result
+singleton_search_5,singleton_search_5,hotpotqa:train_30199:109367:snapshot-324:trajectory-15,5,1.5269161093916115,NECESSARY,1.0,0.0,1.5269161093916115,conditional_arithmetic_not_a_judge_or_training_result
+singleton_search_5,singleton_search_5,hotpotqa:train_30199:109367:snapshot-324:trajectory-15,5,1.5269161093916115,NECESSARY,2.0,0.0,1.5269161093916115,conditional_arithmetic_not_a_judge_or_training_result
+delayed_search_2,delayed_return,hotpotqa:train_9205:88373:snapshot-324:trajectory-10,2,0.8700640406641115,OVER,0.5,-0.5,0.37006404066411147,conditional_arithmetic_not_a_judge_or_training_result
+delayed_search_2,delayed_return,hotpotqa:train_9205:88373:snapshot-324:trajectory-10,2,0.8700640406641115,OVER,1.0,-1.0,-0.12993595933588853,conditional_arithmetic_not_a_judge_or_training_result
+delayed_search_2,delayed_return,hotpotqa:train_9205:88373:snapshot-324:trajectory-10,2,0.8700640406641115,OVER,2.0,-2.0,-1.1299359593358886,conditional_arithmetic_not_a_judge_or_training_result
