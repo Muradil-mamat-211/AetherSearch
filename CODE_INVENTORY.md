@@ -4,22 +4,23 @@ This inventory covers every non-ignored file in the AetherSearch GitHub
 release. Model weights, optimizer checkpoints, eval result bundles, report
 archives, and runtime snapshots are not included.
 
-Generated UTC: `2026-09-30T11:00:11Z`
+Generated UTC: `2026-10-03T11:23:33Z`
 
 ## Summary
 
-- `assets`: `3` files, `8100` bytes
-- `configs`: `24` files, `45808` bytes
-- `documentation`: `4` files, `48428` bytes
-- `dpo`: `8` files, `74020` bytes
-- `environment`: `6` files, `15222` bytes
-- `recipes`: `2` files, `5412` bytes
+- `assets`: `9` files, `640218` bytes
+- `configs`: `24` files, `45955` bytes
+- `docs`: `4` files, `127856` bytes
+- `documentation`: `4` files, `49646` bytes
+- `dpo`: `8` files, `86316` bytes
+- `environment`: `6` files, `15223` bytes
+- `recipes`: `2` files, `5883` bytes
 - `repo_root`: `3` files, `1683` bytes
 - `runtime_assets`: `3` files, `29691` bytes
 - `scripts`: `18` files, `75616` bytes
-- `sft`: `46` files, `653429` bytes
-- `src`: `89` files, `1288260` bytes
-- `tests`: `56` files, `497656` bytes
+- `sft`: `46` files, `656510` bytes
+- `src`: `89` files, `1290396` bytes
+- `tests`: `56` files, `502430` bytes
 - `third_party`: `5` files, `126026` bytes
 
 ## Files
@@ -28,24 +29,30 @@ Generated UTC: `2026-09-30T11:00:11Z`
 
 | path | bytes | sha256 |
 |---|---:|---|
-| `assets/README.md` | 410 | `537cf33dbfee113373d8e430e29fae2fba12885993a032b7875a8bf0c3d95ca6` |
+| `assets/README.md` | 1140 | `1e831cd95fff22e153f3e06688f01c92b43dc9040b3eaea61788392b96c52e80` |
 | `assets/aethersearch-mark.svg` | 824 | `5e3e0105c3db839d15b775155f8c19e02a5982d9ad01c9c57b0e4a9bfbd0f467` |
 | `assets/aethersearch-method.svg` | 6866 | `803d8e2453e26b358fba5807310deca9f808d2399ca4ac5569027a79bbd020e2` |
+| `assets/figures/search-credit-boundaries.png` | 249479 | `9013949ae91c56ae616966126bbdf21d9f7a9a8d2fdde2cedddbf18af679152b` |
+| `assets/figures/search-credit-boundaries.svg` | 43150 | `b010c913d560ad67457bc635e8efb70b54c5f4e04446bf27d275745b7ea56fb9` |
+| `assets/figures/search-credit-delayed-return.png` | 137935 | `ff3363b25dc4b8db041c014f6294ee2548750854edc7ed4bf77a76c16dfdd4e7` |
+| `assets/figures/search-credit-delayed-return.svg` | 18273 | `4b0a5e94f3e8db0ce7058a27e1f85f0b041695106d4041e7fa75fea69c65b87c` |
+| `assets/figures/search-credit-same-depth.png` | 157219 | `45ef99e40996e8294db263311e33a04aa3d92e800c3598eaa29909d1577e7ed2` |
+| `assets/figures/search-credit-same-depth.svg` | 25332 | `449750afa2c720d6b03b73311886d30f67d1a1d2996e358403de278620d188cc` |
 
 ### configs
 
 | path | bytes | sha256 |
 |---|---:|---|
 | `configs/README.md` | 5229 | `546c827178ec53274daf2044b004e60f58586bf0bb29fae7d17bfc3159465b03` |
-| `configs/assets/aethersearch_release_v1.yaml` | 3857 | `94ebdfe31c239ead4d79821d23428fd480191c901fc4d649c710c2cff14878a7` |
+| `configs/assets/aethersearch_release_v1.yaml` | 4018 | `d4ba2aea481cf642d77abf1714bbb12a0ea7fe1eb7076c192f7b4c04dbfb1d4f` |
 | `configs/base.yaml` | 6335 | `4c725cfa92a048e1d772cb0db04771b91d0f7076190fefeea93c3ad22a47c2be` |
 | `configs/exact_ig.yaml` | 4274 | `8c8c7df092024d772afc4684c98158b54cd1ef2639236c1a2a284afcd50d8351` |
 | `configs/exact_ig_fast_path_audit_status.json` | 1107 | `de7b1386e33e9743f930cb398c39e6445055fda1a95cddc761e3d9bc184ff8c8` |
 | `configs/forced_refill_96_test.yaml` | 84 | `41da07ebaf0143c99c123cc4f63dcba01fbbda5d1969402c6b0ab985f4b97427` |
 | `configs/formal_resume_u20_3rank.yaml` | 436 | `a86e58cef9cf5f890753ec6c5208ec95246c01d49010f023c21d6ba0e3ed3445` |
 | `configs/formal_resume_u20_3rank_48cpu.yaml` | 681 | `8ef0bf99193d25f49797dae54853aa3500f0b7819ac62ffc32d30aa4df583949` |
-| `configs/formal_resume_u20_to_u500.yaml` | 1618 | `210de2db51bde0cf27ea24a23e84b86cfacd0f370c6f356c7b3dd89f99359e74` |
-| `configs/formal_train.yaml` | 3264 | `27391ddefbe3b74ad0333b781bb55a748033a6d3b86666b8ef4f71fc5da9878d` |
+| `configs/formal_resume_u20_to_u500.yaml` | 1618 | `3b481cff0555b3e68914d00cebbfbce116c2ddb1e59274ebbe838dc301652bac` |
+| `configs/formal_train.yaml` | 3257 | `ca02399d3548eb3211ba28e3ab363fc3771699c5a164b21b0a1d1a2223ca3d8a` |
 | `configs/formal_train_answer_only_ragen2_mica_ig_v1.yaml` | 1850 | `158994061cb49f31453164f6cffbc65cb4ea6bd99607fe615646c501fc29e783` |
 | `configs/formal_train_answer_only_ragen2_paper_mica_ig_v1.yaml` | 233 | `96ce72b40d0bccbb6a8e5683d55db8fd78ddf0500958c88876e0f7cd17dca925` |
 | `configs/formal_train_role_localized_gate.yaml` | 1404 | `77f0ce4dee74c0db2aab35bc231aefb604dc9d0d0740dbf4fad75cee0a3f1a84` |
@@ -53,7 +60,7 @@ Generated UTC: `2026-09-30T11:00:11Z`
 | `configs/hardware/4x48gb_3rl.yaml` | 748 | `11aa3ae1437984407608f63d4bfe51c7c987580504313cd0fcaa9bf0b2c73983` |
 | `configs/hardware_5x48gb.yaml` | 2300 | `61dfd6ebaeaceb016bf6186e652b26b7d295d5d7adbe00408d8140965305b154` |
 | `configs/logging.yaml` | 1389 | `59e27ba62355340a12bc0cb5fce372b5cb42f8722aa9d6a339c6b28f8e6d26a5` |
-| `configs/pilot_20_final.yaml` | 4246 | `99a2aae1327185afb142efc5a006913c0288ddf69a82b02c9b0a6b092ee991a5` |
+| `configs/pilot_20_final.yaml` | 4239 | `f6ccf9555b8351810c99a2c08e6f689f12bcdbd4977834211ec69d13aceeda8c` |
 | `configs/qualification/official_4x48gb_v1.yaml` | 458 | `95d79ca7261bc8aa3d2759824313c33a217451b07d677cf2e6df0b1d9524ded6` |
 | `configs/retriever_external.yaml` | 607 | `9217abc9742aaac305af59b3818818ac8d74c2df3261fa7b505cf8f0ae5be87d` |
 | `configs/runtime/verl_fsdp2_vllm_4x48_reference.yaml` | 2441 | `8414251c0f3460522213fe4fac5366c7996dfa889a06b08d3c59dba5b171c490` |
@@ -61,22 +68,31 @@ Generated UTC: `2026-09-30T11:00:11Z`
 | `configs/verl_agent_loop.yaml` | 305 | `f352dfe4704acd938871946ae01678d72cfe92907ab2c31a7ee42dd55b8e3734` |
 | `configs/verl_agent_loop_role_localized_gate.yaml` | 341 | `c7377ae6e30859cb5ff1cb9e5481dc79317fd795d4026aaddf0887172b3fa27c` |
 
+### docs
+
+| path | bytes | sha256 |
+|---|---:|---|
+| `docs/data/search-credit-u325-peers.csv` | 12343 | `6a40909b5ecac065d5409716a57c1ab28b3903ec9a8cf8298f2bf02a1aad8d77` |
+| `docs/data/search-credit-u325-trajectories.json` | 85428 | `def76c9035cd64b443d65914911c9b760eeff0e3fb2ca804367e3ff161d229fb` |
+| `docs/scripts/build_search_credit_figures.py` | 10966 | `57203f19203c65612e437210f5de3397cdbe60976dd0e1184a993324c609b2c9` |
+| `docs/search-credit-case-study.md` | 19119 | `098532c8a934903270431d11d0965a29545468b3cc56f43af895351564659e4a` |
+
 ### documentation
 
 | path | bytes | sha256 |
 |---|---:|---|
-| `EXTERNAL_ASSETS.md` | 7701 | `59793ef9918d341a353c1b7d5e4999dcbae3f4564dbaa6ef7e8a3b5241860c58` |
-| `README.md` | 31798 | `17fa966bb99be4af7579b484945781f7d7c78576b139c32c023596e9299c44f8` |
+| `EXTERNAL_ASSETS.md` | 7853 | `8869d1dc5bd8cfc00991a376b47be389035b5c6401127bcd18bb5c9022403a7a` |
+| `README.md` | 32777 | `4258ff549ee8a47f3d25ff139a68ec56644a772ff43152dd13e2cf8d934479e5` |
 | `THIRD_PARTY_NOTICES.md` | 6098 | `f5eb49726de47e3ad7b3897840482d5aee7c854fc1921465e77cf8ff03dae682` |
-| `TRAINING_REPRODUCTION.md` | 2831 | `4221de81e3e1723071cd6f65d30084dca486f559b1a63477bdbc374a38df8b01` |
+| `TRAINING_REPRODUCTION.md` | 2918 | `c960758c1df8d82a9a5eb5fbdf37dc00d65bc75b520e9ec5261a12337e916101` |
 
 ### dpo
 
 | path | bytes | sha256 |
 |---|---:|---|
 | `dpo/ATTRIBUTION.md` | 2720 | `e5b2efa91817590bf764a5eb753b3728ca9599a74d6f5778bc65c1f356abae3b` |
-| `dpo/README.md` | 9605 | `1d3eabb1e8465316fbd5490650affaeff3d8e00c01fc96636d759a7eb9011b76` |
-| `dpo/checksums.sha256` | 319 | `ccacbe09568f61406c99073277392f6d556696a83336817c4c9ca390e234d5fd` |
+| `dpo/README.md` | 21901 | `9ab9a6f0728ffbac8555ba7a4ad89b2d321dfff0640d942475d40c7d90b5b6cb` |
+| `dpo/checksums.sha256` | 319 | `4215483978ab3bf46cfca68df0c8b4502ece531c8156d856dcee20f0d234df23` |
 | `dpo/configs/ds_zero3_bf16.json` | 569 | `41e04c1a169b122eb058f1018edba49648f8c1ebd8f732751c279e10d0d981f9` |
 | `dpo/dataset_manifest.json` | 2529 | `0ee034122d6ad3b88580ed3923658f4e1cc3aaa53504b7dce3c3483cc8a8f676` |
 | `dpo/requirements.txt` | 152 | `f4192c805bbefd20f901cdf4fc6861486b54d158fd2123551f60d7078a4c6c32` |
@@ -89,7 +105,7 @@ Generated UTC: `2026-09-30T11:00:11Z`
 |---|---:|---|
 | `environment/README.md` | 2898 | `a5dcd97e6f95a8ca392514f71a8ab88f55a61e484fcd27d73ef0629bfe18fbed` |
 | `environment/RUNTIME_VERSIONS.md` | 522 | `e52951f548ed1f590b7bc391b07cc5243ae5a9a7708cbe69c5bac811cc4b2d97` |
-| `environment/env.template.sh` | 3301 | `a4ac1e0fc57853239e9492e60181f174f8ebb84d6c559041d36b207fae3c9478` |
+| `environment/env.template.sh` | 3302 | `8714c42a17676bb0cdb2622bb74606815c20f2037e3389050be69bde237bcb84` |
 | `environment/requirements-core-observed.txt` | 388 | `e1b7c50395c6326deea04daefea70257a19370235c477559952f425ea96c4338` |
 | `environment/retriever_pip_freeze.txt` | 3728 | `f077f160bb383b3dda5ebcdaf2526b511a6b0ee0612ca6510f9660cd7a5cd397` |
 | `environment/rl_pip_freeze.txt` | 4385 | `2ec3728256325ed4723e0f2948888192bacc6cc140fe03c4a4b4e15453788fc8` |
@@ -98,8 +114,8 @@ Generated UTC: `2026-09-30T11:00:11Z`
 
 | path | bytes | sha256 |
 |---|---:|---|
-| `recipes/rl/README.md` | 3439 | `284fce72409799984a9c461df40d1a789b20d5f3a3ac6a463d6d570987a5a49e` |
-| `recipes/rl/train_4x48gb.yaml` | 1973 | `8c5c74fff2fe869a2f826ede7a6bc25f71dc84c52955fed125a2d196c80a6d3d` |
+| `recipes/rl/README.md` | 3917 | `acfa45046606a3a60e50bb7b5246f479db40d1fbad6670d5bcb6718551bbe920` |
+| `recipes/rl/train_4x48gb.yaml` | 1966 | `fa6a1372450a929b10e14168130ac19f7e5002972a6237924db1a8ec12d01358` |
 
 ### repo_root
 
@@ -145,8 +161,8 @@ Generated UTC: `2026-09-30T11:00:11Z`
 | path | bytes | sha256 |
 |---|---:|---|
 | `sft/ATTRIBUTION.md` | 3643 | `1f690b238f77cc3ff112a8bb8404a5fe5806d20128d9214d40743857299fc038` |
-| `sft/README.md` | 13811 | `d89e56085e20fc1fca93e7c614c7a21cf3db27348cc0a8b759aca4b923f8f728` |
-| `sft/checksums.sha256` | 424 | `ccfbe288434ecc36c9f14ce0990940b56df07d5b4ed9de93b55b5551edf9fd55` |
+| `sft/README.md` | 16892 | `0ebf9e91b7f939e80dd3e9756305586eb72deed5d8ca2ec6693d29d76ccd5ea5` |
+| `sft/checksums.sha256` | 424 | `b5c6b6d010536067f3f75f78c94bbe8f42dfd37d5d09b732dc60ec0ebf805cdd` |
 | `sft/configs/ds_zero3_bf16.json` | 569 | `41e04c1a169b122eb058f1018edba49648f8c1ebd8f732751c279e10d0d981f9` |
 | `sft/data_generation/run_teacher_rollout.sh` | 1906 | `0b4af6b685ed6ddcd0df4196f0d40d68742f8fac8b37822d7cd35c06eee7af54` |
 | `sft/data_generation/search_sft_hybrid_v1/build_bm25_index.py` | 9938 | `789a3a8df399c73e8d85346f7fc683c8a154301323684f8bd6a56bad6482f17f` |
@@ -257,7 +273,7 @@ Generated UTC: `2026-09-30T11:00:11Z`
 | `src/agentic_rl/runtime/capped_vllm.py` | 29582 | `07d33a34c5dea7725216cc1fb660e26a7cf6c594d7fa7a4c269d3d216d4cfee2` |
 | `src/agentic_rl/runtime/entrypoint.py` | 491 | `b89c28df1a5f9ac848cb3b77487efe614d680b1f908a5ffc6d0bc4b0347bb68d` |
 | `src/agentic_rl/runtime/environment.py` | 3411 | `0d2fe6945210566e6518261f5d2aa2934796e464fd37f2545ffbf35d3e681d15` |
-| `src/agentic_rl/runtime/fixed_eval.py` | 6321 | `bdae94ea5243746f826c75930637eb01353df75a127ddb281f5886a6f95b308c` |
+| `src/agentic_rl/runtime/fixed_eval.py` | 8457 | `38de064da6592d051d3ae368b2088c97ad617f0599e2819a60db8f51f68343bd` |
 | `src/agentic_rl/runtime/formal_state.py` | 6516 | `0b3ed21fff94fa9274074eb3097ebfe80116213b518d049533d32728f7368c37` |
 | `src/agentic_rl/runtime/fsdp_worker.py` | 122408 | `25f7e1a47762ac022e66caffe7122a80487d124169a1e9b0a14a15b7a1ad83c2` |
 | `src/agentic_rl/runtime/learner_batch.py` | 22565 | `6f03c822e9c9f6253cebe03d44131aca014c4304be39102a9f29456da4cb333a` |
@@ -291,7 +307,7 @@ Generated UTC: `2026-09-30T11:00:11Z`
 |---|---:|---|
 | `tests/README.md` | 988 | `0542e9d452605486497eb6255397b11b532450bf9470557441b0d03effb3750d` |
 | `tests/config_support.py` | 1085 | `3c6bd1ca35c18be6d305fb79a429d8883f107c41e74bb3a7370a3c0c80764464` |
-| `tests/fixtures/base_5x48gb.yaml` | 1180 | `1c4bd3ac03dfaa434bab9f677e00bca4ec0a8b71b57c27b8d1f50ed1906f0648` |
+| `tests/fixtures/base_5x48gb.yaml` | 1173 | `89ccf62112714738d2ea6924053e9c4580242379fc3de9baa54801b832fc845a` |
 | `tests/fixtures/formal_resume_u20_3rank_4x48gb.yaml` | 236 | `1c77111b8ceaf5d4a1c21fec749153c89e355ed816b4abb9f562ccd889c0e8bc` |
 | `tests/fixtures/formal_resume_u20_to_u500_5x48gb.yaml` | 262 | `d86babc55847a53a3a72eb8275ade30b623490e241f679c8b52a03f151ad04d5` |
 | `tests/fixtures/formal_train_5x48gb.yaml` | 303 | `8ad9660b8f28c90cc5fff5c7c1193c94e4a400d75e5e39ac46ca5aa6a6ede813` |
@@ -299,7 +315,7 @@ Generated UTC: `2026-09-30T11:00:11Z`
 | `tests/fixtures/formal_train_mica_4x48gb.yaml` | 310 | `0245b4e653608f9c8a705f74273d8b806ec5e9871cef415e950cff319ac65255` |
 | `tests/fixtures/formal_train_paper_mica_4x48gb.yaml` | 257 | `76340ccd88fe1c512a15ed6c33465ed0dc44c7f9975d9eb50aa430f136ca0910` |
 | `tests/fixtures/pilot_20_5x48gb.yaml` | 236 | `9612e025af31616e6a6f54e8fa54d63b7621a006326e3c9ba5400cd4e224ffa0` |
-| `tests/fixtures/reference_4x48gb_resolved.yaml` | 17401 | `ea085bb57866201867d7f86721e94e3f60ffba35a0ccc7471d2c85f0cc4efb4c` |
+| `tests/fixtures/reference_4x48gb_resolved.yaml` | 17394 | `5b41476b8a93243be8eccfb85d1387d930ac9ce5a0c7595ffd91a3c541039870` |
 | `tests/gpu_test_guard.py` | 381 | `89e7b1d626f48868ef99e49382835c797cb2ddc3125b8daa3b7e2fa4ea85d700` |
 | `tests/support/exact_ig_fast_path_audit.py` | 81283 | `f9954f9b143274cc2eb7c2b8dda891227ae3628db5da5be33b51ae21f4ede419` |
 | `tests/test_48cpu_resource_profile.py` | 2770 | `8d0a14001ecd72fbc8842c713e929d8ff872282d6eedee6ef371d42376f52fc4` |
@@ -316,10 +332,10 @@ Generated UTC: `2026-09-30T11:00:11Z`
 | `tests/test_exact_ig_v4_fp32.py` | 10101 | `031a22082c511526f83a9a3e23a8c4963d6c3c8f23906b37f674981b3301cff6` |
 | `tests/test_final_asearch_production_contract.py` | 9241 | `9c4cffb34e550e89542d87789cd81f2eac19d567e4cd7b0afe6a6b70844d2fd2` |
 | `tests/test_final_pretrain_controls.py` | 3716 | `1ce7002fb5cc07eb91e3c3ccb1f38dd45b9ab5cf85f82304c7e8e330ce465414` |
-| `tests/test_fixed_eval_full_manifest.py` | 2694 | `d672b557a60dfc4c890942cff402f3d7c5f1387b77a3d827937c83d04402e6cd` |
+| `tests/test_fixed_eval_full_manifest.py` | 6230 | `d35716d78b9deaf72183901c0a659b10b97ad3346ddb2eb9f06418cca8a80ff7` |
 | `tests/test_formal_resume_runtime.py` | 13271 | `764c918c9175ca408a91fe0c80b6c1ef1f0c941b3770b93d5a76334e61b0d798` |
 | `tests/test_format_advantage.py` | 4810 | `efaff86d140521e142b2c003022d9ca7c16940692099f1415ae496fb00822c06` |
-| `tests/test_fresh_formal_sc_launch.py` | 2090 | `b8797e73ed65618c56d728e550ed35871f20d18aef57078530ae7dd42e8e100d` |
+| `tests/test_fresh_formal_sc_launch.py` | 3342 | `4e55d3ea08329f36b4da11c288f814e1def2b38d4212a9ccaf54cf18803423ed` |
 | `tests/test_igpo_f1_parity.py` | 1651 | `d2abb6cd8637921af94e1529d8dcf3c9607abb4d6777c0453a17c5d46f53f4fa` |
 | `tests/test_mica_ig_v1.py` | 10622 | `66a9f40d6b553fa438955808a5ec409a4d60c09f338733d537cb1f3aec3f37ce` |
 | `tests/test_paper_ragen2_selection.py` | 8900 | `e37304b2e2663743d45b91f68dff0b506211a2acc918b0f2ca78dcd7d1567c71` |
@@ -343,7 +359,7 @@ Generated UTC: `2026-09-30T11:00:11Z`
 | `tests/test_sufficiency_novelty_cumulative_probe_routed.py` | 16944 | `59e8ac0f37279d2b23ace5d77ca776def6a6db016a6fef074bbb831143e226f4` |
 | `tests/test_sufficiency_novelty_local_ig.py` | 9272 | `e7ffeabeae8c69cf7d9a9e7bb04218789ba634b568e131360d58b6736282ce31` |
 | `tests/test_token_provenance.py` | 6861 | `cb50c8b20251305b4de64ce3972718ea0bb0544c81fe7f18ad5ded0cbf6d5421` |
-| `tests/test_topology_decoupling.py` | 19233 | `f2a988b18bb413ab54c5c2c4bfb5bc4952130a394c1168acd2a37308a5b3a86d` |
+| `tests/test_topology_decoupling.py` | 19233 | `9fb7451704ace0a789a60628396e73975668172372e856ecc07f3ec5fd2868ac` |
 | `tests/test_update_controller.py` | 8296 | `08a9ea06361ee35d50dfa82c1b69db7c12aefd9035e27ede0529f832ee820bcc` |
 
 ### third_party

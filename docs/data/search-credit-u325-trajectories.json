@@ -1,0 +1,2758 @@
+{
+  "provenance": {
+    "run_id": "formal_resume_u180_to_u500_answer_ragen2_mica_ig_v1_g16_20260813_004642",
+    "attempt_id": 325,
+    "successful_update_before": 324,
+    "successful_update_after": 325,
+    "rollout_weight_version": 324,
+    "old_policy_version": 324,
+    "reward_policy_version": 324,
+    "timestamp_utc": "2026-08-14T01:08:56.843537+00:00",
+    "search_task_mode": "answer_only_ragen2_mica_ig_v1_singleton_outcome",
+    "scope": "Historical logged trajectories, not a validation of the current v5 scorer",
+    "extraction_files_sha256": {
+      "同题同深度_U325_原始证据.json": "359c585842b27bdbfddfc3aeb0d62b0b46ef7fd1ddb74dc190c31455bd8f5001",
+      "特殊分支_U325_历史尺度与singleton尾部.json": "e740994bfd93deeff3f6128fda5335acd16e8d9e3cd88860d628a86812084c3a",
+      "特殊分支_U325_四题完整turn记录.json": "248266ff2fae1072a030a3cc5a4c8f5d3031c65280d08cb83b2554fe8bde1678"
+    }
+  },
+  "normalization": {
+    "gamma": 1.0,
+    "mix_weight": 0.5,
+    "epsilon": 1e-06,
+    "variance_tolerance": 1e-12,
+    "ddof": 0
+  },
+  "peer_groups": {
+    "same_depth": {
+      "prompt_global_id": "hotpotqa:train_46072:125240",
+      "search_index": 1,
+      "peer_count": 16
+    },
+    "delayed_return": {
+      "prompt_global_id": "hotpotqa:train_9205:88373",
+      "search_index": 1,
+      "peer_count": 14
+    },
+    "negative_tail": {
+      "prompt_global_id": "nq:train_70310:70310",
+      "search_index": 4,
+      "peer_count": 6
+    },
+    "singleton_search_4": {
+      "prompt_global_id": "hotpotqa:train_30199:109367",
+      "search_index": 3,
+      "peer_count": 1
+    },
+    "singleton_search_5": {
+      "prompt_global_id": "hotpotqa:train_30199:109367",
+      "search_index": 4,
+      "peer_count": 1
+    }
+  },
+  "trajectories": [
+    {
+      "prompt_global_id": "hotpotqa:train_46072:125240",
+      "trajectory_id": "hotpotqa:train_46072:125240:snapshot-324:trajectory-00",
+      "R_task": 0.0,
+      "outcome_z": -0.8783877588841451,
+      "terminal_answer_valid": true,
+      "system_valid": true,
+      "search_count": 2,
+      "queries": [
+        "73 won Super Bowl 73rd season Philadelphia",
+        "Super Bowl 73rd season Philadelphia Eagles NFL won"
+      ],
+      "search_turns": [
+        {
+          "search_index": 0,
+          "IG": 0.16874587535858154,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": false,
+          "current_passage_keys": [
+            "passage_id:10494404",
+            "passage_id:18852843",
+            "passage_id:20584114"
+          ],
+          "new_passage_keys": [
+            "passage_id:10494404",
+            "passage_id:18852843",
+            "passage_id:20584114"
+          ]
+        },
+        {
+          "search_index": 1,
+          "IG": 0.32757043838500977,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": false,
+          "current_passage_keys": [
+            "passage_id:10494322",
+            "passage_id:10494404",
+            "passage_id:18498882"
+          ],
+          "new_passage_keys": [
+            "passage_id:10494322",
+            "passage_id:18498882"
+          ]
+        }
+      ]
+    },
+    {
+      "prompt_global_id": "hotpotqa:train_46072:125240",
+      "trajectory_id": "hotpotqa:train_46072:125240:snapshot-324:trajectory-01",
+      "R_task": 0.0,
+      "outcome_z": -0.8783877588841451,
+      "terminal_answer_valid": true,
+      "system_valid": true,
+      "search_count": 4,
+      "queries": [
+        "Super Bowl won 73rd season Philadelphia Eagles NFL",
+        "won Super Bowl 73rd season Philadelphia Eagles NFL",
+        "Philadelphia Eagles won Super Bowl 73rd season NFL",
+        "Super Bowl 73 Philadelphia Eagles NFL won 73rd season NFL"
+      ],
+      "search_turns": [
+        {
+          "search_index": 0,
+          "IG": 0.7813206911087036,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": false,
+          "current_passage_keys": [
+            "passage_id:10494322",
+            "passage_id:10494404",
+            "passage_id:18498882"
+          ],
+          "new_passage_keys": [
+            "passage_id:10494322",
+            "passage_id:10494404",
+            "passage_id:18498882"
+          ]
+        },
+        {
+          "search_index": 1,
+          "IG": 0.15343621373176575,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": true,
+          "current_passage_keys": [
+            "passage_id:10494322",
+            "passage_id:10494404",
+            "passage_id:18498882"
+          ],
+          "new_passage_keys": []
+        },
+        {
+          "search_index": 2,
+          "IG": -0.006380707025527954,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": true,
+          "current_passage_keys": [
+            "passage_id:10494322",
+            "passage_id:10494404",
+            "passage_id:18498882"
+          ],
+          "new_passage_keys": []
+        },
+        {
+          "search_index": 3,
+          "IG": 0.3746841140091419,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": false,
+          "current_passage_keys": [
+            "passage_id:10494322",
+            "passage_id:10494404",
+            "passage_id:12177177"
+          ],
+          "new_passage_keys": [
+            "passage_id:12177177"
+          ]
+        }
+      ]
+    },
+    {
+      "prompt_global_id": "hotpotqa:train_46072:125240",
+      "trajectory_id": "hotpotqa:train_46072:125240:snapshot-324:trajectory-02",
+      "R_task": 0.0,
+      "outcome_z": -0.8783877588841451,
+      "terminal_answer_valid": true,
+      "system_valid": true,
+      "search_count": 3,
+      "queries": [
+        "Super Bowl 73 won 73rd season Philadelphia",
+        "Super Bowl 73 Philadelphia Eagles NFL won 73rd season NFL team",
+        "Philadelphia Eagles NFL won 73rd season team"
+      ],
+      "search_turns": [
+        {
+          "search_index": 0,
+          "IG": 0.1068873405456543,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": false,
+          "current_passage_keys": [
+            "passage_id:10494404",
+            "passage_id:20584114",
+            "passage_id:2262435"
+          ],
+          "new_passage_keys": [
+            "passage_id:10494404",
+            "passage_id:20584114",
+            "passage_id:2262435"
+          ]
+        },
+        {
+          "search_index": 1,
+          "IG": 0.17963433265686035,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": false,
+          "current_passage_keys": [
+            "passage_id:10494322",
+            "passage_id:10494404",
+            "passage_id:20584114"
+          ],
+          "new_passage_keys": [
+            "passage_id:10494322"
+          ]
+        },
+        {
+          "search_index": 2,
+          "IG": 0.10278308391571045,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": true,
+          "current_passage_keys": [
+            "passage_id:10494322",
+            "passage_id:20584114",
+            "passage_id:2262435"
+          ],
+          "new_passage_keys": []
+        }
+      ]
+    },
+    {
+      "prompt_global_id": "hotpotqa:train_46072:125240",
+      "trajectory_id": "hotpotqa:train_46072:125240:snapshot-324:trajectory-03",
+      "R_task": 1.0,
+      "outcome_z": 1.2147915814355195,
+      "terminal_answer_valid": true,
+      "system_valid": true,
+      "search_count": 3,
+      "queries": [
+        "Super Bowl won 73rd season Philadelphia",
+        "Super Bowl 73 Philadelphia Eagles NFL won 73rd season",
+        "2005 Philadelphia Eagles season Super Bowl 73rd"
+      ],
+      "search_turns": [
+        {
+          "search_index": 0,
+          "IG": 0.7217409610748291,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": false,
+          "current_passage_keys": [
+            "passage_id:10494404",
+            "passage_id:18498882",
+            "passage_id:20584114"
+          ],
+          "new_passage_keys": [
+            "passage_id:10494404",
+            "passage_id:18498882",
+            "passage_id:20584114"
+          ]
+        },
+        {
+          "search_index": 1,
+          "IG": 0.10510146617889404,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": false,
+          "current_passage_keys": [
+            "passage_id:10494322",
+            "passage_id:10494404",
+            "passage_id:18498882"
+          ],
+          "new_passage_keys": [
+            "passage_id:10494322"
+          ]
+        },
+        {
+          "search_index": 2,
+          "IG": 0.5183151550590992,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": false,
+          "current_passage_keys": [
+            "passage_id:20584114",
+            "passage_id:2262435",
+            "passage_id:9773187"
+          ],
+          "new_passage_keys": [
+            "passage_id:2262435",
+            "passage_id:9773187"
+          ]
+        }
+      ]
+    },
+    {
+      "prompt_global_id": "hotpotqa:train_46072:125240",
+      "trajectory_id": "hotpotqa:train_46072:125240:snapshot-324:trajectory-04",
+      "R_task": 0.0,
+      "outcome_z": -0.8783877588841451,
+      "terminal_answer_valid": true,
+      "system_valid": true,
+      "search_count": 3,
+      "queries": [
+        "Super Bowl 73 won 73rd season Philadelphia",
+        "Super Bowl 73 won 73rd season Philadelphia Eagles NFL",
+        "73 Philadelphia Eagles NFL won Super Bowl 73rd season"
+      ],
+      "search_turns": [
+        {
+          "search_index": 0,
+          "IG": 0.10688459873199463,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": false,
+          "current_passage_keys": [
+            "passage_id:10494404",
+            "passage_id:20584114",
+            "passage_id:2262435"
+          ],
+          "new_passage_keys": [
+            "passage_id:10494404",
+            "passage_id:20584114",
+            "passage_id:2262435"
+          ]
+        },
+        {
+          "search_index": 1,
+          "IG": 0.5877199172973633,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": false,
+          "current_passage_keys": [
+            "passage_id:10494322",
+            "passage_id:10494404",
+            "passage_id:18498882"
+          ],
+          "new_passage_keys": [
+            "passage_id:10494322",
+            "passage_id:18498882"
+          ]
+        },
+        {
+          "search_index": 2,
+          "IG": 0.15008163452148438,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": true,
+          "current_passage_keys": [
+            "passage_id:10494322",
+            "passage_id:10494404",
+            "passage_id:18498882"
+          ],
+          "new_passage_keys": []
+        }
+      ]
+    },
+    {
+      "prompt_global_id": "hotpotqa:train_46072:125240",
+      "trajectory_id": "hotpotqa:train_46072:125240:snapshot-324:trajectory-05",
+      "R_task": 1.0,
+      "outcome_z": 1.2147915814355195,
+      "terminal_answer_valid": true,
+      "system_valid": true,
+      "search_count": 3,
+      "queries": [
+        "Super Bowl 73 Philadelphia Eagles NFL won 73rd season",
+        "Philadelphia Eagles won Super Bowl 73rd season NFL",
+        "2017 Philadelphia Eagles season Super Bowl 73rd"
+      ],
+      "search_turns": [
+        {
+          "search_index": 0,
+          "IG": 0.8829958736896515,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": false,
+          "current_passage_keys": [
+            "passage_id:10494322",
+            "passage_id:10494404",
+            "passage_id:18498882"
+          ],
+          "new_passage_keys": [
+            "passage_id:10494322",
+            "passage_id:10494404",
+            "passage_id:18498882"
+          ]
+        },
+        {
+          "search_index": 1,
+          "IG": 0.047049760818481445,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": true,
+          "current_passage_keys": [
+            "passage_id:10494322",
+            "passage_id:10494404",
+            "passage_id:18498882"
+          ],
+          "new_passage_keys": []
+        },
+        {
+          "search_index": 2,
+          "IG": 0.4015023950487375,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": false,
+          "current_passage_keys": [
+            "passage_id:18498882",
+            "passage_id:20909254",
+            "passage_id:20909366"
+          ],
+          "new_passage_keys": [
+            "passage_id:20909254",
+            "passage_id:20909366"
+          ]
+        }
+      ]
+    },
+    {
+      "prompt_global_id": "hotpotqa:train_46072:125240",
+      "trajectory_id": "hotpotqa:train_46072:125240:snapshot-324:trajectory-06",
+      "R_task": 1.0,
+      "outcome_z": 1.2147915814355195,
+      "terminal_answer_valid": true,
+      "system_valid": true,
+      "search_count": 5,
+      "queries": [
+        "Super Bowl 73 Philadelphia Eagles NFL won 73rd season",
+        "Super Bowl 73 Philadelphia Eagles NFL won 73rd season",
+        "2017 Philadelphia Eagles season won Super Bowl 73rd",
+        "2017 Philadelphia Eagles season 73 won Super Bowl",
+        "Philadelphia Eagles won Super Bowl 73rd season NFL"
+      ],
+      "search_turns": [
+        {
+          "search_index": 0,
+          "IG": 0.8829902708530426,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": false,
+          "current_passage_keys": [
+            "passage_id:10494322",
+            "passage_id:10494404",
+            "passage_id:18498882"
+          ],
+          "new_passage_keys": [
+            "passage_id:10494322",
+            "passage_id:10494404",
+            "passage_id:18498882"
+          ]
+        },
+        {
+          "search_index": 1,
+          "IG": 0.020816564559936523,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": true,
+          "no_new_passage": true,
+          "current_passage_keys": [
+            "passage_id:10494322",
+            "passage_id:10494404",
+            "passage_id:18498882"
+          ],
+          "new_passage_keys": []
+        },
+        {
+          "search_index": 2,
+          "IG": 0.42765557765960693,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": false,
+          "current_passage_keys": [
+            "passage_id:18498882",
+            "passage_id:20909254",
+            "passage_id:20909366"
+          ],
+          "new_passage_keys": [
+            "passage_id:20909254",
+            "passage_id:20909366"
+          ]
+        },
+        {
+          "search_index": 3,
+          "IG": -0.0061883702874183655,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": false,
+          "current_passage_keys": [
+            "passage_id:12978153",
+            "passage_id:18498882",
+            "passage_id:20909254"
+          ],
+          "new_passage_keys": [
+            "passage_id:12978153"
+          ]
+        },
+        {
+          "search_index": 4,
+          "IG": 0.005764242261648178,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": true,
+          "current_passage_keys": [
+            "passage_id:10494322",
+            "passage_id:10494404",
+            "passage_id:18498882"
+          ],
+          "new_passage_keys": []
+        }
+      ]
+    },
+    {
+      "prompt_global_id": "hotpotqa:train_46072:125240",
+      "trajectory_id": "hotpotqa:train_46072:125240:snapshot-324:trajectory-07",
+      "R_task": 0.0,
+      "outcome_z": -0.8783877588841451,
+      "terminal_answer_valid": true,
+      "system_valid": true,
+      "search_count": 3,
+      "queries": [
+        "Super Bowl 73 Philadelphia Eagles won 73rd season NFL",
+        "73 Philadelphia Eagles NFL won 73rd season Super Bowl",
+        "73 Philadelphia Eagles won Super Bowl 73rd season NFL"
+      ],
+      "search_turns": [
+        {
+          "search_index": 0,
+          "IG": 0.8673368096351624,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": false,
+          "current_passage_keys": [
+            "passage_id:10494322",
+            "passage_id:10494404",
+            "passage_id:18498882"
+          ],
+          "new_passage_keys": [
+            "passage_id:10494322",
+            "passage_id:10494404",
+            "passage_id:18498882"
+          ]
+        },
+        {
+          "search_index": 1,
+          "IG": 0.056150197982788086,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": true,
+          "current_passage_keys": [
+            "passage_id:10494322",
+            "passage_id:10494404",
+            "passage_id:18498882"
+          ],
+          "new_passage_keys": []
+        },
+        {
+          "search_index": 2,
+          "IG": -0.021182358264923096,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": true,
+          "current_passage_keys": [
+            "passage_id:10494322",
+            "passage_id:10494404",
+            "passage_id:18498882"
+          ],
+          "new_passage_keys": []
+        }
+      ]
+    },
+    {
+      "prompt_global_id": "hotpotqa:train_46072:125240",
+      "trajectory_id": "hotpotqa:train_46072:125240:snapshot-324:trajectory-08",
+      "R_task": 0.0,
+      "outcome_z": -0.8783877588841451,
+      "terminal_answer_valid": true,
+      "system_valid": true,
+      "search_count": 4,
+      "queries": [
+        "Super Bowl 73 Philadelphia Eagles NFL won 73rd season",
+        "73 Philadelphia Eagles NFL won 73rd season Super Bowl",
+        "73 Philadelphia Eagles NFL won 73rd season Super Bowl",
+        "Super Bowl 73 Philadelphia Eagles NFL won 73rd season"
+      ],
+      "search_turns": [
+        {
+          "search_index": 0,
+          "IG": 0.8830223679542542,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": false,
+          "current_passage_keys": [
+            "passage_id:10494322",
+            "passage_id:10494404",
+            "passage_id:18498882"
+          ],
+          "new_passage_keys": [
+            "passage_id:10494322",
+            "passage_id:10494404",
+            "passage_id:18498882"
+          ]
+        },
+        {
+          "search_index": 1,
+          "IG": 0.02634701132774353,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": true,
+          "current_passage_keys": [
+            "passage_id:10494322",
+            "passage_id:10494404",
+            "passage_id:18498882"
+          ],
+          "new_passage_keys": []
+        },
+        {
+          "search_index": 2,
+          "IG": -0.0013050734996795654,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": true,
+          "no_new_passage": true,
+          "current_passage_keys": [
+            "passage_id:10494322",
+            "passage_id:10494404",
+            "passage_id:18498882"
+          ],
+          "new_passage_keys": []
+        },
+        {
+          "search_index": 3,
+          "IG": -0.158780038356781,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": true,
+          "no_new_passage": true,
+          "current_passage_keys": [
+            "passage_id:10494322",
+            "passage_id:10494404",
+            "passage_id:18498882"
+          ],
+          "new_passage_keys": []
+        }
+      ]
+    },
+    {
+      "prompt_global_id": "hotpotqa:train_46072:125240",
+      "trajectory_id": "hotpotqa:train_46072:125240:snapshot-324:trajectory-09",
+      "R_task": 0.0,
+      "outcome_z": -0.8783877588841451,
+      "terminal_answer_valid": true,
+      "system_valid": true,
+      "search_count": 2,
+      "queries": [
+        "Super Bowl won 73rd season Philadelphia Eagles NFL",
+        "Super Bowl 73 Philadelphia Eagles NFL won 73rd season"
+      ],
+      "search_turns": [
+        {
+          "search_index": 0,
+          "IG": 0.7812908291816711,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": false,
+          "current_passage_keys": [
+            "passage_id:10494322",
+            "passage_id:10494404",
+            "passage_id:18498882"
+          ],
+          "new_passage_keys": [
+            "passage_id:10494322",
+            "passage_id:10494404",
+            "passage_id:18498882"
+          ]
+        },
+        {
+          "search_index": 1,
+          "IG": 0.1483284831047058,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": true,
+          "current_passage_keys": [
+            "passage_id:10494322",
+            "passage_id:10494404",
+            "passage_id:18498882"
+          ],
+          "new_passage_keys": []
+        }
+      ]
+    },
+    {
+      "prompt_global_id": "hotpotqa:train_46072:125240",
+      "trajectory_id": "hotpotqa:train_46072:125240:snapshot-324:trajectory-10",
+      "R_task": 0.0,
+      "outcome_z": -0.8783877588841451,
+      "terminal_answer_valid": true,
+      "system_valid": true,
+      "search_count": 4,
+      "queries": [
+        "Super Bowl 73 won 73rd season Philadelphia Eagles NFL",
+        "Super Bowl 73 Philadelphia Eagles NFL won 73rd season",
+        "Philadelphia Eagles won Super Bowl 73rd season NFL",
+        "won Super Bowl 73rd season Philadelphia Eagles NFL"
+      ],
+      "search_turns": [
+        {
+          "search_index": 0,
+          "IG": 0.6008632183074951,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": false,
+          "current_passage_keys": [
+            "passage_id:10494322",
+            "passage_id:10494404",
+            "passage_id:18498882"
+          ],
+          "new_passage_keys": [
+            "passage_id:10494322",
+            "passage_id:10494404",
+            "passage_id:18498882"
+          ]
+        },
+        {
+          "search_index": 1,
+          "IG": 0.27734702825546265,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": true,
+          "current_passage_keys": [
+            "passage_id:10494322",
+            "passage_id:10494404",
+            "passage_id:18498882"
+          ],
+          "new_passage_keys": []
+        },
+        {
+          "search_index": 2,
+          "IG": 0.04896736145019531,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": true,
+          "current_passage_keys": [
+            "passage_id:10494322",
+            "passage_id:10494404",
+            "passage_id:18498882"
+          ],
+          "new_passage_keys": []
+        },
+        {
+          "search_index": 3,
+          "IG": -0.06287136673927307,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": true,
+          "current_passage_keys": [
+            "passage_id:10494322",
+            "passage_id:10494404",
+            "passage_id:18498882"
+          ],
+          "new_passage_keys": []
+        }
+      ]
+    },
+    {
+      "prompt_global_id": "hotpotqa:train_46072:125240",
+      "trajectory_id": "hotpotqa:train_46072:125240:snapshot-324:trajectory-11",
+      "R_task": 0.8571428571428571,
+      "outcome_z": 0.915765961389853,
+      "terminal_answer_valid": true,
+      "system_valid": true,
+      "search_count": 2,
+      "queries": [
+        "Super Bowl 73 Philadelphia Eagles won 73rd season NFL",
+        "2017 Philadelphia Eagles season won Super Bowl 73rd"
+      ],
+      "search_turns": [
+        {
+          "search_index": 0,
+          "IG": 0.8673322796821594,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": false,
+          "current_passage_keys": [
+            "passage_id:10494322",
+            "passage_id:10494404",
+            "passage_id:18498882"
+          ],
+          "new_passage_keys": [
+            "passage_id:10494322",
+            "passage_id:10494404",
+            "passage_id:18498882"
+          ]
+        },
+        {
+          "search_index": 1,
+          "IG": 0.4641471914947033,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": false,
+          "current_passage_keys": [
+            "passage_id:18498882",
+            "passage_id:20909254",
+            "passage_id:20909366"
+          ],
+          "new_passage_keys": [
+            "passage_id:20909254",
+            "passage_id:20909366"
+          ]
+        }
+      ]
+    },
+    {
+      "prompt_global_id": "hotpotqa:train_46072:125240",
+      "trajectory_id": "hotpotqa:train_46072:125240:snapshot-324:trajectory-12",
+      "R_task": 1.0,
+      "outcome_z": 1.2147915814355195,
+      "terminal_answer_valid": true,
+      "system_valid": true,
+      "search_count": 3,
+      "queries": [
+        "Super Bowl won 73rd season Philadelphia Eagles NFL",
+        "Philadelphia Eagles NFL won Super Bowl 73rd season",
+        "2017 Philadelphia Eagles season won Super Bowl 73rd"
+      ],
+      "search_turns": [
+        {
+          "search_index": 0,
+          "IG": 0.7812802791595459,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": false,
+          "current_passage_keys": [
+            "passage_id:10494322",
+            "passage_id:10494404",
+            "passage_id:18498882"
+          ],
+          "new_passage_keys": [
+            "passage_id:10494322",
+            "passage_id:10494404",
+            "passage_id:18498882"
+          ]
+        },
+        {
+          "search_index": 1,
+          "IG": 0.1812242865562439,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": true,
+          "current_passage_keys": [
+            "passage_id:10494322",
+            "passage_id:10494404",
+            "passage_id:18498882"
+          ],
+          "new_passage_keys": []
+        },
+        {
+          "search_index": 2,
+          "IG": 0.368154551833868,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": false,
+          "current_passage_keys": [
+            "passage_id:18498882",
+            "passage_id:20909254",
+            "passage_id:20909366"
+          ],
+          "new_passage_keys": [
+            "passage_id:20909254",
+            "passage_id:20909366"
+          ]
+        }
+      ]
+    },
+    {
+      "prompt_global_id": "hotpotqa:train_46072:125240",
+      "trajectory_id": "hotpotqa:train_46072:125240:snapshot-324:trajectory-13",
+      "R_task": 0.8571428571428571,
+      "outcome_z": 0.915765961389853,
+      "terminal_answer_valid": true,
+      "system_valid": true,
+      "search_count": 4,
+      "queries": [
+        "73 Super Bowl 73rd season Philadelphia Eagles NFL won",
+        "Super Bowl 73 Philadelphia Eagles NFL won 73rd season",
+        "won Super Bowl 73rd season Philadelphia Eagles NFL",
+        "Super Bowl 73 Philadelphia Eagles NFL won 73rd season"
+      ],
+      "search_turns": [
+        {
+          "search_index": 0,
+          "IG": 0.779445230960846,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": false,
+          "current_passage_keys": [
+            "passage_id:10494322",
+            "passage_id:10494404",
+            "passage_id:18498882"
+          ],
+          "new_passage_keys": [
+            "passage_id:10494322",
+            "passage_id:10494404",
+            "passage_id:18498882"
+          ]
+        },
+        {
+          "search_index": 1,
+          "IG": 0.1272507905960083,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": true,
+          "current_passage_keys": [
+            "passage_id:10494322",
+            "passage_id:10494404",
+            "passage_id:18498882"
+          ],
+          "new_passage_keys": []
+        },
+        {
+          "search_index": 2,
+          "IG": -0.007964998483657837,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": true,
+          "current_passage_keys": [
+            "passage_id:10494322",
+            "passage_id:10494404",
+            "passage_id:18498882"
+          ],
+          "new_passage_keys": []
+        },
+        {
+          "search_index": 3,
+          "IG": -0.04858389496803284,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": true,
+          "no_new_passage": true,
+          "current_passage_keys": [
+            "passage_id:10494322",
+            "passage_id:10494404",
+            "passage_id:18498882"
+          ],
+          "new_passage_keys": []
+        }
+      ]
+    },
+    {
+      "prompt_global_id": "hotpotqa:train_46072:125240",
+      "trajectory_id": "hotpotqa:train_46072:125240:snapshot-324:trajectory-14",
+      "R_task": 1.0,
+      "outcome_z": 1.2147915814355195,
+      "terminal_answer_valid": true,
+      "system_valid": true,
+      "search_count": 3,
+      "queries": [
+        "Super Bowl 73 won 73rd season Philadelphia",
+        "73 Super Bowl 73rd season Philadelphia Eagles NFL won",
+        "2005 Philadelphia Eagles season won Super Bowl 73rd"
+      ],
+      "search_turns": [
+        {
+          "search_index": 0,
+          "IG": 0.10688602924346924,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": false,
+          "current_passage_keys": [
+            "passage_id:10494404",
+            "passage_id:20584114",
+            "passage_id:2262435"
+          ],
+          "new_passage_keys": [
+            "passage_id:10494404",
+            "passage_id:20584114",
+            "passage_id:2262435"
+          ]
+        },
+        {
+          "search_index": 1,
+          "IG": 0.6404752731323242,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": false,
+          "current_passage_keys": [
+            "passage_id:10494322",
+            "passage_id:10494404",
+            "passage_id:18498882"
+          ],
+          "new_passage_keys": [
+            "passage_id:10494322",
+            "passage_id:18498882"
+          ]
+        },
+        {
+          "search_index": 2,
+          "IG": 0.5975653193891048,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": false,
+          "current_passage_keys": [
+            "passage_id:20584114",
+            "passage_id:2262435",
+            "passage_id:9773187"
+          ],
+          "new_passage_keys": [
+            "passage_id:9773187"
+          ]
+        }
+      ]
+    },
+    {
+      "prompt_global_id": "hotpotqa:train_46072:125240",
+      "trajectory_id": "hotpotqa:train_46072:125240:snapshot-324:trajectory-15",
+      "R_task": 0.0,
+      "outcome_z": -0.8783877588841451,
+      "terminal_answer_valid": true,
+      "system_valid": true,
+      "search_count": 2,
+      "queries": [
+        "73 won Super Bowl 73rd season Philadelphia",
+        "Super Bowl 73 Philadelphia Eagles NFL won 73rd season"
+      ],
+      "search_turns": [
+        {
+          "search_index": 0,
+          "IG": 0.1687544584274292,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": false,
+          "current_passage_keys": [
+            "passage_id:10494404",
+            "passage_id:18852843",
+            "passage_id:20584114"
+          ],
+          "new_passage_keys": [
+            "passage_id:10494404",
+            "passage_id:18852843",
+            "passage_id:20584114"
+          ]
+        },
+        {
+          "search_index": 1,
+          "IG": 0.45289671421051025,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": false,
+          "current_passage_keys": [
+            "passage_id:10494322",
+            "passage_id:10494404",
+            "passage_id:18498882"
+          ],
+          "new_passage_keys": [
+            "passage_id:10494322",
+            "passage_id:18498882"
+          ]
+        }
+      ]
+    },
+    {
+      "prompt_global_id": "hotpotqa:train_9205:88373",
+      "trajectory_id": "hotpotqa:train_9205:88373:snapshot-324:trajectory-00",
+      "R_task": 0.4444444444444445,
+      "outcome_z": 0.44700850830799194,
+      "terminal_answer_valid": true,
+      "system_valid": true,
+      "search_count": 2,
+      "queries": [
+        "Vic Morrow helicopter crash take killed location",
+        "helicopter crash take killed Vic Morrow location"
+      ],
+      "search_turns": [
+        {
+          "search_index": 0,
+          "IG": 0.7152233123779297,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": false,
+          "current_passage_keys": [
+            "passage_id:15538156",
+            "passage_id:15538157",
+            "passage_id:904148"
+          ],
+          "new_passage_keys": [
+            "passage_id:15538156",
+            "passage_id:15538157",
+            "passage_id:904148"
+          ]
+        },
+        {
+          "search_index": 1,
+          "IG": 0.041930198669433594,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": true,
+          "current_passage_keys": [
+            "passage_id:15538156",
+            "passage_id:15538157",
+            "passage_id:904148"
+          ],
+          "new_passage_keys": []
+        }
+      ]
+    },
+    {
+      "prompt_global_id": "hotpotqa:train_9205:88373",
+      "trajectory_id": "hotpotqa:train_9205:88373:snapshot-324:trajectory-02",
+      "R_task": 0.5714285714285715,
+      "outcome_z": 0.85028138566921,
+      "terminal_answer_valid": true,
+      "system_valid": true,
+      "search_count": 3,
+      "queries": [
+        "Vic Morrow helicopter crash take killed location",
+        "Vic Morrow helicopter crash take killed location",
+        "Indian Dunes location"
+      ],
+      "search_turns": [
+        {
+          "search_index": 0,
+          "IG": 0.7152011394500732,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": false,
+          "current_passage_keys": [
+            "passage_id:15538156",
+            "passage_id:15538157",
+            "passage_id:904148"
+          ],
+          "new_passage_keys": [
+            "passage_id:15538156",
+            "passage_id:15538157",
+            "passage_id:904148"
+          ]
+        },
+        {
+          "search_index": 1,
+          "IG": 0.035013675689697266,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": true,
+          "no_new_passage": true,
+          "current_passage_keys": [
+            "passage_id:15538156",
+            "passage_id:15538157",
+            "passage_id:904148"
+          ],
+          "new_passage_keys": []
+        },
+        {
+          "search_index": 2,
+          "IG": 0.04277300834655762,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": false,
+          "current_passage_keys": [
+            "passage_id:13752998",
+            "passage_id:20082051",
+            "passage_id:9462520"
+          ],
+          "new_passage_keys": [
+            "passage_id:13752998",
+            "passage_id:20082051",
+            "passage_id:9462520"
+          ]
+        }
+      ]
+    },
+    {
+      "prompt_global_id": "hotpotqa:train_9205:88373",
+      "trajectory_id": "hotpotqa:train_9205:88373:snapshot-324:trajectory-03",
+      "R_task": 0.0,
+      "outcome_z": -0.9644465624562707,
+      "terminal_answer_valid": true,
+      "system_valid": true,
+      "search_count": 2,
+      "queries": [
+        "helicopter crash take killed Vic Morrow",
+        "Indian Dunes location"
+      ],
+      "search_turns": [
+        {
+          "search_index": 0,
+          "IG": 3.2370972633361816,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": false,
+          "current_passage_keys": [
+            "passage_id:15538157",
+            "passage_id:5742853",
+            "passage_id:904148"
+          ],
+          "new_passage_keys": [
+            "passage_id:15538157",
+            "passage_id:5742853",
+            "passage_id:904148"
+          ]
+        },
+        {
+          "search_index": 1,
+          "IG": -0.185258686542511,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": false,
+          "current_passage_keys": [
+            "passage_id:13752998",
+            "passage_id:20082051",
+            "passage_id:9462520"
+          ],
+          "new_passage_keys": [
+            "passage_id:13752998",
+            "passage_id:20082051",
+            "passage_id:9462520"
+          ]
+        }
+      ]
+    },
+    {
+      "prompt_global_id": "hotpotqa:train_9205:88373",
+      "trajectory_id": "hotpotqa:train_9205:88373:snapshot-324:trajectory-04",
+      "R_task": 0.4444444444444445,
+      "outcome_z": 0.44700850830799194,
+      "terminal_answer_valid": true,
+      "system_valid": true,
+      "search_count": 4,
+      "queries": [
+        "Vic Morrow helicopter crash take killed location",
+        "Vic Morrow helicopter crash take killed location",
+        "Combat location death date",
+        "Combat location death date actor"
+      ],
+      "search_turns": [
+        {
+          "search_index": 0,
+          "IG": 0.7152235507965088,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": false,
+          "current_passage_keys": [
+            "passage_id:15538156",
+            "passage_id:15538157",
+            "passage_id:904148"
+          ],
+          "new_passage_keys": [
+            "passage_id:15538156",
+            "passage_id:15538157",
+            "passage_id:904148"
+          ]
+        },
+        {
+          "search_index": 1,
+          "IG": 0.03454279899597168,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": true,
+          "no_new_passage": true,
+          "current_passage_keys": [
+            "passage_id:15538156",
+            "passage_id:15538157",
+            "passage_id:904148"
+          ],
+          "new_passage_keys": []
+        },
+        {
+          "search_index": 2,
+          "IG": 0.16101765632629395,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": false,
+          "current_passage_keys": [
+            "passage_id:14258324",
+            "passage_id:3115953",
+            "passage_id:5811678"
+          ],
+          "new_passage_keys": [
+            "passage_id:14258324",
+            "passage_id:3115953",
+            "passage_id:5811678"
+          ]
+        },
+        {
+          "search_index": 3,
+          "IG": -0.11547470092773438,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": false,
+          "current_passage_keys": [
+            "passage_id:4793498",
+            "passage_id:6232576",
+            "passage_id:9026006"
+          ],
+          "new_passage_keys": [
+            "passage_id:4793498",
+            "passage_id:6232576",
+            "passage_id:9026006"
+          ]
+        }
+      ]
+    },
+    {
+      "prompt_global_id": "hotpotqa:train_9205:88373",
+      "trajectory_id": "hotpotqa:train_9205:88373:snapshot-324:trajectory-05",
+      "R_task": 0.0,
+      "outcome_z": -0.9644465624562707,
+      "terminal_answer_valid": true,
+      "system_valid": true,
+      "search_count": 4,
+      "queries": [
+        "Vic Morrow helicopter crash take killed location",
+        "Combat location",
+        "Combat location",
+        "landis helicopter crash take killed location"
+      ],
+      "search_turns": [
+        {
+          "search_index": 0,
+          "IG": 0.7152090072631836,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": false,
+          "current_passage_keys": [
+            "passage_id:15538156",
+            "passage_id:15538157",
+            "passage_id:904148"
+          ],
+          "new_passage_keys": [
+            "passage_id:15538156",
+            "passage_id:15538157",
+            "passage_id:904148"
+          ]
+        },
+        {
+          "search_index": 1,
+          "IG": 0.13273024559020996,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": false,
+          "current_passage_keys": [
+            "passage_id:6349801",
+            "passage_id:6349803",
+            "passage_id:7916015"
+          ],
+          "new_passage_keys": [
+            "passage_id:6349801",
+            "passage_id:6349803",
+            "passage_id:7916015"
+          ]
+        },
+        {
+          "search_index": 2,
+          "IG": 0.10583090782165527,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": true,
+          "no_new_passage": true,
+          "current_passage_keys": [
+            "passage_id:6349801",
+            "passage_id:6349803",
+            "passage_id:7916015"
+          ],
+          "new_passage_keys": []
+        },
+        {
+          "search_index": 3,
+          "IG": 2.464487761259079,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": false,
+          "current_passage_keys": [
+            "passage_id:3230561",
+            "passage_id:5742853",
+            "passage_id:7734792"
+          ],
+          "new_passage_keys": [
+            "passage_id:3230561",
+            "passage_id:5742853",
+            "passage_id:7734792"
+          ]
+        }
+      ]
+    },
+    {
+      "prompt_global_id": "hotpotqa:train_9205:88373",
+      "trajectory_id": "hotpotqa:train_9205:88373:snapshot-324:trajectory-06",
+      "R_task": 0.25,
+      "outcome_z": -0.170503085151373,
+      "terminal_answer_valid": true,
+      "system_valid": true,
+      "search_count": 2,
+      "queries": [
+        "Vic Morrow helicopter crash take killed",
+        "Valencia location"
+      ],
+      "search_turns": [
+        {
+          "search_index": 0,
+          "IG": 3.2452076077461243,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": false,
+          "current_passage_keys": [
+            "passage_id:15538157",
+            "passage_id:5742853",
+            "passage_id:904148"
+          ],
+          "new_passage_keys": [
+            "passage_id:15538157",
+            "passage_id:5742853",
+            "passage_id:904148"
+          ]
+        },
+        {
+          "search_index": 1,
+          "IG": 0.029510974884033203,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": false,
+          "current_passage_keys": [
+            "passage_id:14928482",
+            "passage_id:5188685",
+            "passage_id:8608844"
+          ],
+          "new_passage_keys": [
+            "passage_id:14928482",
+            "passage_id:5188685",
+            "passage_id:8608844"
+          ]
+        }
+      ]
+    },
+    {
+      "prompt_global_id": "hotpotqa:train_9205:88373",
+      "trajectory_id": "hotpotqa:train_9205:88373:snapshot-324:trajectory-07",
+      "R_task": 1.0,
+      "outcome_z": 2.21132734676332,
+      "terminal_answer_valid": true,
+      "system_valid": true,
+      "search_count": 2,
+      "queries": [
+        "Vic Morrow helicopter crash take killed",
+        "Valencia Santa Clarita California helicopter crash take killed location"
+      ],
+      "search_turns": [
+        {
+          "search_index": 0,
+          "IG": 3.245216965675354,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": false,
+          "current_passage_keys": [
+            "passage_id:15538157",
+            "passage_id:5742853",
+            "passage_id:904148"
+          ],
+          "new_passage_keys": [
+            "passage_id:15538157",
+            "passage_id:5742853",
+            "passage_id:904148"
+          ]
+        },
+        {
+          "search_index": 1,
+          "IG": -0.051125675439834595,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": false,
+          "current_passage_keys": [
+            "passage_id:16031995",
+            "passage_id:4116380",
+            "passage_id:5742853"
+          ],
+          "new_passage_keys": [
+            "passage_id:16031995",
+            "passage_id:4116380"
+          ]
+        }
+      ]
+    },
+    {
+      "prompt_global_id": "hotpotqa:train_9205:88373",
+      "trajectory_id": "hotpotqa:train_9205:88373:snapshot-324:trajectory-08",
+      "R_task": 0.0,
+      "outcome_z": -0.9644465624562707,
+      "terminal_answer_valid": true,
+      "system_valid": true,
+      "search_count": 2,
+      "queries": [
+        "Vic Morrow helicopter crash take killed",
+        "Indian Dunes location"
+      ],
+      "search_turns": [
+        {
+          "search_index": 0,
+          "IG": 3.2452074885368347,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": false,
+          "current_passage_keys": [
+            "passage_id:15538157",
+            "passage_id:5742853",
+            "passage_id:904148"
+          ],
+          "new_passage_keys": [
+            "passage_id:15538157",
+            "passage_id:5742853",
+            "passage_id:904148"
+          ]
+        },
+        {
+          "search_index": 1,
+          "IG": -0.1621570587158203,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": false,
+          "current_passage_keys": [
+            "passage_id:13752998",
+            "passage_id:20082051",
+            "passage_id:9462520"
+          ],
+          "new_passage_keys": [
+            "passage_id:13752998",
+            "passage_id:20082051",
+            "passage_id:9462520"
+          ]
+        }
+      ]
+    },
+    {
+      "prompt_global_id": "hotpotqa:train_9205:88373",
+      "trajectory_id": "hotpotqa:train_9205:88373:snapshot-324:trajectory-09",
+      "R_task": 0.7272727272727273,
+      "outcome_z": 1.3452071897034317,
+      "terminal_answer_valid": true,
+      "system_valid": true,
+      "search_count": 2,
+      "queries": [
+        "Vic Morrow helicopter crash take killed location",
+        "Indian Dunes Vic Morrow crash take killed location"
+      ],
+      "search_turns": [
+        {
+          "search_index": 0,
+          "IG": 0.7152087688446045,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": false,
+          "current_passage_keys": [
+            "passage_id:15538156",
+            "passage_id:15538157",
+            "passage_id:904148"
+          ],
+          "new_passage_keys": [
+            "passage_id:15538156",
+            "passage_id:15538157",
+            "passage_id:904148"
+          ]
+        },
+        {
+          "search_index": 1,
+          "IG": 2.6199252754449844,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": false,
+          "current_passage_keys": [
+            "passage_id:15538156",
+            "passage_id:5742853",
+            "passage_id:9462521"
+          ],
+          "new_passage_keys": [
+            "passage_id:5742853",
+            "passage_id:9462521"
+          ]
+        }
+      ]
+    },
+    {
+      "prompt_global_id": "hotpotqa:train_9205:88373",
+      "trajectory_id": "hotpotqa:train_9205:88373:snapshot-324:trajectory-10",
+      "R_task": 0.6,
+      "outcome_z": 0.9410177830754837,
+      "terminal_answer_valid": true,
+      "system_valid": true,
+      "search_count": 4,
+      "queries": [
+        "helicopter crash take killed Vic Morrow location",
+        "helicopter crash take killed Vic Morrow location",
+        "California location",
+        "Indian Dunes Vic Morrow helicopter crash take killed location"
+      ],
+      "search_turns": [
+        {
+          "search_index": 0,
+          "IG": 0.6702039241790771,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": false,
+          "current_passage_keys": [
+            "passage_id:15538156",
+            "passage_id:15538157",
+            "passage_id:904148"
+          ],
+          "new_passage_keys": [
+            "passage_id:15538156",
+            "passage_id:15538157",
+            "passage_id:904148"
+          ]
+        },
+        {
+          "search_index": 1,
+          "IG": -0.02328348159790039,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": true,
+          "no_new_passage": true,
+          "current_passage_keys": [
+            "passage_id:15538156",
+            "passage_id:15538157",
+            "passage_id:904148"
+          ],
+          "new_passage_keys": []
+        },
+        {
+          "search_index": 2,
+          "IG": 0.22577381134033203,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": false,
+          "current_passage_keys": [
+            "passage_id:20698570",
+            "passage_id:3144565",
+            "passage_id:4029573"
+          ],
+          "new_passage_keys": [
+            "passage_id:20698570",
+            "passage_id:3144565",
+            "passage_id:4029573"
+          ]
+        },
+        {
+          "search_index": 3,
+          "IG": 2.6348849311470985,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": false,
+          "current_passage_keys": [
+            "passage_id:15538156",
+            "passage_id:5742853",
+            "passage_id:9462521"
+          ],
+          "new_passage_keys": [
+            "passage_id:5742853",
+            "passage_id:9462521"
+          ]
+        }
+      ]
+    },
+    {
+      "prompt_global_id": "hotpotqa:train_9205:88373",
+      "trajectory_id": "hotpotqa:train_9205:88373:snapshot-324:trajectory-11",
+      "R_task": 0.0,
+      "outcome_z": -0.9644465624562707,
+      "terminal_answer_valid": true,
+      "system_valid": true,
+      "search_count": 2,
+      "queries": [
+        "Vic Morrow helicopter crash take killed location",
+        "India Dunes location"
+      ],
+      "search_turns": [
+        {
+          "search_index": 0,
+          "IG": 0.7152078151702881,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": false,
+          "current_passage_keys": [
+            "passage_id:15538156",
+            "passage_id:15538157",
+            "passage_id:904148"
+          ],
+          "new_passage_keys": [
+            "passage_id:15538156",
+            "passage_id:15538157",
+            "passage_id:904148"
+          ]
+        },
+        {
+          "search_index": 1,
+          "IG": 0.12125778198242188,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": false,
+          "current_passage_keys": [
+            "passage_id:13752998",
+            "passage_id:20778505",
+            "passage_id:9462520"
+          ],
+          "new_passage_keys": [
+            "passage_id:13752998",
+            "passage_id:20778505",
+            "passage_id:9462520"
+          ]
+        }
+      ]
+    },
+    {
+      "prompt_global_id": "hotpotqa:train_9205:88373",
+      "trajectory_id": "hotpotqa:train_9205:88373:snapshot-324:trajectory-12",
+      "R_task": 0.0,
+      "outcome_z": -0.9644465624562707,
+      "terminal_answer_valid": true,
+      "system_valid": true,
+      "search_count": 2,
+      "queries": [
+        "Vic Morrow helicopter crash take killed",
+        "Indian Dunes location"
+      ],
+      "search_turns": [
+        {
+          "search_index": 0,
+          "IG": 3.245199292898178,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": false,
+          "current_passage_keys": [
+            "passage_id:15538157",
+            "passage_id:5742853",
+            "passage_id:904148"
+          ],
+          "new_passage_keys": [
+            "passage_id:15538157",
+            "passage_id:5742853",
+            "passage_id:904148"
+          ]
+        },
+        {
+          "search_index": 1,
+          "IG": -0.15594717860221863,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": false,
+          "current_passage_keys": [
+            "passage_id:13752998",
+            "passage_id:20082051",
+            "passage_id:9462520"
+          ],
+          "new_passage_keys": [
+            "passage_id:13752998",
+            "passage_id:20082051",
+            "passage_id:9462520"
+          ]
+        }
+      ]
+    },
+    {
+      "prompt_global_id": "hotpotqa:train_9205:88373",
+      "trajectory_id": "hotpotqa:train_9205:88373:snapshot-324:trajectory-13",
+      "R_task": 0.0,
+      "outcome_z": -0.9644465624562707,
+      "terminal_answer_valid": true,
+      "system_valid": true,
+      "search_count": 2,
+      "queries": [
+        "Vic Morrow helicopter crash take killed",
+        "Indian Dunes helicopter crash take killed Vic location date"
+      ],
+      "search_turns": [
+        {
+          "search_index": 0,
+          "IG": 3.245204210281372,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": false,
+          "current_passage_keys": [
+            "passage_id:15538157",
+            "passage_id:5742853",
+            "passage_id:904148"
+          ],
+          "new_passage_keys": [
+            "passage_id:15538157",
+            "passage_id:5742853",
+            "passage_id:904148"
+          ]
+        },
+        {
+          "search_index": 1,
+          "IG": -0.09045717120170593,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": false,
+          "current_passage_keys": [
+            "passage_id:15538156",
+            "passage_id:5742853",
+            "passage_id:9462521"
+          ],
+          "new_passage_keys": [
+            "passage_id:15538156",
+            "passage_id:9462521"
+          ]
+        }
+      ]
+    },
+    {
+      "prompt_global_id": "hotpotqa:train_9205:88373",
+      "trajectory_id": "hotpotqa:train_9205:88373:snapshot-324:trajectory-15",
+      "R_task": 0.25,
+      "outcome_z": -0.170503085151373,
+      "terminal_answer_valid": true,
+      "system_valid": true,
+      "search_count": 2,
+      "queries": [
+        "Vic Morrow helicopter crash take killed",
+        "helicopter crash take killed Vic Morrow location"
+      ],
+      "search_turns": [
+        {
+          "search_index": 0,
+          "IG": 3.245218187570572,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": false,
+          "current_passage_keys": [
+            "passage_id:15538157",
+            "passage_id:5742853",
+            "passage_id:904148"
+          ],
+          "new_passage_keys": [
+            "passage_id:15538157",
+            "passage_id:5742853",
+            "passage_id:904148"
+          ]
+        },
+        {
+          "search_index": 1,
+          "IG": -0.06601607799530029,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": false,
+          "current_passage_keys": [
+            "passage_id:15538156",
+            "passage_id:15538157",
+            "passage_id:904148"
+          ],
+          "new_passage_keys": [
+            "passage_id:15538156"
+          ]
+        }
+      ]
+    },
+    {
+      "prompt_global_id": "nq:train_70310:70310",
+      "trajectory_id": "nq:train_70310:70310:snapshot-324:trajectory-02",
+      "R_task": 0.0,
+      "outcome_z": 0.0,
+      "terminal_answer_valid": false,
+      "system_valid": true,
+      "search_count": 6,
+      "queries": [
+        "outlander season episode airing date",
+        "outlander season episode airing date",
+        "13-episode third season premiered date",
+        "Outlander season episode airing date",
+        "Outlander episode airing date",
+        "Outlander season 3 episode airing date"
+      ],
+      "search_turns": [
+        {
+          "search_index": 0,
+          "IG": 0.1904768943786621,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": false,
+          "current_passage_keys": [
+            "passage_id:14254935",
+            "passage_id:14254952",
+            "passage_id:16012388"
+          ],
+          "new_passage_keys": [
+            "passage_id:14254935",
+            "passage_id:14254952",
+            "passage_id:16012388"
+          ]
+        },
+        {
+          "search_index": 1,
+          "IG": -0.029238224029541016,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": true,
+          "no_new_passage": true,
+          "current_passage_keys": [
+            "passage_id:14254935",
+            "passage_id:14254952",
+            "passage_id:16012388"
+          ],
+          "new_passage_keys": []
+        },
+        {
+          "search_index": 2,
+          "IG": -0.03886818885803223,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": false,
+          "current_passage_keys": [
+            "passage_id:10968016",
+            "passage_id:11528379",
+            "passage_id:9430835"
+          ],
+          "new_passage_keys": [
+            "passage_id:10968016",
+            "passage_id:11528379",
+            "passage_id:9430835"
+          ]
+        },
+        {
+          "search_index": 3,
+          "IG": 0.07739973068237305,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": true,
+          "no_new_passage": true,
+          "current_passage_keys": [
+            "passage_id:14254935",
+            "passage_id:14254952",
+            "passage_id:16012388"
+          ],
+          "new_passage_keys": []
+        },
+        {
+          "search_index": 4,
+          "IG": -0.09773969650268555,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": true,
+          "current_passage_keys": [
+            "passage_id:14254935",
+            "passage_id:14254952",
+            "passage_id:16012388"
+          ],
+          "new_passage_keys": []
+        },
+        {
+          "search_index": 5,
+          "IG": null,
+          "ig_reward_eligible": false,
+          "policy_credit_eligible": true,
+          "missing_reason": "budget_exhausted",
+          "exact_query_repeat": false,
+          "no_new_passage": true,
+          "current_passage_keys": [],
+          "new_passage_keys": []
+        }
+      ]
+    },
+    {
+      "prompt_global_id": "nq:train_70310:70310",
+      "trajectory_id": "nq:train_70310:70310:snapshot-324:trajectory-03",
+      "R_task": 0.0,
+      "outcome_z": 0.0,
+      "terminal_answer_valid": false,
+      "system_valid": true,
+      "search_count": 6,
+      "queries": [
+        "outlander season episode airing date",
+        "Outlander season episode airing date",
+        "Voyager Outlander season episode airing date",
+        "Voyager Outlander season episode airing date",
+        "Outlander season episode airing date",
+        "Outlander 3 episode airing date"
+      ],
+      "search_turns": [
+        {
+          "search_index": 0,
+          "IG": 0.1904773712158203,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": false,
+          "current_passage_keys": [
+            "passage_id:14254935",
+            "passage_id:14254952",
+            "passage_id:16012388"
+          ],
+          "new_passage_keys": [
+            "passage_id:14254935",
+            "passage_id:14254952",
+            "passage_id:16012388"
+          ]
+        },
+        {
+          "search_index": 1,
+          "IG": -0.04013228416442871,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": true,
+          "no_new_passage": true,
+          "current_passage_keys": [
+            "passage_id:14254935",
+            "passage_id:14254952",
+            "passage_id:16012388"
+          ],
+          "new_passage_keys": []
+        },
+        {
+          "search_index": 2,
+          "IG": 0.028845548629760742,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": true,
+          "current_passage_keys": [
+            "passage_id:14254935",
+            "passage_id:14254952",
+            "passage_id:16012388"
+          ],
+          "new_passage_keys": []
+        },
+        {
+          "search_index": 3,
+          "IG": 0.04961681365966797,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": true,
+          "no_new_passage": true,
+          "current_passage_keys": [
+            "passage_id:14254935",
+            "passage_id:14254952",
+            "passage_id:16012388"
+          ],
+          "new_passage_keys": []
+        },
+        {
+          "search_index": 4,
+          "IG": -0.07220578193664551,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": true,
+          "no_new_passage": true,
+          "current_passage_keys": [
+            "passage_id:14254935",
+            "passage_id:14254952",
+            "passage_id:16012388"
+          ],
+          "new_passage_keys": []
+        },
+        {
+          "search_index": 5,
+          "IG": null,
+          "ig_reward_eligible": false,
+          "policy_credit_eligible": true,
+          "missing_reason": "budget_exhausted",
+          "exact_query_repeat": false,
+          "no_new_passage": true,
+          "current_passage_keys": [],
+          "new_passage_keys": []
+        }
+      ]
+    },
+    {
+      "prompt_global_id": "nq:train_70310:70310",
+      "trajectory_id": "nq:train_70310:70310:snapshot-324:trajectory-09",
+      "R_task": 0.0,
+      "outcome_z": 0.0,
+      "terminal_answer_valid": false,
+      "system_valid": true,
+      "search_count": 6,
+      "queries": [
+        "outlander season episode airing date",
+        "Outlander season episode airing date",
+        "Voyager date",
+        "Outlander season episode airing date",
+        "Drums Autumn date",
+        "Outlander season 3 episode airing date"
+      ],
+      "search_turns": [
+        {
+          "search_index": 0,
+          "IG": 0.1904757022857666,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": false,
+          "current_passage_keys": [
+            "passage_id:14254935",
+            "passage_id:14254952",
+            "passage_id:16012388"
+          ],
+          "new_passage_keys": [
+            "passage_id:14254935",
+            "passage_id:14254952",
+            "passage_id:16012388"
+          ]
+        },
+        {
+          "search_index": 1,
+          "IG": -0.03190803527832031,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": true,
+          "no_new_passage": true,
+          "current_passage_keys": [
+            "passage_id:14254935",
+            "passage_id:14254952",
+            "passage_id:16012388"
+          ],
+          "new_passage_keys": []
+        },
+        {
+          "search_index": 2,
+          "IG": 0.11350274085998535,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": false,
+          "current_passage_keys": [
+            "passage_id:12183034",
+            "passage_id:5304907",
+            "passage_id:8647100"
+          ],
+          "new_passage_keys": [
+            "passage_id:12183034",
+            "passage_id:5304907",
+            "passage_id:8647100"
+          ]
+        },
+        {
+          "search_index": 3,
+          "IG": 0.009850263595581055,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": true,
+          "no_new_passage": true,
+          "current_passage_keys": [
+            "passage_id:14254935",
+            "passage_id:14254952",
+            "passage_id:16012388"
+          ],
+          "new_passage_keys": []
+        },
+        {
+          "search_index": 4,
+          "IG": -0.4014139175415039,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": false,
+          "current_passage_keys": [
+            "passage_id:11654634",
+            "passage_id:20282391",
+            "passage_id:9140145"
+          ],
+          "new_passage_keys": [
+            "passage_id:11654634",
+            "passage_id:20282391",
+            "passage_id:9140145"
+          ]
+        },
+        {
+          "search_index": 5,
+          "IG": null,
+          "ig_reward_eligible": false,
+          "policy_credit_eligible": true,
+          "missing_reason": "budget_exhausted",
+          "exact_query_repeat": false,
+          "no_new_passage": true,
+          "current_passage_keys": [],
+          "new_passage_keys": []
+        }
+      ]
+    },
+    {
+      "prompt_global_id": "nq:train_70310:70310",
+      "trajectory_id": "nq:train_70310:70310:snapshot-324:trajectory-10",
+      "R_task": 0.0,
+      "outcome_z": -1.2998626603598553,
+      "terminal_answer_valid": true,
+      "system_valid": true,
+      "search_count": 5,
+      "queries": [
+        "outlander season episode airing date",
+        "Outlander series episode airing date",
+        "outlander season episode airing date",
+        "Outlander episode airing date season",
+        "Outlander season episode airing date"
+      ],
+      "search_turns": [
+        {
+          "search_index": 0,
+          "IG": 0.19047045707702637,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": false,
+          "current_passage_keys": [
+            "passage_id:14254935",
+            "passage_id:14254952",
+            "passage_id:16012388"
+          ],
+          "new_passage_keys": [
+            "passage_id:14254935",
+            "passage_id:14254952",
+            "passage_id:16012388"
+          ]
+        },
+        {
+          "search_index": 1,
+          "IG": -0.030919313430786133,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": true,
+          "current_passage_keys": [
+            "passage_id:14254935",
+            "passage_id:14254952",
+            "passage_id:16012388"
+          ],
+          "new_passage_keys": []
+        },
+        {
+          "search_index": 2,
+          "IG": -0.016988039016723633,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": true,
+          "no_new_passage": true,
+          "current_passage_keys": [
+            "passage_id:14254935",
+            "passage_id:14254952",
+            "passage_id:16012388"
+          ],
+          "new_passage_keys": []
+        },
+        {
+          "search_index": 3,
+          "IG": 0.06128406524658203,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": true,
+          "current_passage_keys": [
+            "passage_id:14254935",
+            "passage_id:14254952",
+            "passage_id:16012388"
+          ],
+          "new_passage_keys": []
+        },
+        {
+          "search_index": 4,
+          "IG": -0.04303550720214844,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": true,
+          "no_new_passage": true,
+          "current_passage_keys": [
+            "passage_id:14254935",
+            "passage_id:14254952",
+            "passage_id:16012388"
+          ],
+          "new_passage_keys": []
+        }
+      ]
+    },
+    {
+      "prompt_global_id": "nq:train_70310:70310",
+      "trajectory_id": "nq:train_70310:70310:snapshot-324:trajectory-11",
+      "R_task": 0.0,
+      "outcome_z": -1.2998626603598553,
+      "terminal_answer_valid": true,
+      "system_valid": true,
+      "search_count": 5,
+      "queries": [
+        "outlander season episode airing date",
+        "Outlander episode airing date",
+        "Outlander season episode airing date",
+        "Outlander season episode airing date",
+        "Outlander episode airing date season"
+      ],
+      "search_turns": [
+        {
+          "search_index": 0,
+          "IG": 0.19047808647155762,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": false,
+          "current_passage_keys": [
+            "passage_id:14254935",
+            "passage_id:14254952",
+            "passage_id:16012388"
+          ],
+          "new_passage_keys": [
+            "passage_id:14254935",
+            "passage_id:14254952",
+            "passage_id:16012388"
+          ]
+        },
+        {
+          "search_index": 1,
+          "IG": -0.024092435836791992,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": true,
+          "current_passage_keys": [
+            "passage_id:14254935",
+            "passage_id:14254952",
+            "passage_id:16012388"
+          ],
+          "new_passage_keys": []
+        },
+        {
+          "search_index": 2,
+          "IG": 0.005005359649658203,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": true,
+          "no_new_passage": true,
+          "current_passage_keys": [
+            "passage_id:14254935",
+            "passage_id:14254952",
+            "passage_id:16012388"
+          ],
+          "new_passage_keys": []
+        },
+        {
+          "search_index": 3,
+          "IG": 0.019651412963867188,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": true,
+          "no_new_passage": true,
+          "current_passage_keys": [
+            "passage_id:14254935",
+            "passage_id:14254952",
+            "passage_id:16012388"
+          ],
+          "new_passage_keys": []
+        },
+        {
+          "search_index": 4,
+          "IG": -0.046774864196777344,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": true,
+          "current_passage_keys": [
+            "passage_id:14254935",
+            "passage_id:14254952",
+            "passage_id:16012388"
+          ],
+          "new_passage_keys": []
+        }
+      ]
+    },
+    {
+      "prompt_global_id": "nq:train_70310:70310",
+      "trajectory_id": "nq:train_70310:70310:snapshot-324:trajectory-15",
+      "R_task": 0.6666666666666666,
+      "outcome_z": 1.1141679945941616,
+      "terminal_answer_valid": true,
+      "system_valid": true,
+      "search_count": 5,
+      "queries": [
+        "outlander season episode airing date",
+        "outlander season episode airing date",
+        "Outlander episode airing date",
+        "Outlander season 3 episode airing date",
+        "Outlander episode 3 airing date"
+      ],
+      "search_turns": [
+        {
+          "search_index": 0,
+          "IG": 0.19047808647155762,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": false,
+          "current_passage_keys": [
+            "passage_id:14254935",
+            "passage_id:14254952",
+            "passage_id:16012388"
+          ],
+          "new_passage_keys": [
+            "passage_id:14254935",
+            "passage_id:14254952",
+            "passage_id:16012388"
+          ]
+        },
+        {
+          "search_index": 1,
+          "IG": -0.023148298263549805,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": true,
+          "no_new_passage": true,
+          "current_passage_keys": [
+            "passage_id:14254935",
+            "passage_id:14254952",
+            "passage_id:16012388"
+          ],
+          "new_passage_keys": []
+        },
+        {
+          "search_index": 2,
+          "IG": -0.020873069763183594,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": true,
+          "current_passage_keys": [
+            "passage_id:14254935",
+            "passage_id:14254952",
+            "passage_id:16012388"
+          ],
+          "new_passage_keys": []
+        },
+        {
+          "search_index": 3,
+          "IG": 0.062267303466796875,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": true,
+          "current_passage_keys": [
+            "passage_id:14254935",
+            "passage_id:14254952",
+            "passage_id:16012388"
+          ],
+          "new_passage_keys": []
+        },
+        {
+          "search_index": 4,
+          "IG": -0.016813278198242188,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": false,
+          "current_passage_keys": [
+            "passage_id:14254935",
+            "passage_id:14254952",
+            "passage_id:5596038"
+          ],
+          "new_passage_keys": [
+            "passage_id:5596038"
+          ]
+        }
+      ]
+    },
+    {
+      "prompt_global_id": "hotpotqa:train_30199:109367",
+      "trajectory_id": "hotpotqa:train_30199:109367:snapshot-324:trajectory-15",
+      "R_task": 0.8000000000000002,
+      "outcome_z": 1.5269161093916115,
+      "terminal_answer_valid": true,
+      "system_valid": true,
+      "search_count": 5,
+      "queries": [
+        "an elderly male ghost clutching a hatbox Disney locations",
+        "Disney locations host ride animatronic character described originally appearance",
+        "Hatbox Ghost location",
+        "Disney locations host ride animatronic character described originally appearance location",
+        "Haunted Mansion Disneyland ride animatronic character described location"
+      ],
+      "search_turns": [
+        {
+          "search_index": 0,
+          "IG": -0.03314739465713501,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": false,
+          "current_passage_keys": [
+            "passage_id:6913576",
+            "passage_id:6913578",
+            "passage_id:6913583"
+          ],
+          "new_passage_keys": [
+            "passage_id:6913576",
+            "passage_id:6913578",
+            "passage_id:6913583"
+          ]
+        },
+        {
+          "search_index": 1,
+          "IG": -0.9536651372909546,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": false,
+          "current_passage_keys": [
+            "passage_id:11711201",
+            "passage_id:20591936",
+            "passage_id:359717"
+          ],
+          "new_passage_keys": [
+            "passage_id:11711201",
+            "passage_id:20591936",
+            "passage_id:359717"
+          ]
+        },
+        {
+          "search_index": 2,
+          "IG": -0.051427364349365234,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": false,
+          "current_passage_keys": [
+            "passage_id:6913576",
+            "passage_id:6913577",
+            "passage_id:6913583"
+          ],
+          "new_passage_keys": [
+            "passage_id:6913577"
+          ]
+        },
+        {
+          "search_index": 3,
+          "IG": -0.08211374282836914,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": true,
+          "current_passage_keys": [
+            "passage_id:11711201",
+            "passage_id:20591936",
+            "passage_id:6913583"
+          ],
+          "new_passage_keys": []
+        },
+        {
+          "search_index": 4,
+          "IG": 1.6543675363063812,
+          "ig_reward_eligible": true,
+          "policy_credit_eligible": true,
+          "missing_reason": null,
+          "exact_query_repeat": false,
+          "no_new_passage": false,
+          "current_passage_keys": [
+            "passage_id:19554135",
+            "passage_id:20081722",
+            "passage_id:6913583"
+          ],
+          "new_passage_keys": [
+            "passage_id:19554135",
+            "passage_id:20081722"
+          ]
+        }
+      ]
+    }
+  ]
+}

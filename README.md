@@ -634,6 +634,14 @@ The single-peer fallback uses terminal outcome only and does not add format
 credit. An unavailable score is a separate fail-closed case. Search actions
 that are ineligible for policy credit are excluded from actor optimization.
 
+**Recorded trajectory cases.** The
+[Search-credit case study](docs/search-credit-case-study.md) examines actual
+historical trajectories, with complete peer-group data and three figures.
+It documents process credit that differs from the terminal task outcome,
+delayed-return attribution, and the boundaries of singleton fallback and
+all-negative terminal peer groups. These cases illustrate the credit rule;
+they do not validate the current v5 scorer or replace controlled ablations.
+
 ### 5. Answer credit and token masking
 
 Let the terminal format indicator be $F_{p,i}\in\{0,1\}$. Format credit is
