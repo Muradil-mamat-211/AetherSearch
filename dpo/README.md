@@ -130,6 +130,39 @@ accepted gold aliases before generation. Record the Codex model, prompts,
 taxonomy version, and teacher-retry limit as well. Gold answers and aliases
 are verification inputs and must stay outside policy and correction prompts.
 
+#### Rollout configuration
+
+Use the following **recommended configuration** for this construction
+specification. Historical sampling values are not recorded in the published
+DPO manifest; these recommendations do not establish the original run settings.
+
+| Setting | Value |
+|---|---|
+| Complete trajectory attempts | 4 initially per question; 4 resampled per frozen prefix |
+| Sampling mode | Stochastic; `do_sample=true`, `num_beams=1` where supported |
+| `temperature` / `top_p` | **0.7 / 0.95** |
+| Generation `top_k` / `min_p` | Disabled / `0.0`; project top-k `0` maps to vLLM `-1` in the pinned runtime |
+| Repetition / presence / frequency penalties | `1.0` / `0.0` / `0.0` |
+| Action budget | 500 student tokens per action, including think, tags, and any required EOS reserve |
+| Search budget | At most 5 searches per complete trajectory, including searches in the prefix |
+| Retrieval observation | Top-3 documents; at most 500 student tokens including information tags |
+| Random seeds | Base `42`; distinct derived seeds per question, phase, candidate, and action |
+| Per-action stop strings | `</search>` and `</answer>`; preserve the closing tag (`include_stop_str_in_output=true` for vLLM) |
+
+Apply the **same frozen SFT policy and rollout configuration** to initial
+sampling, prefix resampling, and SFT continuation after a teacher-corrected
+Search. Prefix continuations inherit the remaining budget: if three searches
+already occurred, at most two remain, and a corrected Search consumes one.
+Record effective backend settings, request seeds, and the exact policy-visible
+retrieval observations in the audit records.
+
+A Search stop executes real retrieval and resumes the policy; an Answer stop
+ends the trajectory. The 500-token budget is per action, while each trajectory
+continues through its final Answer. Incomplete or truncated attempts fail the
+completion gate. All candidates still require valid format, final-answer
+EM = 1, and next-action verification. Validate the recommended baseline on an
+isolated pilot before regeneration, then freeze its configuration.
+
 ### 2. Generate four initial complete trajectories per question
 
 Use the frozen [SFT policy](https://huggingface.co/muradil211/AetherSearch_SFT)

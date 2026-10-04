@@ -4,7 +4,7 @@ This inventory covers every non-ignored file in the AetherSearch GitHub
 release. Model weights, optimizer checkpoints, eval result bundles, report
 archives, and runtime snapshots are not included.
 
-Generated UTC: `2026-10-04T06:49:50Z`
+Generated UTC: `2026-10-04T07:44:42Z`
 
 ## Summary
 
@@ -12,7 +12,7 @@ Generated UTC: `2026-10-04T06:49:50Z`
 - `configs`: `24` files, `45955` bytes
 - `docs`: `7` files, `153864` bytes
 - `documentation`: `4` files, `54942` bytes
-- `dpo`: `8` files, `93989` bytes
+- `dpo`: `8` files, `96078` bytes
 - `environment`: `6` files, `15223` bytes
 - `recipes`: `2` files, `5883` bytes
 - `repo_root`: `3` files, `1683` bytes
@@ -96,8 +96,8 @@ Generated UTC: `2026-10-04T06:49:50Z`
 | path | bytes | sha256 |
 |---|---:|---|
 | `dpo/ATTRIBUTION.md` | 2720 | `e5b2efa91817590bf764a5eb753b3728ca9599a74d6f5778bc65c1f356abae3b` |
-| `dpo/README.md` | 29574 | `98c998c5eeb78aaf98a3070a17e7464a5437406c4ab96aa11ff753c0d1efb07a` |
-| `dpo/checksums.sha256` | 319 | `7c537600a06501bee6a74f44a525a1c33e14aaf24cd443694c4aafc47dcb3c9c` |
+| `dpo/README.md` | 31663 | `f7745f0babe9748a44b6f2b66a80ba465f8438b5794a9d96438c35024d17c167` |
+| `dpo/checksums.sha256` | 319 | `9dd7faa5bd8a7289a902fe952b84f2278aa2cbc0e602c890e1eab8d287122828` |
 | `dpo/configs/ds_zero3_bf16.json` | 569 | `41e04c1a169b122eb058f1018edba49648f8c1ebd8f732751c279e10d0d981f9` |
 | `dpo/dataset_manifest.json` | 2529 | `0ee034122d6ad3b88580ed3923658f4e1cc3aaa53504b7dce3c3483cc8a8f676` |
 | `dpo/requirements.txt` | 152 | `f4192c805bbefd20f901cdf4fc6861486b54d158fd2123551f60d7078a4c6c32` |
