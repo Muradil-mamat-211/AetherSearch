@@ -598,6 +598,20 @@ chosen/rejected ranking separately, using the protocol below.
 
 ### 2. Preference Eval: held-out chosen/rejected ranking
 
+#### PrefAcc results
+
+The project maintainer reports the following overall preference accuracy:
+
+| Metric | SFT | DPO | Change (DPO − SFT) |
+|---|---:|---:|---:|
+| Overall PrefAcc (%) | 46.0 | **81.0** | **+35.0 pp** |
+
+DPO increases the reported PrefAcc from **46% to 81%**, an improvement of
+**35 percentage points**. PrefAcc measures chosen/rejected ranking using the
+scoring protocol below, separately from final-answer accuracy on Eval-1400.
+
+#### Preference scoring protocol
+
 Use a separate held-out preference set with the same failure taxonomy and
 pair types as DPO training. Its questions and preference pairs must never
 participate in DPO training; also exclude overlap with SFT training, RL
@@ -623,7 +637,8 @@ alignment, mask-boundary tokenization, and terminal-token handling. Scores
 are sums of token log probabilities, with the same tokenization and masking
 for both checkpoints.
 
-Preference accuracy measures each model's own chosen/rejected ranking:
+Preference accuracy measures each model's own chosen/rejected ranking, with
+$`N`$ denoting the number of evaluated preference pairs:
 
 ```math
 \boxed{
@@ -640,15 +655,17 @@ S_{\pi}(y_{l,i}\mid x_i)
 }
 ```
 
-A tie does not count as a correct preference. Evaluate SFT and DPO on the
-same held-out pairs and test whether:
+A pair is correct only when the chosen score is strictly greater than the
+rejected score; a tie does not count. The table reports
+$`100 \times \mathrm{PrefAcc}_{\pi}`$ as a percentage. Evaluate SFT and DPO on
+the same held-out pairs. The reported overall result satisfies:
 
 ```math
 \boxed{\mathrm{PrefAcc}_{\mathrm{DPO}} \gt \mathrm{PrefAcc}_{\mathrm{SFT}}}
 ```
 
-Report **Overall PrefAcc and PrefAcc for every pair type**, including the
-number of evaluated pairs and the SFT-to-DPO change for each type. This shows
+For a detailed breakdown, also report **PrefAcc for every pair type**, including
+the number of evaluated pairs and the SFT-to-DPO change for each type. This shows
 which decision boundaries improved, such as continuing search versus
 answering prematurely, selecting a useful query, or interpreting retrieved
 evidence correctly, and whether any pair type regressed.
@@ -661,8 +678,8 @@ evidence correctly, and whether any pair type regressed.
 The two evaluations together determine whether the learned preferences
 translate into better agent behavior. Use the Eval-1400 comparison above
 together with overall and per-type PrefAcc to assess the checkpoint.
-The PrefAcc inequality above remains an evaluation target until held-out
-preference results are reported.
+The reported **46% to 81% overall PrefAcc** improvement complements the
+end-to-end gains on Eval-1400.
 
 <a id="files"></a>
 
