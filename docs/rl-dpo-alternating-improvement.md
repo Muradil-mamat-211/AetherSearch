@@ -5,11 +5,14 @@ implemented or experimentally validated.** RL explores search and answering
 strategies. Every 100 successful RL updates, a short DPO phase targets clear,
 verified decision errors made by the current policy, then RL resumes:
 
-```math
-\pi_{100}\xrightarrow{\mathrm{DPO}}\pi_{100}^{+}
-\xrightarrow{100\ \mathrm{RL\ updates}}\pi_{200}
-\xrightarrow{\mathrm{DPO}}\pi_{200}^{+}\rightarrow\cdots
-```
+$$
+\pi_{100}\rightarrow\pi_{100}^{+}
+\rightarrow\pi_{200}
+\rightarrow\pi_{200}^{+}\rightarrow\cdots
+$$
+
+Each transition from $\pi_k$ to $\pi_k^+$ is one DPO epoch. Each transition
+from $\pi_k^+$ to $\pi_{k+100}$ is 100 further successful RL updates.
 
 This follows the [over-search improvement](over-search-improvement.md).
 That proposal adjusts Search credit during RL; this proposal periodically
@@ -120,10 +123,10 @@ Among accepted candidates, prefer a clear decision improvement with the
 smallest necessary correction. Keep at most one highest-quality pair per
 normalized question:
 
-```math
+$$
 \mathcal D_k=\{(x_i,a_{w,i},a_{l,i})\}_{i=1}^{N_k},
 \qquad 0\le N_k\le256.
-```
+$$
 
 | Training field | Content |
 |---|---|
@@ -150,26 +153,29 @@ not a fixed list that blocks newly discovered error types.
 For nonempty $\mathcal D_k$, initialize the actor and frozen reference from
 the same checkpoint:
 
-```math
+$$
 \pi_{\theta}^{(0)}=\pi_k,
 \qquad
-\pi_{\mathrm{ref},k}^{DPO}=\operatorname{stopgrad}(\pi_k).
-```
+\pi_{\mathrm{ref},k}^{\mathrm{DPO}}=\pi_k.
+$$
+
+The reference parameters remain frozen throughout the DPO phase and receive
+no gradient updates.
 
 Use the next-action preference objective:
 
-```math
+$$
 \mathcal L_k
 =-\mathbb E_{(x,a_w,a_l)\sim\mathcal D_k}
 \log\sigma\!\left(
-\beta_{DPO}\left[
-\log\frac{\pi_\theta(a_w\mid x)}{\pi_{\mathrm{ref},k}^{DPO}(a_w\mid x)}
--\log\frac{\pi_\theta(a_l\mid x)}{\pi_{\mathrm{ref},k}^{DPO}(a_l\mid x)}
+\beta_{\mathrm{DPO}}\left[
+\log\frac{\pi_\theta(a_w\mid x)}{\pi_{\mathrm{ref},k}^{\mathrm{DPO}}(a_w\mid x)}
+-\log\frac{\pi_\theta(a_l\mid x)}{\pi_{\mathrm{ref},k}^{\mathrm{DPO}}(a_l\mid x)}
 \right]\right).
-```
+$$
 
 Log probabilities sum over scored action tokens. Fix the DPO learning rate,
-batching, and $\beta_{DPO}>0$ before the phase; it is a separate coefficient
+batching, and $\beta_{\mathrm{DPO}}>0$ before the phase; it is a separate coefficient
 from the over-search penalty. Run one epoch over the fresh pairs to obtain
 $\pi_k^+$. Refresh this DPO reference at each correction boundary; do not
 silently replace the RL phase's separately configured KL reference.
