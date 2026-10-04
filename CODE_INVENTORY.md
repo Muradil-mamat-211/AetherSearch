@@ -4,14 +4,14 @@ This inventory covers every non-ignored file in the AetherSearch GitHub
 release. Model weights, optimizer checkpoints, eval result bundles, report
 archives, and runtime snapshots are not included.
 
-Generated UTC: `2026-10-04T07:44:42Z`
+Generated UTC: `2026-10-04T07:57:37Z`
 
 ## Summary
 
 - `assets`: `11` files, `842971` bytes
 - `configs`: `24` files, `45955` bytes
-- `docs`: `7` files, `153864` bytes
-- `documentation`: `4` files, `54942` bytes
+- `docs`: `8` files, `165392` bytes
+- `documentation`: `4` files, `58811` bytes
 - `dpo`: `8` files, `96078` bytes
 - `environment`: `6` files, `15223` bytes
 - `recipes`: `2` files, `5883` bytes
@@ -77,7 +77,8 @@ Generated UTC: `2026-10-04T07:44:42Z`
 | `docs/data/over-search-conditional-examples.csv` | 2542 | `f59b2b84b69dda908f76f6c6aa9980b096dff3579f7b00af923cebf23991f40f` |
 | `docs/data/search-credit-u325-peers.csv` | 12343 | `6a40909b5ecac065d5409716a57c1ab28b3903ec9a8cf8298f2bf02a1aad8d77` |
 | `docs/data/search-credit-u325-trajectories.json` | 85428 | `def76c9035cd64b443d65914911c9b760eeff0e3fb2ca804367e3ff161d229fb` |
-| `docs/over-search-improvement.md` | 18593 | `2c6831728f277858c3e0e52830168fe03f3ab9d965a9f676a6b5a4c4716fc227` |
+| `docs/over-search-improvement.md` | 18878 | `8e650cba0e4f483431ac4e6a640d701e074f3c1a4cd5436cbaefc31f636e173a` |
+| `docs/rl-dpo-alternating-improvement.md` | 11243 | `843ae1ff970054e5c4fc8c927c2ed06768ab3c28492cd0197ba6b66f523567cd` |
 | `docs/scripts/build_over_search_illustration.py` | 4564 | `899b312365ae4481d1676dec3165b3b1d95ee9bdfc72339c90fa39077d72c83e` |
 | `docs/scripts/build_search_credit_figures.py` | 10966 | `57203f19203c65612e437210f5de3397cdbe60976dd0e1184a993324c609b2c9` |
 | `docs/search-credit-case-study.md` | 19428 | `6dbbd0011c9936e393aa7c2452e2e7e302b540e2cd0ff34d2dfddf062b1a458b` |
@@ -87,7 +88,7 @@ Generated UTC: `2026-10-04T07:44:42Z`
 | path | bytes | sha256 |
 |---|---:|---|
 | `EXTERNAL_ASSETS.md` | 7853 | `8869d1dc5bd8cfc00991a376b47be389035b5c6401127bcd18bb5c9022403a7a` |
-| `README.md` | 37540 | `6642b77aabe9e30f07132ec160e8aa3de4bdc8f100e8872a0ef3f409bf8258a9` |
+| `README.md` | 41409 | `60a3f462847aeb3823184ef8bfb8701f1813859e419b33965d6bca992f198f70` |
 | `THIRD_PARTY_NOTICES.md` | 6098 | `f5eb49726de47e3ad7b3897840482d5aee7c854fc1921465e77cf8ff03dae682` |
 | `TRAINING_REPRODUCTION.md` | 3451 | `0c90f5a5d676e3d5997e6b946b9994863b28a0d5483509c27345c64ac88666fb` |
 

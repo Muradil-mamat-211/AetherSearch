@@ -50,6 +50,7 @@
 - [Method Overview](#method-overview)
 - [Agentic RL Method](#agentic-rl-method)
 - [Over-Search Improvement](#over-search-improvement)
+- [RL and DPO Alternating Training](#rl-and-dpo-alternating-training)
 - [Reproducibility & Configuration](#reproducibility-configuration)
 - [Repository Layout](#repository-layout)
 - [Release Scope](#release-scope)
@@ -1029,6 +1030,78 @@ The [full design](docs/over-search-improvement.md) explains the scoring branch
 and conditions for improvement. The
 [calculation script](docs/scripts/build_over_search_illustration.py) reproduces
 the conditional examples and figure.
+
+## RL and DPO Alternating Training
+
+**Second improvement proposal; not yet implemented or experimentally validated.**
+Every **100 successful RL updates**, AetherSearch would pause exploration,
+construct a small set of verified next-action preferences from its current
+policy, run a short DPO correction, and resume RL with fresh rollouts.
+This complements the preceding over-search correction by targeting observed
+decision errors, including newly emerging failure types.
+
+```mermaid
+flowchart LR
+    R["100 successful RL updates"] --> F["Freeze current policy"]
+    F --> V["Construct up to 256 verified action pairs"]
+    V --> C{"Any accepted pairs?"}
+    C -->|Yes| D["One DPO epoch"]
+    C -->|No| N["Fresh RL rollouts"]
+    D --> N
+    N --> R
+```
+
+### Construct preferences from current behavior
+
+1. **Observe:** sample eight complete trajectories per training question with
+   the frozen current policy and real retrieval. Codex identifies the earliest
+   clear, actionable, verifiable error without a fixed failure taxonomy.
+2. **Freeze the decision:** preserve the exact pre-action state $x$ and the
+   actual faulty next action $a_l$. The rejected action is never fabricated.
+3. **Resample:** generate four complete continuations from the same $x$;
+   allow up to four more if none passes. If needed, Codex proposes a minimal
+   repair: execute a Search through real retrieval and a policy continuation;
+   an Answer ends immediately. Both undergo the same verification.
+4. **Verify:** require a protocol-valid final answer with **EM = 1**, plus a
+   clear local advantage over $a_l$. A chosen Search must be needed at $x$
+   and return useful new evidence; a chosen Answer must be correct and
+   justified in stopping. Reject ties and uncertainty. **Codex proposes;
+   fixed verification gates accept.**
+5. **Export:** keep $(x,a_w,a_l)$, with only the next action on each preference
+   side. Full continuations and retrieval provenance remain audit evidence.
+
+Policy samples and teacher repairs use the same gates and remaining execution
+budget. Gold answers are verification-only inputs; future observations are
+excluded from $x$ and repair prompts. Use training-only questions, exclude
+evaluation overlap, and retain at most one pair per normalized question.
+
+### Correct briefly, then resume exploration
+
+| Setting | Proposed first version |
+|---|---|
+| Interval | 100 successful RL optimizer updates; skipped attempts do not count |
+| Initial trajectories per question | 8 |
+| Complete resamples per frozen prefix | 4, then up to 4 additional attempts if needed |
+| Accepted pairs per phase | Target 256; use fewer when verification or collection budgets limit yield |
+| DPO duration | One epoch over the phase's fresh accepted pairs |
+| Actor / frozen DPO reference | Both start from the current RL checkpoint $\pi_k$ |
+
+The DPO phase produces $\pi_k^+$. Its reference stays frozen for that phase
+and is refreshed at the next boundary. Train only on the chosen/rejected
+action tokens; the shared prefix is masked. If no pair passes verification,
+skip DPO rather than weaken the gates.
+
+After DPO, synchronize the new actor and rollout policy, refresh old-policy
+and reward-scoring snapshots, and invalidate old rollout-derived training
+signals. Resume RL at update $k+1$ with fresh trajectories from $\pi_k^+$.
+Policy revisions and DPO steps have separate counters; DPO steps do not
+advance the RL schedule. Optimizer handoff must be explicitly configured.
+
+This design aims to turn current-policy mistakes into targeted training
+corrections. Its effect on answer quality, search efficiency, and total cost
+requires controlled evaluation. The
+[full second-improvement design](docs/rl-dpo-alternating-improvement.md)
+specifies the loss, verification boundaries, and phase handoff.
 
 ## Reproducibility & Configuration
 

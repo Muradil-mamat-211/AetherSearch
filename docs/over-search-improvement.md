@@ -400,3 +400,8 @@ and PNG/SVG figures. It performs no model or judge inference:
 python docs/scripts/build_over_search_illustration.py
 python scripts/validate_readme.py README.md docs/over-search-improvement.md
 ```
+
+The [second improvement: alternating RL and DPO](rl-dpo-alternating-improvement.md)
+extends the training schedule with periodic corrections of verified
+current-policy decision errors. It complements the Search-credit change
+described here and remains a separate proposal to evaluate.
