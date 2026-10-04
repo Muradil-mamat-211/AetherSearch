@@ -4,23 +4,23 @@ This inventory covers every non-ignored file in the AetherSearch GitHub
 release. Model weights, optimizer checkpoints, eval result bundles, report
 archives, and runtime snapshots are not included.
 
-Generated UTC: `2026-10-03T14:04:23Z`
+Generated UTC: `2026-10-04T06:36:20Z`
 
 ## Summary
 
 - `assets`: `11` files, `842971` bytes
 - `configs`: `24` files, `45955` bytes
 - `docs`: `7` files, `153864` bytes
-- `documentation`: `4` files, `54409` bytes
-- `dpo`: `8` files, `86316` bytes
+- `documentation`: `4` files, `54773` bytes
+- `dpo`: `8` files, `93588` bytes
 - `environment`: `6` files, `15223` bytes
 - `recipes`: `2` files, `5883` bytes
 - `repo_root`: `3` files, `1683` bytes
 - `runtime_assets`: `3` files, `29691` bytes
-- `scripts`: `18` files, `75616` bytes
-- `sft`: `46` files, `656510` bytes
+- `scripts`: `18` files, `76227` bytes
+- `sft`: `46` files, `657232` bytes
 - `src`: `89` files, `1290396` bytes
-- `tests`: `56` files, `502430` bytes
+- `tests`: `57` files, `503940` bytes
 - `third_party`: `5` files, `126026` bytes
 
 ## Files
@@ -89,15 +89,15 @@ Generated UTC: `2026-10-03T14:04:23Z`
 | `EXTERNAL_ASSETS.md` | 7853 | `8869d1dc5bd8cfc00991a376b47be389035b5c6401127bcd18bb5c9022403a7a` |
 | `README.md` | 37540 | `6642b77aabe9e30f07132ec160e8aa3de4bdc8f100e8872a0ef3f409bf8258a9` |
 | `THIRD_PARTY_NOTICES.md` | 6098 | `f5eb49726de47e3ad7b3897840482d5aee7c854fc1921465e77cf8ff03dae682` |
-| `TRAINING_REPRODUCTION.md` | 2918 | `c960758c1df8d82a9a5eb5fbdf37dc00d65bc75b520e9ec5261a12337e916101` |
+| `TRAINING_REPRODUCTION.md` | 3282 | `aaca5b983337b5b0d3fe95598ca69d2acbb316ab52311ef4cb0040bd7190b61a` |
 
 ### dpo
 
 | path | bytes | sha256 |
 |---|---:|---|
 | `dpo/ATTRIBUTION.md` | 2720 | `e5b2efa91817590bf764a5eb753b3728ca9599a74d6f5778bc65c1f356abae3b` |
-| `dpo/README.md` | 21901 | `9ab9a6f0728ffbac8555ba7a4ad89b2d321dfff0640d942475d40c7d90b5b6cb` |
-| `dpo/checksums.sha256` | 319 | `4215483978ab3bf46cfca68df0c8b4502ece531c8156d856dcee20f0d234df23` |
+| `dpo/README.md` | 29173 | `99f1b5b5dd27a8c771a1fa8a692f0e32763d1ebff537cb0edc5f541236a90f93` |
+| `dpo/checksums.sha256` | 319 | `23179ad22367d9c67f0df69e4e0183db1bf08daef51c4f7b1505fc9ce3e3cefb` |
 | `dpo/configs/ds_zero3_bf16.json` | 569 | `41e04c1a169b122eb058f1018edba49648f8c1ebd8f732751c279e10d0d981f9` |
 | `dpo/dataset_manifest.json` | 2529 | `0ee034122d6ad3b88580ed3923658f4e1cc3aaa53504b7dce3c3483cc8a8f676` |
 | `dpo/requirements.txt` | 152 | `f4192c805bbefd20f901cdf4fc6861486b54d158fd2123551f60d7078a4c6c32` |
@@ -157,7 +157,7 @@ Generated UTC: `2026-10-03T14:04:23Z`
 | `scripts/test_code.sh` | 680 | `755f7abd8560e8567685722fbb3d9e98045e6e27f8ae43bbfbff1b38df2a4e4f` |
 | `scripts/train_rl.sh` | 2473 | `0ac0c8e3a75ee49b66ee16e017d067c0b9808b1663d06e86d43ad41ce47ac397` |
 | `scripts/validate_48cpu_resource_profile.py` | 4712 | `73d6f24edab2f69498106642a8658e7f8c781b9eb360e205fc36598aa3369f59` |
-| `scripts/validate_readme.py` | 7746 | `5c07bbfd9e4bcbe38017dc0660b121133d3e571e93b5da1416b1370e8539bf1f` |
+| `scripts/validate_readme.py` | 8357 | `f5aeb20234240b6f939ca1b680ff5b1fccb42fa02b91a4ac9efc58351ef4417e` |
 | `scripts/validate_static.sh` | 1587 | `4e4957917bd285aa4e140649d93cc35ecd9483170e2b2f46a8c78176e3b81c53` |
 | `scripts/verify_checkpoint_readonly.py` | 2659 | `c8af6683b6f6e09e96fa91c16cf679706b4673d947e5437428239d542e6ad9d2` |
 
@@ -166,8 +166,8 @@ Generated UTC: `2026-10-03T14:04:23Z`
 | path | bytes | sha256 |
 |---|---:|---|
 | `sft/ATTRIBUTION.md` | 3643 | `1f690b238f77cc3ff112a8bb8404a5fe5806d20128d9214d40743857299fc038` |
-| `sft/README.md` | 16892 | `0ebf9e91b7f939e80dd3e9756305586eb72deed5d8ca2ec6693d29d76ccd5ea5` |
-| `sft/checksums.sha256` | 424 | `b5c6b6d010536067f3f75f78c94bbe8f42dfd37d5d09b732dc60ec0ebf805cdd` |
+| `sft/README.md` | 17614 | `1f7dd834231210c19bf571a034595258a469e54bd578f8a3801e935e2bb0bcda` |
+| `sft/checksums.sha256` | 424 | `615deb8cfb255a228b57a34aa7e87156a5b6ab5ea6afaadc2f51dc5535ed7112` |
 | `sft/configs/ds_zero3_bf16.json` | 569 | `41e04c1a169b122eb058f1018edba49648f8c1ebd8f732751c279e10d0d981f9` |
 | `sft/data_generation/run_teacher_rollout.sh` | 1906 | `0b4af6b685ed6ddcd0df4196f0d40d68742f8fac8b37822d7cd35c06eee7af54` |
 | `sft/data_generation/search_sft_hybrid_v1/build_bm25_index.py` | 9938 | `789a3a8df399c73e8d85346f7fc683c8a154301323684f8bd6a56bad6482f17f` |
@@ -366,6 +366,7 @@ Generated UTC: `2026-10-03T14:04:23Z`
 | `tests/test_token_provenance.py` | 6861 | `cb50c8b20251305b4de64ce3972718ea0bb0544c81fe7f18ad5ded0cbf6d5421` |
 | `tests/test_topology_decoupling.py` | 19233 | `9fb7451704ace0a789a60628396e73975668172372e856ecc07f3ec5fd2868ac` |
 | `tests/test_update_controller.py` | 8296 | `08a9ea06361ee35d50dfa82c1b69db7c12aefd9035e27ede0529f832ee820bcc` |
+| `tests/test_validate_readme.py` | 1510 | `15492ea829657ae854480c52f3ed86e86a9b49b277833b379db8580e3e660d26` |
 
 ### third_party
 

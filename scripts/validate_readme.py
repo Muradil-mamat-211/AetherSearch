@@ -9,6 +9,7 @@ import re
 import sys
 import urllib.parse
 import xml.etree.ElementTree as ET
+from html.parser import HTMLParser
 from pathlib import Path
 
 
@@ -19,6 +20,20 @@ HTML_LINK_RE = re.compile(r"\b(?:src|href)=[\"']([^\"']+)[\"']", re.IGNORECASE)
 DIV_RE = re.compile(r"</?div\b[^>]*>", re.IGNORECASE)
 CONFLICT_RE = re.compile(r"^(?:<<<<<<< |=======\s*$|>>>>>>> )", re.MULTILINE)
 TABLE_SEPARATOR_RE = re.compile(r"^:?-{3,}:?$")
+
+
+class HTMLAnchorParser(HTMLParser):
+    """Collect explicit anchors that GitHub retains alongside heading slugs."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.anchors: set[str] = set()
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        if tag == "a":
+            for name, value in attrs:
+                if name == "id" and value:
+                    self.anchors.add(value.lower())
 
 
 def github_slug(text: str) -> str:
@@ -142,6 +157,9 @@ def validate(path: Path) -> list[str]:
 
     references: list[str] = []
     outside_text = "\n".join(line for _, line in outside_fence)
+    anchor_parser = HTMLAnchorParser()
+    anchor_parser.feed(outside_text)
+    slugs.update(anchor_parser.anchors)
     references.extend(match.group(1) for match in LINK_RE.finditer(outside_text))
     references.extend(match.group(1) for match in HTML_LINK_RE.finditer(outside_text))
     for raw_reference in references:

@@ -179,6 +179,17 @@ The evaluation analysis informs the failure categories. DPO preference pairs
 use separate training questions that exhibit those failures, so the frozen
 Eval-1400 questions remain held out.
 
+The [DPO construction specification](../dpo/README.md#dpo-data-construction-workflow)
+uses four initial complete SFT rollouts to locate an actionable decision
+error, then four complete continuations from the exact prefix before that
+error. A candidate must pass terminal protocol validation and alias-aware
+EM = 1, followed by verification of its next Search or Answer action and its
+advantage over the actual rejected action. Codex proposes a minimal correction
+only when those sampled candidates fail; corrected actions undergo the same
+full-rollout and local checks. For these decision-level pairs, full rollouts
+provide verification evidence and the verified next actions supply the
+chosen/rejected training targets.
+
 ## Reproduce Training
 
 This workflow uses the published `final_sft_2600.jsonl` directly. Data generation

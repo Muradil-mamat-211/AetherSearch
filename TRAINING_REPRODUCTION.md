@@ -24,6 +24,12 @@ variables; the 2,600-record count and dataset SHA-256 remain fixed.
 
 ## DPO
 
+For new or regenerated decision-level preference data, follow the
+[DPO construction specification](dpo/README.md#dpo-data-construction-workflow):
+complete rollouts establish terminal correctness, and a separate action check
+establishes the local preference. The training commands below reproduce the
+existing frozen release using its recorded count and checksum.
+
 The strict preference-training implementation is documented in
 [`dpo/`](dpo/). Download the canonical 2,126-pair `train.jsonl` from
 [muradil211/AetherSearch_DPO](https://huggingface.co/datasets/muradil211/AetherSearch_DPO),

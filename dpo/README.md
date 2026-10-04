@@ -81,132 +81,230 @@ Preference composition:
 
 ## 🛠️ DPO Data Construction Workflow
 
-The workflow described by the project maintainer starts with **5,000 isolated
-candidate questions** and targets approximately **2,126 high-quality preference
-pairs**. It uses the failure taxonomy established through
-[SFT rollout analysis](../sft/README.md#sft-evaluation-and-failure-analysis)
-to identify concrete decision errors and construct preferences at the same
-agent state. The exact published count and source composition are recorded
-in [Dataset overview](#dataset-overview).
+This is the construction specification for **new or regenerated decision-level
+DPO pairs**. It starts with **5,000 isolated candidate questions** and targets
+approximately **2,126 high-quality pairs**, subject to verification. The central
+rule is: **roll out to the final answer for verification, then train on the
+verified next action at the shared prefix**. SFT-sampled and Codex-corrected
+candidates must pass the same acceptance gates.
 
-### 1. Build the candidate question pool
+The [published release](#dataset-overview) contains exactly 2,126 pairs,
+including 235 `true_full_trajectory_preference` pairs whose training units are
+whole continuations. That release keeps its recorded counts and data checksum.
+Historical rows require their original rollout and audit records before they
+can be certified against this specification; a documentation update alone
+does not establish that certification.
 
-Sample 5,000 candidate questions by source from datasets such as NQ, TriviaQA,
-PopQA, HotpotQA, 2WikiMultiHopQA, MuSiQue, and Bamboogle, as well as other
-eligible QA sources. Strictly exclude questions that overlap with **SFT
-training data, evaluation data, or RL training data**.
+Human review establishes the failure taxonomy from the stratified 140-example
+[SFT analysis](../sft/README.md#sft-evaluation-and-failure-analysis). Codex then
+locates decision errors, applies the taxonomy, proposes minimal corrections,
+and judges actions using actual evidence. The rollout controller executes
+retrieval and checks protocol validity and answer EM. Humans review new
+failure categories, unresolved judgments, and a sample of accepted pairs.
+Evaluation examples define the taxonomy; separate training questions supply
+the DPO pairs.
 
-Use the same question normalization as Eval-1400: Unicode NFKC, casefold,
+### 1. Isolate the question pool and freeze the construction settings
+
+Sample 5,000 candidate questions, stratified by eligible source, from QA
+datasets such as NQ, TriviaQA, PopQA, HotpotQA, 2WikiMultiHopQA, and MuSiQue.
+Strictly exclude overlap with **SFT training, evaluation, and RL training
+questions**. Use the Eval-1400 question normalization: Unicode NFKC, casefold,
 whitespace collapse, strip, and removal of trailing ASCII/full-width question
 marks. Exclude normalized exact matches and confirmed high-confidence
 near-duplicates before sampling.
 
-Stratify across sources with eligible questions; eligibility determines which
-sources can contribute. In particular, the complete 125-question Bamboogle
-release is already included in
+The complete 125-question Bamboogle release is already included in
 [frozen Eval-1400](https://huggingface.co/datasets/muradil211/AetherSearch_Eval_1400/tree/frozen-v1),
-so it contributes **zero eligible DPO candidates** under strict evaluation
-isolation. Select the 5,000 candidates from the remaining eligible sources.
+so it contributes **zero eligible DPO candidates** under strict isolation.
 If the eligible pool is too small, stop without relaxing the exclusions.
 
-### 2. Run four real SFT rollouts per question
+Pin the SFT checkpoint, retriever and corpus revisions, retrieval settings,
+decoding settings, rollout budgets, protocol parser, answer scorer, and
+accepted gold aliases before generation. Record the Codex model, prompts,
+taxonomy version, and teacher-retry limit as well. Gold answers and aliases
+are verification inputs and must stay outside policy and correction prompts.
 
-Use the [SFT model](https://huggingface.co/muradil211/AetherSearch_SFT)
-to sample **$`K=4`$ complete trajectories per question**: 20,000 initial
-rollouts for a 5,000-question pool. Every `<search>` action must execute the
-real retriever, and the resulting observations become part of the trajectory.
-Retain the actual actions, retrieval results, and interaction history.
+### 2. Generate four initial complete trajectories per question
 
-### 3. Locate the first actionable failure
+Use the frozen [SFT policy](https://huggingface.co/muradil211/AetherSearch_SFT)
+to sample **$`K=4`$ trajectories per question**: 20,000 initial rollout attempts
+for a 5,000-question pool. Each attempt continues to a terminal `<answer>` or
+the fixed execution limit. Every `<search>` calls the **real retriever**;
+retain the actual actions, returned observations, document identifiers,
+settings, and termination reason.
 
-Codex reviews all **format-valid trajectories for each question**, using the
-known failure taxonomy. Across those trajectories, identify the **first
-actionable failure**: the earliest genuinely incorrect decision for which a
-correction can be made and verified at the same state.
+The intended sampling unit is a complete trajectory. A timeout, exhausted
+budget, or malformed output is recorded as a failed attempt rather than
+treated as a successful completion.
 
-Record the shared state **$`x`$ immediately before that decision**, including the
-question, conversation prefix, previous agent actions, and real retrieval
-observations. The target is a decision failure in a valid trajectory.
+### 3. Locate the first actionable error and freeze its prefix
 
-### 4. Use the real SFT error as rejected
+Codex reviews the format-valid initial trajectories. Within each trace,
+identify the **earliest genuinely faulty decision** that can be corrected and
+verified at the same state. A wrong final answer alone does not prove that
+an earlier search was wrong; a correct final answer can still contain an
+unnecessary or unhelpful search. Discard cases with no clear, verifiable
+decision error.
 
-Use the incorrect continuation that SFT actually generated from that state:
+For a selected error, freeze **$`x`$ immediately before the faulty action**:
+the question, exact conversation prefix, earlier actions, and existing real
+retrieval observations. Preserve the faulty **next action** as **$`a_l`$
+(`rejected`)**, including its `<think>` block and complete `<search>` or
+`<answer>` block. Keep this action unchanged and link it to the original SFT
+trace. Neither future observations nor later actions belong in $`x`$.
+
+### 4. Sample four complete continuations from that exact prefix
+
+From the same frozen **$`x`$**, sample **four new continuations with the same
+SFT policy**. Execute every subsequent search and continue each attempt to
+its final answer or execution limit. These are a second set of four complete
+rollout attempts, additional to the initial four in step 2.
+
+For candidate $`i`$, retain both its first next action **$`a_i`$** and its full
+continuation **$`\tau_i`$**. The action is the proposed training target; the
+complete continuation supplies the terminal-verification evidence. A
+next-action-only sample cannot establish that a Search leads to a correct
+final answer. An immediate Answer is already a terminal continuation.
+
+### 5. Apply the terminal gate first
+
+A candidate can supply `chosen` only if its complete rollout:
+
+- finishes with exactly one terminal `<answer>` under the pinned protocol;
+- has valid action ordering, tags, final-answer schema, and real retrieval
+  observations throughout;
+- achieves **normalized, alias-aware EM = 1** on the extracted final answer.
+
+Use
+[`max_alias_exact_match`](../src/agentic_rl/outcome/token_f1.py)
+with the approved aliases and the pinned production normalization: lowercase,
+ASCII punctuation replaced by spaces, and whitespace normalization. Question
+deduplication and answer scoring have distinct normalization contracts.
+Validate the complete protocol before extracting the terminal answer; the
+answer scorer alone is not a trajectory-format validator.
+
+**F1 is recorded for analysis only. Neither F1 > 0.75 nor any other partial
+overlap threshold automatically accepts a candidate.** Incomplete,
+format-invalid, or EM-failing candidates supply no chosen action to this
+main dataset. A suspected missing alias needs independent evidence and
+review; version the approved alias change and rerun verification instead of
+adding an alias merely to accept a candidate.
+
+### 6. Verify the candidate's next action and relative improvement
+
+Only terminal-passing candidates proceed to the local action gate. Evaluate
+**$`a_i`$ at $`x`$ against the actual rejected action $`a_l`$**:
+
+| Next action | Required acceptance conditions |
+|---|---|
+| **Search** | Codex checks the real retrieval results: searching is necessary at this state, the returned evidence fills or clarifies an information gap relevant to the question, and this action has a clear advantage over `rejected`. Useful intermediate-hop or bridge facts count; redundant results or merely different wording do not. |
+| **Answer** | The answer and format pass the terminal checks. For a premature-answer failure, Codex must also verify that the current state provides sufficient grounds to stop, under the task's allowed evidence and prior-knowledge rules. |
+
+For a Search judgment, provide the question, $`x`$, both competing actions,
+the candidate's actual returned information, and the rejected search's actual
+results when applicable. Record the specific supporting snippets or document
+IDs, the identified information gap, and the reason for the improvement.
+A necessary query that returns no useful evidence fails this gate. When
+the state already supports an answer, another search fails the necessity
+check.
+
+The local judge assesses evidence available at this decision, including the
+newly returned Search results. Keep future continuation outcomes, gold
+answers, and candidate origin out of this judgment to reduce hindsight and
+teacher bias. A correct final answer does not by itself validate the earlier
+Search. For an immediate Answer, the terminal gate already checks its answer
+EM; the additional local check concerns whether ending now is justified.
+Direct answers may use reliable prior knowledge where the task permits it.
+
+Require a **clear preference**, with no unresolved tie or uncertainty.
+Uncertain judgments need review or exclusion. A Codex assertion without
+supporting retrieval evidence or answer verification is insufficient.
+Chosen and rejected may have different action types, such as Search replacing
+a premature Answer or Answer replacing an unnecessary Search.
+
+### 7. If no sampled candidate passes, propose a minimal teacher correction
+
+If none of the four continuations passes **both** gates, Codex or a stronger
+teacher proposes a minimal correction of the next action from the **same
+$`x`$**. Preserve the prefix and original rejected action. Correct the decision
+and any affected `<think>` text together; the correction may change the query,
+the answer, or the action type.
+
+| Observed failure | Minimal next-action correction |
+|---|---|
+| Wrong entity, relation, or multi-hop query | Repair the Search query using the question and information already present in $`x`$. |
+| Answer issued before the needed information is available | Replace Answer with a Search targeting the missing fact. |
+| Evidence already available but misread | Correct Answer and its associated reasoning from that evidence. |
+| Search issued despite sufficient information | Replace the unnecessary Search with a supported Answer. |
+
+The teacher uses only the question and state available at the decision.
+Future observations and gold answers must not be used to design the repaired
+action, and `<information>` blocks must never be invented.
+
+For a corrected **Search**, execute the new query through the real retriever,
+append its actual observation, and return control to the **same frozen SFT
+policy** to generate the remaining continuation through the final answer.
+Regenerate the dependent suffix; results and actions belonging to the old
+query cannot be reused as though they followed the new query. A corrected
+**Answer** ends the rollout immediately.
+
+Then apply **the same terminal gate in step 5 and the same action gate in
+step 6**. Teacher generation and acceptance judging are separate passes;
+the proposal is never accepted merely because its author endorses it.
+Search corrections require both a successful final-answer rollout and a
+verified useful, necessary search. Answer corrections require correct valid
+answers and the applicable stopping-evidence check. If the predeclared retry
+limit is exhausted without a passing candidate, discard the case.
+
+### 8. Export the verified next-action preference pair
+
+Among passing candidates, prefer the clearest verified improvement requiring
+the smallest correction. Set **$`a_w`$ (`chosen`)** to that candidate's next
+action. The decision-level training unit is:
 
 ```math
-y_l = \text{actual incorrect SFT continuation generated from } x
+\boxed{(x,\ a_w,\ a_l)}
 ```
 
-Preserve the observed error and its rollout provenance. The rejected side is
-grounded in real SFT behavior at the recorded prefix.
-
-### 5. Find chosen from the same prefix
-
-First, fix **$`x`$** and resample **four continuations with the SFT model**,
-executing any subsequent searches through the real retriever. If SFT produces
-a correct behavior that passes verification, use:
-
-```math
-y_w = \text{verified good SFT continuation generated from } x
-```
-
-If none of the four resamples succeeds, ask a stronger teacher or Codex for a
-**minimal correction** from that same prefix. Keep the question, prior actions,
-and existing observations in $`x`$ unchanged; correct the faulty decision with
-as little change to the continuation as possible.
-
-### 6. Verify that chosen is better
-
-Validate the correction with observable evidence:
-
-- **Answer:** check the answer against the original gold answer or accepted
-  aliases.
-- **Search:** execute the proposed search through the real retriever and
-  inspect whether it obtains more useful new evidence for the question.
-
-An LLM judge saying that a continuation is better is not sufficient for
-acceptance. Keep only corrections supported by answer verification or actual
-retrieval evidence.
-
-### 7. Form the candidate preference pair
-
-The preference unit is:
-
-```math
-\boxed{(x,\ y_w,\ y_l)}
-```
-
-Map it to the public training fields:
-
-| Preference component | Public field | Meaning |
+| Component | Public field | Exported content |
 |---|---|---|
-| $`x`$ | `prompt_text` | Exact shared state before the faulty decision |
-| $`y_w`$ | `chosen` | Verified better continuation from that state |
-| $`y_l`$ | `rejected` | Actual incorrect SFT continuation from that state |
+| $`x`$ | `prompt_text` | Exact shared prefix immediately before the target action |
+| $`a_w`$ | `chosen` | Verified next `<think>` + `<search>` or `<think>` + `<answer>` action |
+| $`a_l`$ | `rejected` | Actual faulty next action from the original SFT trace |
 
-Attach the question, source, gold aliases, and corresponding `pair_type`.
-Examples include `premature_answer_negative`, `query_hard_negative`, and
-`evidence_misread_negative`, following the
-[SFT failure-to-pair mapping](../sft/README.md#sft-evaluation-and-failure-analysis).
-Both sides share the exact same `prompt_text`; neither continuation duplicates
-the prefix.
+Both sides use the same `prompt_text` and omit the repeated prefix. A local
+Search target ends at `</search>`; its new retrieval observation and later
+actions belong in the audit record, outside the local training target.
+Retain the existing [eight-field public schema](#public-schema), including
+the question, source, gold aliases, and matching failure `pair_type`.
 
-### 8. Keep one highest-quality pair per question
+Store full original and candidate trajectories, retrieval provenance,
+EM/F1 results, gate judgments, correction origin, and construction versions
+in a linked **audit sidecar**. This preserves the distinction between the
+full rollout used to verify a pair and the next action used to train it.
+Whole-continuation `true_full_trajectory_preference` pairs in the published
+release keep their separate training scope; a local action pair must not be
+labeled as a full-trajectory pair.
 
-Keep **one pair per normalized question**. Prefer the pair whose failure is
-**earliest, clearest, most directly verifiable**, and whose chosen/rejected
-continuations differ by the **smallest correction** needed to fix the decision.
-Discard ambiguous, unverified, or lower-quality alternatives.
+### 9. Deduplicate, audit, and release
 
-### 9. Deduplicate and audit the final release
+Keep **one highest-quality pair per normalized question**. Across candidate
+errors, prefer the earliest clear, directly verifiable decision failure with
+a passing correction; discard ambiguous or lower-quality alternatives.
+Check unique IDs and questions, SFT/Eval/RL isolation, exact shared prefixes,
+valid non-empty and distinct actions, terminal EM = 1, real retrieval
+provenance, and the documented local preference. Human review samples accepted
+pairs across sources, failure categories, and candidate origins, and resolves
+new categories before release.
 
-Check question uniqueness, format validity, data leakage against SFT/Eval/RL,
-shared-prefix consistency, non-empty and distinct chosen/rejected
-continuations, valid trajectory structure, and the evidence supporting each
-preference. Review a human sample of the retained pairs before release.
-
-The target is approximately **2,126 high-quality DPO pairs**; the current
-canonical release contains **exactly 2,126**. Quality and isolation checks
-determine acceptance, and must not be weakened to meet the target count.
+Trainer preflight checks schema, tokens, masks, and data identity. It cannot
+recover a local Search target's final answer or certify its usefulness from
+the exported action alone; the construction audit records supply that
+evidence. Approximately **2,126 pairs** is a planning target. Acceptance
+depends on the fixed gates, and their standards must not be weakened to fill
+a quota. A regenerated dataset needs its own version, counts, checksums,
+and audit records.
 
 <a id="public-schema"></a>
 
