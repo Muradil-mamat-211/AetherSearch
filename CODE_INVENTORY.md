@@ -4,13 +4,13 @@ This inventory covers every non-ignored file in the AetherSearch GitHub
 release. Model weights, optimizer checkpoints, eval result bundles, report
 archives, and runtime snapshots are not included.
 
-Generated UTC: `2026-10-04T08:20:57Z`
+Generated UTC: `2026-10-04T08:51:10Z`
 
 ## Summary
 
 - `assets`: `11` files, `842971` bytes
 - `configs`: `24` files, `45955` bytes
-- `docs`: `8` files, `165575` bytes
+- `docs`: `8` files, `165973` bytes
 - `documentation`: `4` files, `58811` bytes
 - `dpo`: `8` files, `96078` bytes
 - `environment`: `6` files, `15223` bytes
@@ -78,7 +78,7 @@ Generated UTC: `2026-10-04T08:20:57Z`
 | `docs/data/search-credit-u325-peers.csv` | 12343 | `6a40909b5ecac065d5409716a57c1ab28b3903ec9a8cf8298f2bf02a1aad8d77` |
 | `docs/data/search-credit-u325-trajectories.json` | 85428 | `def76c9035cd64b443d65914911c9b760eeff0e3fb2ca804367e3ff161d229fb` |
 | `docs/over-search-improvement.md` | 18878 | `8e650cba0e4f483431ac4e6a640d701e074f3c1a4cd5436cbaefc31f636e173a` |
-| `docs/rl-dpo-alternating-improvement.md` | 11426 | `942c02c758daea2fc4a87790fca00ebae84637f55b42a2b39c8a2462d5c9e068` |
+| `docs/rl-dpo-alternating-improvement.md` | 11824 | `f0115f479c6e0bb44ae4d37053b6efc084db0f3925426122c29e184df373ba7f` |
 | `docs/scripts/build_over_search_illustration.py` | 4564 | `899b312365ae4481d1676dec3165b3b1d95ee9bdfc72339c90fa39077d72c83e` |
 | `docs/scripts/build_search_credit_figures.py` | 10966 | `57203f19203c65612e437210f5de3397cdbe60976dd0e1184a993324c609b2c9` |
 | `docs/search-credit-case-study.md` | 19428 | `6dbbd0011c9936e393aa7c2452e2e7e302b540e2cd0ff34d2dfddf062b1a458b` |

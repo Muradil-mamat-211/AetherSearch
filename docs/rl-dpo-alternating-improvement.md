@@ -162,17 +162,33 @@ $$
 The reference parameters remain frozen throughout the DPO phase and receive
 no gradient updates.
 
-Use the next-action preference objective:
+First define the policy-to-reference log score of one next action:
 
 $$
-\mathcal L_k
-=-\mathbb E_{(x,a_w,a_l)\sim\mathcal D_k}
-\log\sigma\!\left(
-\beta_{\mathrm{DPO}}\left[
-\log\frac{\pi_\theta(a_w\mid x)}{\pi_{\mathrm{ref},k}^{\mathrm{DPO}}(a_w\mid x)}
--\log\frac{\pi_\theta(a_l\mid x)}{\pi_{\mathrm{ref},k}^{\mathrm{DPO}}(a_l\mid x)}
-\right]\right).
+s_{\theta,k}(a,x)
+=\log\pi_\theta(a\mid x)
+-\log\pi_{\mathrm{ref},k}^{\mathrm{DPO}}(a\mid x).
 $$
+
+The preference margin is the chosen action's score minus the rejected
+action's score:
+
+$$
+\Delta_{\theta,k}(x,a_w,a_l)
+=s_{\theta,k}(a_w,x)-s_{\theta,k}(a_l,x).
+$$
+
+Use the sigmoid DPO loss over the accepted next-action pairs:
+
+$$
+\mathcal{L}_k
+=-\mathbb{E}_{(x,a_w,a_l)\sim\mathcal{D}_k}
+[\log\sigma(\beta_{\mathrm{DPO}}\Delta_{\theta,k}(x,a_w,a_l))].
+$$
+
+Here $\sigma$ is the sigmoid function. These three expressions are exactly
+the log-ratio DPO objective: increasing the chosen action's score relative
+to the rejected action's score decreases the loss.
 
 Log probabilities sum over scored action tokens. Fix the DPO learning rate,
 batching, and $\beta_{\mathrm{DPO}}>0$ before the phase; it is a separate coefficient
