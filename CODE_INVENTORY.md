@@ -4,21 +4,21 @@ This inventory covers every non-ignored file in the AetherSearch GitHub
 release. Model weights, optimizer checkpoints, eval result bundles, report
 archives, and runtime snapshots are not included.
 
-Generated UTC: `2026-10-04T06:36:20Z`
+Generated UTC: `2026-10-04T06:49:50Z`
 
 ## Summary
 
 - `assets`: `11` files, `842971` bytes
 - `configs`: `24` files, `45955` bytes
 - `docs`: `7` files, `153864` bytes
-- `documentation`: `4` files, `54773` bytes
-- `dpo`: `8` files, `93588` bytes
+- `documentation`: `4` files, `54942` bytes
+- `dpo`: `8` files, `93989` bytes
 - `environment`: `6` files, `15223` bytes
 - `recipes`: `2` files, `5883` bytes
 - `repo_root`: `3` files, `1683` bytes
 - `runtime_assets`: `3` files, `29691` bytes
 - `scripts`: `18` files, `76227` bytes
-- `sft`: `46` files, `657232` bytes
+- `sft`: `46` files, `657404` bytes
 - `src`: `89` files, `1290396` bytes
 - `tests`: `57` files, `503940` bytes
 - `third_party`: `5` files, `126026` bytes
@@ -89,15 +89,15 @@ Generated UTC: `2026-10-04T06:36:20Z`
 | `EXTERNAL_ASSETS.md` | 7853 | `8869d1dc5bd8cfc00991a376b47be389035b5c6401127bcd18bb5c9022403a7a` |
 | `README.md` | 37540 | `6642b77aabe9e30f07132ec160e8aa3de4bdc8f100e8872a0ef3f409bf8258a9` |
 | `THIRD_PARTY_NOTICES.md` | 6098 | `f5eb49726de47e3ad7b3897840482d5aee7c854fc1921465e77cf8ff03dae682` |
-| `TRAINING_REPRODUCTION.md` | 3282 | `aaca5b983337b5b0d3fe95598ca69d2acbb316ab52311ef4cb0040bd7190b61a` |
+| `TRAINING_REPRODUCTION.md` | 3451 | `0c90f5a5d676e3d5997e6b946b9994863b28a0d5483509c27345c64ac88666fb` |
 
 ### dpo
 
 | path | bytes | sha256 |
 |---|---:|---|
 | `dpo/ATTRIBUTION.md` | 2720 | `e5b2efa91817590bf764a5eb753b3728ca9599a74d6f5778bc65c1f356abae3b` |
-| `dpo/README.md` | 29173 | `99f1b5b5dd27a8c771a1fa8a692f0e32763d1ebff537cb0edc5f541236a90f93` |
-| `dpo/checksums.sha256` | 319 | `23179ad22367d9c67f0df69e4e0183db1bf08daef51c4f7b1505fc9ce3e3cefb` |
+| `dpo/README.md` | 29574 | `98c998c5eeb78aaf98a3070a17e7464a5437406c4ab96aa11ff753c0d1efb07a` |
+| `dpo/checksums.sha256` | 319 | `7c537600a06501bee6a74f44a525a1c33e14aaf24cd443694c4aafc47dcb3c9c` |
 | `dpo/configs/ds_zero3_bf16.json` | 569 | `41e04c1a169b122eb058f1018edba49648f8c1ebd8f732751c279e10d0d981f9` |
 | `dpo/dataset_manifest.json` | 2529 | `0ee034122d6ad3b88580ed3923658f4e1cc3aaa53504b7dce3c3483cc8a8f676` |
 | `dpo/requirements.txt` | 152 | `f4192c805bbefd20f901cdf4fc6861486b54d158fd2123551f60d7078a4c6c32` |
@@ -166,8 +166,8 @@ Generated UTC: `2026-10-04T06:36:20Z`
 | path | bytes | sha256 |
 |---|---:|---|
 | `sft/ATTRIBUTION.md` | 3643 | `1f690b238f77cc3ff112a8bb8404a5fe5806d20128d9214d40743857299fc038` |
-| `sft/README.md` | 17614 | `1f7dd834231210c19bf571a034595258a469e54bd578f8a3801e935e2bb0bcda` |
-| `sft/checksums.sha256` | 424 | `615deb8cfb255a228b57a34aa7e87156a5b6ab5ea6afaadc2f51dc5535ed7112` |
+| `sft/README.md` | 17786 | `21951d5af9b5ae162c8a1f5e60d516e40afafa9b42792926bf1bc4cbcd5eebc8` |
+| `sft/checksums.sha256` | 424 | `5c8428bfc4ee9a05efb31cb3e29cf969a7c6c4671f1eef7c25b3cd40461558af` |
 | `sft/configs/ds_zero3_bf16.json` | 569 | `41e04c1a169b122eb058f1018edba49648f8c1ebd8f732751c279e10d0d981f9` |
 | `sft/data_generation/run_teacher_rollout.sh` | 1906 | `0b4af6b685ed6ddcd0df4196f0d40d68742f8fac8b37822d7cd35c06eee7af54` |
 | `sft/data_generation/search_sft_hybrid_v1/build_bm25_index.py` | 9938 | `789a3a8df399c73e8d85346f7fc683c8a154301323684f8bd6a56bad6482f17f` |

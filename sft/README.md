@@ -179,6 +179,10 @@ The evaluation analysis informs the failure categories. DPO preference pairs
 use separate training questions that exhibit those failures, so the frozen
 Eval-1400 questions remain held out.
 
+The published DPO dataset contains **2,126 preference pairs constructed from
+a pool of 5,000 candidate questions** through SFT rollouts, pair construction,
+and filtering.
+
 The [DPO construction specification](../dpo/README.md#dpo-data-construction-workflow)
 uses four initial complete SFT rollouts to locate an actionable decision
 error, then four complete continuations from the exact prefix before that

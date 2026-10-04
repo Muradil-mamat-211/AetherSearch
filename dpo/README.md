@@ -33,6 +33,7 @@
 | Base checkpoint | [muradil211/AetherSearch_SFT](https://huggingface.co/muradil211/AetherSearch_SFT) |
 | DPO model output | [muradil211/AetherSearch_DPO](https://huggingface.co/muradil211/AetherSearch_DPO) |
 | Reproduction entrypoint | [`scripts/run_train_dpo_zero3.sh`](scripts/run_train_dpo_zero3.sh) |
+| Original candidate question pool | 5,000 |
 | Preference pairs | 2,126 |
 | Training unit | Shared prompt with chosen/rejected continuations |
 | License metadata | `unknown` |
@@ -42,10 +43,11 @@
 
 ## 🧩 Dataset overview
 
-The stage uses the complete 2,126-pair `train.jsonl` release. Every normalized
-question is unique and every row contains one shared `prompt_text`, one
-preferred continuation, and one non-preferred continuation. The exact data
-identity is:
+The stage uses the complete 2,126-pair `train.jsonl` release, constructed from
+SFT rollouts on the original **5,000-question candidate pool** and retained
+after preference-pair construction and filtering. Every normalized question
+is unique and every row contains one shared `prompt_text`, one preferred
+continuation, and one non-preferred continuation. The exact data identity is:
 
 ```text
 c42adcb0f194cff3126134b37afd85e4b89aa9917e5c98dda4b09904509f61e9
@@ -81,10 +83,13 @@ Preference composition:
 
 ## 🛠️ DPO Data Construction Workflow
 
-This is the construction specification for **new or regenerated decision-level
-DPO pairs**. It starts with **5,000 isolated candidate questions** and targets
-approximately **2,126 high-quality pairs**, subject to verification. The central
-rule is: **roll out to the final answer for verification, then train on the
+The published dataset was constructed from **5,000 isolated candidate
+questions**. SFT rollouts on this pool, preference-pair construction, and
+filtering produced **exactly 2,126 retained preference pairs**. These are the
+observed input and output counts of the released dataset.
+
+The decision-level construction specification below follows the central
+rule: **roll out to the final answer for verification, then train on the
 verified next action at the shared prefix**. SFT-sampled and Codex-corrected
 candidates must pass the same acceptance gates.
 
@@ -301,10 +306,11 @@ new categories before release.
 Trainer preflight checks schema, tokens, masks, and data identity. It cannot
 recover a local Search target's final answer or certify its usefulness from
 the exported action alone; the construction audit records supply that
-evidence. Approximately **2,126 pairs** is a planning target. Acceptance
-depends on the fixed gates, and their standards must not be weakened to fill
-a quota. A regenerated dataset needs its own version, counts, checksums,
-and audit records.
+evidence. The actual construction result was **2,126 retained preference pairs
+from the original 5,000 candidate questions**, as recorded in the
+[published release](#dataset-overview). Acceptance depends on the fixed
+verification and audit requirements. A regenerated dataset needs its own
+version, actual counts, checksums, and audit records.
 
 <a id="public-schema"></a>
 

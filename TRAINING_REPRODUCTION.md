@@ -24,6 +24,10 @@ variables; the 2,600-record count and dataset SHA-256 remain fixed.
 
 ## DPO
 
+The canonical **2,126-pair release was constructed from the original
+5,000-question candidate pool** through SFT rollouts, preference-pair
+construction, and filtering.
+
 For new or regenerated decision-level preference data, follow the
 [DPO construction specification](dpo/README.md#dpo-data-construction-workflow):
 complete rollouts establish terminal correctness, and a separate action check
