@@ -7,6 +7,7 @@ documentation.
 |---|---|
 | `aethersearch-mark.svg` | AetherSearch monogram displayed in the root README |
 | `aethersearch-method.svg` | Static overview of the Agentic RL training flow |
+| `rl-dpo-alternating.svg` | Editable vector overview of the proposed alternating RL and DPO workflow |
 | `figures/search-credit-same-depth.png` and `.svg` | Four recorded second-Search cases for one prompt; immediate, return, and mixed credit |
 | `figures/search-credit-delayed-return.png` and `.svg` | Recorded continuation gains and the mixed credit assigned to an earlier repeated Search |
 | `figures/search-credit-boundaries.png` and `.svg` | All-negative terminal peer gains and consecutive singleton outcome fallback |
@@ -14,6 +15,13 @@ documentation.
 
 Assets remain local to the repository so the project overview does not depend
 on an external image host.
+
+The alternating RL/DPO diagram is committed as a static SVG so viewing the
+root README does not require GitHub's client-side Mermaid renderer. Its
+[SVG file](rl-dpo-alternating.svg) is the editable source: labels, cards,
+branch paths, and the cycle arrow use native SVG elements. It includes an
+accessible title and description and requires no scripts, external fonts,
+HTML labels, or rendering service.
 
 The Search-credit figures use the committed evidence in `docs/data/` and can
 be verified and rebuilt with

@@ -1040,16 +1040,7 @@ policy, run a short DPO correction, and resume RL with fresh rollouts.
 This complements the preceding over-search correction by targeting observed
 decision errors, including newly emerging failure types.
 
-```mermaid
-flowchart LR
-    R["100 successful RL updates"] --> F["Freeze current policy"]
-    F --> V["Construct up to 256 verified action pairs"]
-    V --> C{"Any accepted pairs?"}
-    C -->|Yes| D["One DPO epoch"]
-    C -->|No| N["Fresh RL rollouts"]
-    D --> N
-    N --> R
-```
+![Alternating RL and DPO: after 100 successful RL updates, freeze the policy and construct up to 256 verified action pairs; run one DPO epoch if any are accepted, then resume with fresh RL rollouts.](assets/rl-dpo-alternating.svg)
 
 ### Construct preferences from current behavior
 
